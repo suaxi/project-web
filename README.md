@@ -1,5 +1,7 @@
 # project-web
 
+*参考eladmin项目*
+
 ## Project setup
 ```
 npm install
