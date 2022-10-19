@@ -12,6 +12,7 @@
     "core-js": "^3.8.3",
     "element-ui": "^2.15.10",
     "js-cookie": "^3.0.1",
+    "jsencrypt": "^3.2.1",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "path-browserify": "^1.0.1",
     "vue": "^2.6.14",

@@ -47,6 +47,8 @@
 
 <script>
 import Background from '@/assets/images/background.jpg';
+import { encrypt } from '@/utils/rsaEncrypt';
+import ElementUI from "element-ui";
 
 export default {
   name: "MyLogin",
@@ -62,7 +64,11 @@ export default {
         rememberMe: false,
         uuid: ''
       },
-      loginRules: {},
+      loginRules: {
+        username: [{required: true, trigger: 'blur', message: '用户名不能为空'}],
+        password: [{required: true, trigger: 'blur', message: '密码不能为空'}],
+        code: [{required: true, trigger: 'blur', message: '验证码不能为空'}]
+      },
       Background,
       codeUrl: '',
       loading: false
@@ -70,12 +76,27 @@ export default {
   },
   methods: {
     getCode() {
-      this.$axios.get('http://localhost:8088/auth/getCaptcha').then(res => {
+      this.$request.get('http://localhost:8088/auth/getCaptcha').then(res => {
         this.codeUrl = res.data.data.img;
         this.loginForm.uuid = res.data.data.uuid;
       })
     },
-    handleLogin() {}
+    handleLogin() {
+      this.$refs.loginForm.validate(valid => {
+        if (valid) {
+          //校验通过执行登录
+          this.loginForm.password = encrypt(this.loginForm.password)
+          this.$request.post('http://localhost:8088/auth/login', this.loginForm).then(res => {
+            if (res.data.code === 200) {
+              this.$router.push('/home')
+            } else {
+              this.getCode()
+              ElementUI.Message.error(res.data.message)
+            }
+          })
+        }
+      })
+    }
   }
 }
 </script>
