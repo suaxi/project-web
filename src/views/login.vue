@@ -7,19 +7,19 @@
       </h3>
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
-<!--          <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon"/>-->
+          <!--          <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon"/>-->
         </el-input>
       </el-form-item>
       <el-form-item prop="password">
         <el-input v-model="loginForm.password" type="password" auto-complete="off" placeholder="密码"
                   @keyup.enter.native="handleLogin">
-<!--          <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon"/>-->
+          <!--          <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon"/>-->
         </el-input>
       </el-form-item>
       <el-form-item prop="code">
         <el-input v-model="loginForm.code" auto-complete="off" placeholder="验证码" style="width: 63%"
                   @keyup.enter.native="handleLogin">
-<!--          <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon"/>-->
+          <!--          <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon"/>-->
         </el-input>
         <div class="login-code">
           <img :src="codeUrl" @click="getCode">
@@ -37,18 +37,21 @@
       </el-form-item>
     </el-form>
     <!--  底部  -->
-<!--    <div v-if="$store.state.settings.showFooter" id="el-login-footer">-->
-<!--      <span v-html="$store.state.settings.footerTxt"/>-->
-<!--      <span v-if="$store.state.settings.caseNumber"> ⋅ </span>-->
-<!--      <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">{{ $store.state.settings.caseNumber }}</a>-->
-<!--    </div>-->
+    <!--    <div v-if="$store.state.settings.showFooter" id="el-login-footer">-->
+    <!--      <span v-html="$store.state.settings.footerTxt"/>-->
+    <!--      <span v-if="$store.state.settings.caseNumber"> ⋅ </span>-->
+    <!--      <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">{{ $store.state.settings.caseNumber }}</a>-->
+    <!--    </div>-->
   </div>
 </template>
 
 <script>
 import Background from '@/assets/images/background.jpg';
-import { encrypt } from '@/utils/rsaEncrypt';
+import {encrypt} from '@/utils/rsaEncrypt';
 import ElementUI from "element-ui";
+import Cookies from 'js-cookie';
+import Config from '@/settings';
+import {setToken} from "@/utils/auth";
 
 export default {
   name: "MyLogin",
@@ -71,27 +74,63 @@ export default {
       },
       Background,
       codeUrl: '',
-      loading: false
+      loading: false,
+      cookiePass: ''
     }
   },
   methods: {
+    getCookie() {
+      const username = Cookies.get('username')
+      let password = Cookies.get('password')
+      const rememberMe = Cookies.get('rememberMe')
+      // 保存cookie里面的加密后的密码
+      this.cookiePass = password === undefined ? '' : password
+      password = password === undefined ? this.loginForm.password : password
+      this.loginForm = {
+        username: username === undefined ? this.loginForm.username : username,
+        password: password,
+        rememberMe: rememberMe === undefined ? false : Boolean(rememberMe),
+        code: ''
+      }
+    },
     getCode() {
       this.$request.get('http://localhost:8088/auth/getCaptcha').then(res => {
-        this.codeUrl = res.data.data.img;
-        this.loginForm.uuid = res.data.data.uuid;
+        this.codeUrl = res.data.img;
+        this.loginForm.uuid = res.data.uuid;
       })
     },
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           //校验通过执行登录
-          this.loginForm.password = encrypt(this.loginForm.password)
-          this.$request.post('http://localhost:8088/auth/login', this.loginForm).then(res => {
-            if (res.data.code === 200) {
+          const user = {
+            username: this.loginForm.username,
+            password: this.loginForm.password,
+            rememberMe: this.loginForm.rememberMe,
+            code: this.loginForm.code,
+            uuid: this.loginForm.uuid
+          }
+          if (user.password !== Cookies.get()) {
+            user.password = encrypt(this.loginForm.password)
+          }
+
+          if (this.loginForm.rememberMe) {
+            Cookies.set('username', user.username, {expires: Config.passwordExpires});
+            Cookies.set('password', user.password, {expires: Config.passwordExpires});
+            Cookies.set('rememberMe', user.rememberMe, {expires: Config.passwordExpires});
+          } else {
+            Cookies.remove('username');
+            Cookies.remove('password');
+            Cookies.remove('rememberMe');
+          }
+
+          this.$request.post('http://localhost:8088/auth/login', user).then(res => {
+            if (res.code === 200) {
+              setToken(res.data.token, user.rememberMe)
               this.$router.push('/home')
             } else {
               this.getCode()
-              ElementUI.Message.error(res.data.message)
+              ElementUI.Message.error(res.message)
             }
           })
         }
@@ -109,6 +148,7 @@ export default {
   height: 100%;
   background-size: cover;
 }
+
 .title {
   margin: 0 auto 30px auto;
   text-align: center;
@@ -120,29 +160,37 @@ export default {
   background: #ffffff;
   width: 385px;
   padding: 25px 25px 5px 25px;
+
   .el-input {
     height: 38px;
+
     input {
       height: 38px;
     }
   }
-  .input-icon{
-    height: 39px;width: 14px;margin-left: 2px;
+
+  .input-icon {
+    height: 39px;
+    width: 14px;
+    margin-left: 2px;
   }
 }
+
 .login-tip {
   font-size: 13px;
   text-align: center;
   color: #bfbfbf;
 }
+
 .login-code {
   width: 33%;
   display: inline-block;
   height: 38px;
   float: right;
-  img{
+
+  img {
     cursor: pointer;
-    vertical-align:middle
+    vertical-align: middle
   }
 }
 </style>

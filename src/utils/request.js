@@ -4,7 +4,7 @@ import ElementUI from "element-ui";
 let request = axios.create()
 
 request.interceptors.response.use(response => {
-        return response
+        return response.data
     },
     error => {
         ElementUI.Message.error(error)
