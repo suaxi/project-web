@@ -124,7 +124,7 @@ export default {
             Cookies.remove('rememberMe');
           }
 
-          this.$request.post('http://localhost:8088/auth/login', user).then(res => {
+          this.$request.post('/api/auth/login', user).then(res => {
             if (res.code === 200) {
               setToken(res.data.token, user.rememberMe)
               this.$router.push('/home')

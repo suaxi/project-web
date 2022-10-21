@@ -6,5 +6,17 @@ module.exports = defineConfig({
   configureWebpack: {
     plugins: [new NodePolyfillPlugin()]
   },
-  transpileDependencies: true
+  transpileDependencies: true,
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8088',
+        //路径重写
+        pathRewrite: {'^/api': ''},
+        ws: true,
+        //用于空值请求头中的host值（默认值为true）
+        changeOrigin: true
+      }
+    }
+  }
 })
