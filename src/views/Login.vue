@@ -56,7 +56,8 @@ import {setToken} from "@/utils/auth";
 export default {
   name: "MyLogin",
   created() {
-    this.getCode()
+    this.getCode();
+    this.getCookie()
   },
   data() {
     return {
@@ -123,11 +124,13 @@ export default {
             Cookies.remove('password');
             Cookies.remove('rememberMe');
           }
+          this.loading = true
 
           this.$request.post('/api/auth/login', user).then(res => {
+            this.loading = false
             if (res.code === 200) {
               setToken(res.data.token, user.rememberMe)
-              this.$router.push('/home')
+              this.$router.replace('/home')
             } else {
               this.getCode()
               ElementUI.Message.error(res.message)
