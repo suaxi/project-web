@@ -10,6 +10,8 @@ import request from "@/utils/request";
 import 'element-ui/lib/theme-chalk/index.css';
 // global css
 import './assets/styles/index.scss'
+// global svg
+import './assets/icons/index'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
