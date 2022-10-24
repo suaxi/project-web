@@ -54,7 +54,7 @@ import Config from '@/settings';
 import {setToken} from "@/utils/auth";
 
 export default {
-  name: "MyLogin",
+  name: "ProjectLogin",
   created() {
     this.getCode();
     this.getCookie()
@@ -130,7 +130,7 @@ export default {
             this.loading = false
             if (res.code === 200) {
               setToken(res.data.token, user.rememberMe)
-              this.$router.replace('/home')
+              this.$router.replace('/')
             } else {
               this.getCode()
               ElementUI.Message.error(res.message)

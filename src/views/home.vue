@@ -8,7 +8,7 @@
               <svg-icon slot="prefix" :icon-class="item.meta.icon"/>
               {{ item.meta.title }}
             </template>
-            <el-menu-item v-for="child in item.children" :index="child.name" :key="child.name">
+            <el-menu-item v-for="child in item.children" :index="child.name" :key="child.name" @click="selectMenu(item.path, child.path)">
               <template slot="title">
                 <svg-icon slot="prefix" :icon-class="child.meta.icon"/>
                 {{ child.meta.title }}
@@ -30,30 +30,7 @@
           </el-dropdown>
         </el-header>
         <el-main>
-          <el-table
-              ref="singleTable"
-              :data="tableData"
-              highlight-current-row
-              style="width: 100%">
-            <el-table-column
-                type="index"
-                width="50">
-            </el-table-column>
-            <el-table-column
-                property="date"
-                label="日期"
-                width="120">
-            </el-table-column>
-            <el-table-column
-                property="name"
-                label="姓名"
-                width="120">
-            </el-table-column>
-            <el-table-column
-                property="address"
-                label="地址">
-            </el-table-column>
-          </el-table>
+          <router-view></router-view>
         </el-main>
       </el-container>
     </el-container>
@@ -65,33 +42,19 @@ import {removeToken} from "@/utils/auth";
 import ElementUI from "element-ui";
 
 export default {
-  name: "MyHome",
+  name: "ProjectHome",
   created() {
     this.getMenus()
   },
   data() {
     return {
-      tableData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
       menuList: []
     }
   },
   methods: {
+    selectMenu(path1, path2) {
+      this.$router.replace(path1 + '/' + path2).catch(err => err)
+    },
     getMenus() {
       this.$request.get('/api/menu/getUserRouters').then(res => {
         this.menuList = res.data;
@@ -101,7 +64,7 @@ export default {
       this.$request.get('/api/auth/logout').then(res => {
         if (res.code === 200) {
           removeToken()
-          this.$router.replace('/')
+          this.$router.replace('/login')
           ElementUI.Message.success(res.message)
         }
       })

@@ -1,20 +1,28 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Login from "@/views/Login";
+import Login from "@/views/login";
 import {getToken} from "@/utils/auth";
+import User from "@/views/system/user";
 
 Vue.use(VueRouter)
 
 const routes = [
     {
-        path: '',
+        path: '/login',
         name: 'Login',
         component: Login
     },
     {
-        path: '/home',
+        path: '/',
         name: 'Home',
-        component: () => import('@/views/Home')
+        component: () => import('@/views/home'),
+        children: [
+            {
+                path: 'system/user',
+                name: 'User',
+                component: User
+            }
+        ]
     }
 ]
 
@@ -28,13 +36,13 @@ router.beforeEach((to, from, next) => {
     if (getToken()) {
         if (to.name === 'Login') {
             //已登录
-            next('/home')
+            next('/')
         } else {
             next()
         }
-    } else if (to.path !== '/') {
+    } else if (to.name !== 'Login') {
         //未登录
-        next({path: '/'})
+        next({name: 'Login'})
     } else {
         next()
     }
