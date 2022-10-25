@@ -10,6 +10,7 @@
               size="mini"
               type="primary"
               icon="el-icon-plus"
+              @click="setOperation('post')"
           >
             新增
           </el-button>
@@ -73,6 +74,77 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 用户信息编辑弹框 -->
+    <el-dialog append-to-body title="用户信息" :visible.sync="dialogFormVisible" width="680px">
+      <el-form :model="form" :inline="true" size="small" label-width="66px">
+        <el-form-item label="用户名">
+          <el-input v-model="form.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话">
+          <el-input v-model="form.phone" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="form.nickName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="form.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-radio-group v-model="form.sex" style="width: 178px">
+            <el-radio label="男">男</el-radio>
+            <el-radio label="女">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="form.enabled">
+            <el-radio
+                v-for="item in user_status"
+                :key="item.value"
+                :label="item.value"
+            >{{ item.label }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="部门">
+          <el-select v-model="dept" placeholder="请选择部门" ref="deptSelect">
+            <el-option v-model="dept" style="height: max-content;width: 100%;padding: 0">
+              <el-tree
+                  :props="props"
+                  :load="loadDept"
+                  lazy
+                  style="width: 100%"
+                  @node-click="setDept">
+              </el-tree>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="岗位">
+          <el-select v-model="jobData" multiple placeholder="请选择岗位" @change="changeJob">
+            <el-option v-for="item in jobs" :label="item.name" :value="item.id" :key="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="角色" prop="roles" >
+          <el-select
+              v-model="roleData"
+              multiple
+              placeholder="请选择角色"
+              @change="changeRole"
+          >
+            <el-option
+                v-for="item in roles"
+                :key="item.name"
+                :label="item.name"
+                :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="updateUser">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -84,13 +156,85 @@ export default {
   },
   data() {
     return {
-      tableData: []
+      tableData: [],
+      dialogFormVisible: false,
+      user_status: [{label: '激活', value: 'true'}, {label: '禁用', value: 'false'}],
+      jobs: [],
+      roles: [],
+      jobData: [],
+      roleData: [],
+      dept: {},
+      depts: [],
+      props: {
+        label: 'name',
+        children: 'zones',
+        isLeaf: 'leaf',
+      },
+      form: {
+        username: 'testJeff520',
+        email: '786500545@qq.com',
+        dept: {},
+        nickName: 'houky',
+        id: null,
+        phone: 13242842112,
+        roles: [{id: 2}],
+        enabled: 'true',
+        sex: '男',
+        jobs: []
+      },
     }
   },
   methods: {
     getUserList() {
       this.$request.get('/api/user/queryPage').then(res => {
         this.tableData = res.data.records
+      })
+    },
+    setOperation(operation) {
+      this.dialogFormVisible = true;
+      this.$store.commit('SET_OPERATION', operation)
+      //角色列表
+      this.$request.get('/api/role/queryList').then(res => {
+        this.roles = res.data
+      });
+      //岗位列表
+      this.$request.get('/api/job/queryList').then(res => {
+        this.jobs = res.data
+      });
+    },
+    //部门列表（懒加载）
+    loadDept(node, resolve) {
+      let pid = node.level === 0 ? null : node.data.id;
+      this.$request.get('/api/dept/queryChildListByPid', {params: {pid}}).then(res => {
+        this.depts = res.data
+        resolve(this.depts)
+      })
+    },
+    setDept(node) {
+      this.form.dept = node.id;
+      this.dept = node.name;
+      this.$refs.deptSelect.visible = false
+    },
+    //岗位select选择组件的值需转换为键值对
+    changeJob() {
+      this.form.jobs = this.jobData.map(value => {
+        return {id: value}
+      })
+    },
+    //角色同理岗位键值对转换
+    changeRole() {
+      this.form.roles = this.roleData.map(value => {
+        return {id: value}
+      })
+    },
+    updateUser() {
+      let operation = this.$store.state.operation;
+      this.$request({
+        url: '/api/user',
+        method: operation,
+        data: this.form
+      }).then(res => {
+        this.dialogFormVisible = false
       })
     }
   }

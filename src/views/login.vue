@@ -95,7 +95,7 @@ export default {
       }
     },
     getCode() {
-      this.$request.get('http://localhost:8088/auth/getCaptcha').then(res => {
+      this.$request.get('/api/auth/getCaptcha').then(res => {
         this.codeUrl = res.data.img;
         this.loginForm.uuid = res.data.uuid;
       })
