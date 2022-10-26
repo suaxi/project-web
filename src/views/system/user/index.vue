@@ -1,6 +1,7 @@
 <template>
   <div>
-    <div class="head-container">  <!--增删改查按钮-->
+    <div class="head-container">
+      <!--增删改查按钮-->
       <div class="crud-opts">
         <span class="crud-opts-left">
           <!--左侧插槽-->
@@ -19,6 +20,8 @@
               size="mini"
               type="success"
               icon="el-icon-edit"
+              @click="setOperation('put')"
+              :disabled="selectData.length !== 1"
           >
             修改
           </el-button>
@@ -54,7 +57,8 @@
         </el-button-group>
       </div>
     </div>
-    <el-table :data="tableData" style="width: 100%">
+    <el-table :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column fixed prop="username" label="用户名" width="150"></el-table-column>
       <el-table-column prop="nickName" label="昵称" width="120"></el-table-column>
       <el-table-column prop="sex" label="性别" width="120"></el-table-column>
@@ -104,8 +108,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="岗位">
-          <el-select v-model="form.jobIds" multiple placeholder="请选择岗位">
-            <el-option v-for="item in jobs" :key="item.id" :label="item.name" :value="item.id"/>
+          <el-select v-model="jobs" multiple placeholder="请选择岗位" @change="setJob">
+            <el-option v-for="item in jobList" :key="item.id" :label="item.name" :value="item.id"/>
           </el-select>
         </el-form-item>
         <el-form-item label="性别">
@@ -122,8 +126,8 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="角色" prop="roles">
-          <el-select v-model="form.roleIds" multiple placeholder="请选择角色">
-            <el-option v-for="item in roles" :key="item.id" :label="item.name" :value="item.id"/>
+          <el-select v-model="roles" multiple placeholder="请选择角色" @change="setRole">
+            <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id"/>
           </el-select>
         </el-form-item>
       </el-form>
@@ -145,6 +149,7 @@ export default {
   },
   data() {
     return {
+      selectData: [],
       tableData: [],
       dialogFormVisible: false,
       user_status: [{label: '激活', value: true}, {label: '禁用', value: false}],
@@ -153,10 +158,12 @@ export default {
         children: 'zones',
         isLeaf: 'leaf',
       },
-      jobs: [],
-      roles: [],
-      depts: [],
+      deptList: [],
       dept: {},
+      jobList: [],
+      jobs: [],
+      roleList: [],
+      roles: [],
       form: {
         id: null,
         deptId: '',
@@ -166,8 +173,8 @@ export default {
         phone: null,
         email: '',
         enabled: false,
-        roleIds: [],
-        jobIds: []
+        roleIds: '',
+        jobIds: ''
       },
     }
   },
@@ -177,30 +184,50 @@ export default {
         this.tableData = res.data.records
       })
     },
+    //选中行，解除处于disabled状态的按钮
+    handleSelectionChange(rows) {
+      this.selectData = rows
+    },
+    //修改时值映射
+    mapForm(selectRow) {
+      this.dept = selectRow.deptName
+      this.jobs = selectRow.jobIds.split(',').map(item => Number(item));
+      this.roles = selectRow.roleIds.split(',').map(item => Number(item));
+      this.form = selectRow
+    },
     setOperation(operation) {
+      if (operation === 'put') {
+        this.mapForm(this.selectData[0])
+      }
       this.dialogFormVisible = true;
       this.$store.commit('SET_OPERATION', operation)
       //角色列表
       this.$request.get('/api/role/queryList').then(res => {
-        this.roles = res.data
+        this.roleList = res.data
       });
       //岗位列表
       this.$request.get('/api/job/queryList').then(res => {
-        this.jobs = res.data
+        this.jobList = res.data
       });
     },
     //部门列表（懒加载）
     loadDept(node, resolve) {
       let pid = node.level === 0 ? null : node.data.id;
       this.$request.get('/api/dept/queryChildListByPid', {params: {pid}}).then(res => {
-        this.depts = res.data
-        resolve(this.depts)
+        this.deptList = res.data
+        resolve(this.deptList)
       })
     },
     setDept(node) {
       this.form.deptId = node.id;
       this.dept = node.name
       this.$refs.deptSelect.visible = false
+    },
+    setJob() {
+      this.form.jobIds = this.jobs.join(',')
+    },
+    setRole() {
+      this.form.roleIds = this.roles.join(',')
     },
     updateUser() {
       let operation = this.$store.state.operation;
