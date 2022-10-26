@@ -69,8 +69,8 @@
       <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期" width="200"></el-table-column>
       <el-table-column prop="operation" label="操作" width="120">
         <template slot-scope="scope">
-          <el-button type="text" size="small">Edit</el-button>
-          <el-button type="text" size="small">Delete</el-button>
+          <el-button type="text" size="small">编辑</el-button>
+          <el-button type="text" size="small">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -90,22 +90,6 @@
         <el-form-item label="邮箱">
           <el-input v-model="form.email" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="性别">
-          <el-radio-group v-model="form.sex" style="width: 178px">
-            <el-radio label="男">男</el-radio>
-            <el-radio label="女">女</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.enabled">
-            <el-radio
-                v-for="item in user_status"
-                :key="item.value"
-                :label="item.value"
-            >{{ item.label }}
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
         <el-form-item label="部门">
           <el-select v-model="dept" placeholder="请选择部门" ref="deptSelect">
             <el-option v-model="dept" style="height: max-content;width: 100%;padding: 0">
@@ -120,23 +104,26 @@
           </el-select>
         </el-form-item>
         <el-form-item label="岗位">
-          <el-select v-model="jobData" multiple placeholder="请选择岗位" @change="changeJob">
-            <el-option v-for="item in jobs" :label="item.name" :value="item.id" :key="item.id"></el-option>
+          <el-select v-model="form.jobIds" multiple placeholder="请选择岗位">
+            <el-option v-for="item in jobs" :key="item.id" :label="item.name" :value="item.id"/>
           </el-select>
         </el-form-item>
-        <el-form-item label="角色" prop="roles" >
-          <el-select
-              v-model="roleData"
-              multiple
-              placeholder="请选择角色"
-              @change="changeRole"
-          >
-            <el-option
-                v-for="item in roles"
-                :key="item.name"
-                :label="item.name"
-                :value="item.id"
-            />
+        <el-form-item label="性别">
+          <el-radio-group v-model="form.sex" style="width: 178px">
+            <el-radio label="男">男</el-radio>
+            <el-radio label="女">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="form.enabled">
+            <el-radio v-for="item in user_status" :key="item.value" :label="item.value">
+              {{ item.label }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="角色" prop="roles">
+          <el-select v-model="form.roleIds" multiple placeholder="请选择角色">
+            <el-option v-for="item in roles" :key="item.id" :label="item.name" :value="item.id"/>
           </el-select>
         </el-form-item>
       </el-form>
@@ -149,6 +136,8 @@
 </template>
 
 <script>
+import ElementUI from "element-ui";
+
 export default {
   name: "ProjectUser",
   created() {
@@ -158,29 +147,27 @@ export default {
     return {
       tableData: [],
       dialogFormVisible: false,
-      user_status: [{label: '激活', value: 'true'}, {label: '禁用', value: 'false'}],
-      jobs: [],
-      roles: [],
-      jobData: [],
-      roleData: [],
-      dept: {},
-      depts: [],
+      user_status: [{label: '激活', value: true}, {label: '禁用', value: false}],
       props: {
         label: 'name',
         children: 'zones',
         isLeaf: 'leaf',
       },
+      jobs: [],
+      roles: [],
+      depts: [],
+      dept: {},
       form: {
-        username: 'testJeff520',
-        email: '786500545@qq.com',
-        dept: {},
-        nickName: 'houky',
         id: null,
-        phone: 13242842112,
-        roles: [{id: 2}],
-        enabled: 'true',
+        deptId: '',
+        username: '',
+        nickName: '',
         sex: '男',
-        jobs: []
+        phone: null,
+        email: '',
+        enabled: false,
+        roleIds: [],
+        jobIds: []
       },
     }
   },
@@ -211,21 +198,9 @@ export default {
       })
     },
     setDept(node) {
-      this.form.dept = node.id;
-      this.dept = node.name;
+      this.form.deptId = node.id;
+      this.dept = node.name
       this.$refs.deptSelect.visible = false
-    },
-    //岗位select选择组件的值需转换为键值对
-    changeJob() {
-      this.form.jobs = this.jobData.map(value => {
-        return {id: value}
-      })
-    },
-    //角色同理岗位键值对转换
-    changeRole() {
-      this.form.roles = this.roleData.map(value => {
-        return {id: value}
-      })
     },
     updateUser() {
       let operation = this.$store.state.operation;
@@ -234,7 +209,12 @@ export default {
         method: operation,
         data: this.form
       }).then(res => {
-        this.dialogFormVisible = false
+        if (res.code === 200) {
+          ElementUI.Message.success(res.message)
+          this.dialogFormVisible = false
+        } else if (res.code === 400) {
+          ElementUI.Message.error(res.data)
+        }
       })
     }
   }
