@@ -31,6 +31,8 @@
               type="danger"
               icon="el-icon-delete"
               size="mini"
+              @click="setOperation('delete')"
+              :disabled="selectData.length !== 1"
           >
             删除
           </el-button>
@@ -80,7 +82,7 @@
     </el-table>
 
     <!-- 用户信息编辑弹框 -->
-    <el-dialog append-to-body title="用户信息" :visible.sync="dialogFormVisible" width="680px">
+    <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" width="680px">
       <el-form :model="form" :inline="true" size="small" label-width="66px">
         <el-form-item label="用户名">
           <el-input v-model="form.username" autocomplete="off"></el-input>
@@ -133,7 +135,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="updateUser">确 定</el-button>
+        <el-button type="primary" @click="updateUser(form)">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -152,6 +154,7 @@ export default {
       selectData: [],
       tableData: [],
       dialogFormVisible: false,
+      dialogTitle: '',
       user_status: [{label: '激活', value: true}, {label: '禁用', value: false}],
       props: {
         label: 'name',
@@ -197,6 +200,7 @@ export default {
         this.form = selectRow
       }
     },
+    //新增、修改、删除
     setOperation(operation) {
       //清空缓存
       this.dept = {};
@@ -216,10 +220,21 @@ export default {
       };
 
       if (operation === 'put') {
+        this.dialogTitle = '修改用户'
         this.mapForm(this.selectData[0])
+      } else {
+        this.dialogTitle = '新增用户'
       }
-      this.dialogFormVisible = true;
+      //修改不打开编辑弹框
+      this.dialogFormVisible = operation !== 'delete';
       this.$store.commit('SET_OPERATION', operation)
+      if (operation !== 'delete') {
+        this.getRoleAndJobInfo();
+      } else {
+        this.updateUser(this.selectData.map(item => item.id))
+      }
+    },
+    getRoleAndJobInfo() {
       //角色列表
       this.$request.get('/api/role/queryList').then(res => {
         this.roleList = res.data
@@ -248,18 +263,23 @@ export default {
     setRole() {
       this.form.roleIds = this.roles.join(',')
     },
-    updateUser() {
+    updateUser(data) {
       let operation = this.$store.state.operation;
       this.$request({
         url: '/api/user',
         method: operation,
-        data: this.form
+        data
       }).then(res => {
         if (res.code === 200) {
-          ElementUI.Message.success(res.message)
-          this.dialogFormVisible = false
+          ElementUI.Message.success(res.message);
+          this.dialogFormVisible = false;
+          this.getUserList()
         } else if (res.code === 400) {
-          ElementUI.Message.error(res.data)
+          if (res.data) {
+            ElementUI.Message.error(res.data)
+          } else {
+            ElementUI.Message.error(res.message)
+          }
         }
       })
     }
