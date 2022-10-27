@@ -64,7 +64,7 @@
       <el-table-column prop="sex" label="性别" width="120"></el-table-column>
       <el-table-column prop="phone" label="电话" width="200"></el-table-column>
       <el-table-column prop="email" label="邮箱" width="200"></el-table-column>
-      <el-table-column prop="dept.name" label="部门" width="120"></el-table-column>
+      <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
       <el-table-column prop="enabled" label="状态" width="120">
         <template slot-scope="scope">
           <el-switch ref="enabled"></el-switch>
@@ -190,12 +190,31 @@ export default {
     },
     //修改时值映射
     mapForm(selectRow) {
-      this.dept = selectRow.deptName
-      this.jobs = selectRow.jobIds.split(',').map(item => Number(item));
-      this.roles = selectRow.roleIds.split(',').map(item => Number(item));
-      this.form = selectRow
+      if (selectRow.deptName && selectRow.jobIds && selectRow.roleIds) {
+        this.dept = selectRow.deptName
+        this.jobs = selectRow.jobIds.split(',').map(item => Number(item));
+        this.roles = selectRow.roleIds.split(',').map(item => Number(item));
+        this.form = selectRow
+      }
     },
     setOperation(operation) {
+      //清空缓存
+      this.dept = {};
+      this.jobs = [];
+      this.roles = [];
+      this.form = {
+        id: null,
+        deptId: '',
+        username: '',
+        nickName: '',
+        sex: '男',
+        phone: null,
+        email: '',
+        enabled: false,
+        roleIds: '',
+        jobIds: ''
+      };
+
       if (operation === 'put') {
         this.mapForm(this.selectData[0])
       }
