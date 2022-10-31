@@ -11,10 +11,10 @@ module.exports = defineConfig({
     lintOnSave: false,
     devServer: {
         proxy: {
-            '/api': {
-                target: process.env.VUE_APP_BASE_API,
+            [process.env.VUE_APP_BASE_API]: {
+                target: 'http://localhost:8088',
                 //路径重写
-                pathRewrite: {'^/api': ''},
+                pathRewrite: {['^' + process.env.VUE_APP_BASE_API]: ''},
                 ws: true,
                 //用于空值请求头中的host值（默认值为true）
                 changeOrigin: true

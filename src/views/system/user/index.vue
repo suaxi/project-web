@@ -196,7 +196,7 @@ export default {
   },
   methods: {
     getUserList() {
-      this.$request.get('/api/user/queryPage').then(res => {
+      this.$request.get('/user/queryPage').then(res => {
         this.tableData = res.data.records
       })
     },
@@ -249,18 +249,18 @@ export default {
     },
     getRoleAndJobInfo() {
       //角色列表
-      this.$request.get('/api/role/queryList').then(res => {
+      this.$request.get('/role/queryList').then(res => {
         this.roleList = res.data
       });
       //岗位列表
-      this.$request.get('/api/job/queryList').then(res => {
+      this.$request.get('/job/queryList').then(res => {
         this.jobList = res.data
       });
     },
     //部门列表（懒加载）
     loadDept(node, resolve) {
       let pid = node.level === 0 ? null : node.data.id;
-      this.$request.get('/api/dept/queryChildListByPid', {params: {pid}}).then(res => {
+      this.$request.get('/dept/queryChildListByPid', {params: {pid}}).then(res => {
         this.deptList = res.data
         resolve(this.deptList)
       })
@@ -279,7 +279,7 @@ export default {
     updateUser(data) {
       let operation = this.$store.state.operation;
       this.$request({
-        url: '/api/user',
+        url: '/user',
         method: operation,
         data
       }).then(res => {

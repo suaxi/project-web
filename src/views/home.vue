@@ -55,7 +55,7 @@ export default {
       this.$router.replace(path1 + '/' + path2).catch(err => err)
     },
     getMenus() {
-      this.$request.get('/api/menu/getUserRouters').then(res => {
+      this.$request.get('/menu/getUserRouters').then(res => {
         this.menuList = res.data;
       })
     },
