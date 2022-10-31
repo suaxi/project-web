@@ -12,7 +12,7 @@ module.exports = defineConfig({
     devServer: {
         proxy: {
             '/api': {
-                target: 'http://localhost:8088',
+                target: process.env.VUE_APP_BASE_API,
                 //路径重写
                 pathRewrite: {'^/api': ''},
                 ws: true,

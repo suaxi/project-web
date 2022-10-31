@@ -11,6 +11,7 @@
               size="mini"
               type="primary"
               icon="el-icon-plus"
+              v-permission="['user:add']"
               @click="setOperation('post')"
           >
             新增
@@ -20,6 +21,7 @@
               size="mini"
               type="success"
               icon="el-icon-edit"
+              v-permission="['user:edit']"
               @click="setOperation('put')"
               :disabled="selectData.length !== 1"
           >
@@ -148,6 +150,17 @@ export default {
   name: "ProjectUser",
   created() {
     this.getUserList()
+    this.$store.dispatch('GetUserInfo').then(() => {
+
+    })
+    //页面加载时读取sessionStorage中的状态信息，解决页面刷新vuex状态清空的问题
+    if (sessionStorage.getItem('store')) {
+      this.$store.replaceState(JSON.parse(sessionStorage.getItem('store')))
+    }
+    //页面刷新时将vuex中的信息保存到sessionStorage中
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.setItem('store', JSON.stringify(this.$store.state))
+    })
   },
   data() {
     return {

@@ -38,7 +38,6 @@
 </template>
 
 <script>
-import {removeToken} from "@/utils/auth";
 import ElementUI from "element-ui";
 
 export default {
@@ -61,17 +60,11 @@ export default {
       })
     },
     logout() {
-      this.$request.get('/api/auth/logout').then(res => {
+      this.$store.dispatch('LogOut').then(res => {
         if (res.code === 200) {
-          removeToken()
           this.$router.replace('/login')
           ElementUI.Message.success(res.message)
         }
-      })
-    },
-    getUserInfo() {
-      this.$request.get('/api/user/getUserInfo').then(res => {
-        console.log('用户信息', res.data)
       })
     }
   }

@@ -2,8 +2,12 @@ import axios from 'axios';
 import ElementUI from "element-ui";
 import {getToken, removeToken} from "@/utils/auth";
 import router from "@/router";
+import * as Config from "@/settings"
 
-let request = axios.create()
+let request = axios.create({
+    baseURL: process.env.VUE_APP_BASE_API,
+    timeout: Config.timeout
+})
 
 //响应拦截器
 request.interceptors.response.use(response => {

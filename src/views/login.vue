@@ -51,7 +51,7 @@ import {encrypt} from '@/utils/rsaEncrypt';
 import ElementUI from "element-ui";
 import Cookies from 'js-cookie';
 import Config from '@/settings';
-import {setToken} from "@/utils/auth";
+import {getCode} from "@/api/login";
 
 export default {
   name: "ProjectLogin",
@@ -95,7 +95,7 @@ export default {
       }
     },
     getCode() {
-      this.$request.get('/api/auth/getCaptcha').then(res => {
+      getCode().then(res => {
         this.codeUrl = res.data.img;
         this.loginForm.uuid = res.data.uuid;
       })
@@ -126,10 +126,10 @@ export default {
           }
           this.loading = true
 
-          this.$request.post('/api/auth/login', user).then(res => {
+          this.$store.dispatch('Login', user).then(res => {
             this.loading = false
             if (res.code === 200) {
-              setToken(res.data.token, user.rememberMe)
+              //setToken(res.data.token, user.rememberMe)
               this.$router.replace('/')
             } else {
               this.getCode()
