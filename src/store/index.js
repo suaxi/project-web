@@ -57,7 +57,7 @@ export default new Vuex.Store({
             return new Promise((resolve, reject) => {
                 logout().then(res => {
                     logOut(commit);
-                    resolve()
+                    resolve(res)
                 }).catch(error => {
                     logOut(commit);
                     reject(error)
@@ -66,7 +66,7 @@ export default new Vuex.Store({
         }
     },
     getters: {
-        userRoles: state => state.roles.filter(role => role.indexOf('user') !== -1)
+        userRoles: state => state.roles.filter(role => role && role.indexOf('user') !== -1)
     }
 })
 
