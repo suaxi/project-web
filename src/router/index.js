@@ -3,6 +3,7 @@ import VueRouter from "vue-router";
 import Login from "@/views/login";
 import {getToken} from "@/utils/auth";
 import User from "@/views/system/user";
+import Role from "@/views/system/role";
 
 Vue.use(VueRouter)
 
@@ -21,6 +22,11 @@ const routes = [
                 path: 'system/user',
                 name: 'User',
                 component: User
+            },
+            {
+                path: 'system/role',
+                name: 'Role',
+                component: Role
             }
         ]
     }
@@ -28,7 +34,6 @@ const routes = [
 
 const router = new VueRouter({
     mode: 'history',
-    base: process.env.VUE_APP_BASE_API,
     routes
 })
 
