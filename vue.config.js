@@ -7,7 +7,9 @@ function resolve(dir) {
 }
 
 module.exports = defineConfig({
-    transpileDependencies: true,
+    transpileDependencies: [
+        '@riophae/vue-treeselect'
+    ],
     lintOnSave: false,
     devServer: {
         proxy: {
