@@ -197,7 +197,7 @@ export default {
   methods: {
     getUserList() {
       this.$request.get('/user/queryPage').then(res => {
-        this.tableData = res.data.records
+        this.tableData = res.records
       })
     },
     //选中行，解除处于disabled状态的按钮
@@ -250,18 +250,18 @@ export default {
     getRoleAndJobInfo() {
       //角色列表
       this.$request.get('/role/queryList').then(res => {
-        this.roleList = res.data
+        this.roleList = res
       });
       //岗位列表
       this.$request.get('/job/queryList').then(res => {
-        this.jobList = res.data
+        this.jobList = res
       });
     },
     //部门列表（懒加载）
     loadDept(node, resolve) {
       let pid = node.level === 0 ? null : node.data.id;
       this.$request.get('/dept/queryChildListByPid', {params: {pid}}).then(res => {
-        this.deptList = res.data
+        this.deptList = res.records
         resolve(this.deptList)
       })
     },
@@ -282,18 +282,10 @@ export default {
         url: '/user',
         method: operation,
         data
-      }).then(res => {
-        if (res.code === 200) {
-          ElementUI.Message.success(res.message);
-          this.dialogFormVisible = false;
-          this.getUserList()
-        } else if (res.code === 400) {
-          if (res.data) {
-            ElementUI.Message.error(res.data)
-          } else {
-            ElementUI.Message.error(res.message)
-          }
-        }
+      }).then(() => {
+        ElementUI.Message.success('操作成功');
+        this.dialogFormVisible = false;
+        this.getUserList()
       })
     }
   }

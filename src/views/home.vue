@@ -56,15 +56,13 @@ export default {
     },
     getMenus() {
       this.$request.get('/menu/getUserRouters').then(res => {
-        this.menuList = res.data;
+        this.menuList = res;
       })
     },
     logout() {
-      this.$store.dispatch('LogOut').then(res => {
-        if (res.code === 200) {
-          this.$router.replace('/login')
-          ElementUI.Message.success(res.message)
-        }
+      this.$store.dispatch('LogOut').then(() => {
+        this.$router.replace('/login')
+        ElementUI.Message.success('退出成功')
       })
     }
   }

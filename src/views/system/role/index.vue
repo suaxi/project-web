@@ -198,7 +198,7 @@ export default {
   methods: {
     getRoleList() {
       this.$request.get('role/queryPage').then(res => {
-        this.tableData = res.data.records
+        this.tableData = res.records
       })
     },
     setOperation(operation) {
@@ -216,7 +216,7 @@ export default {
     loadDeptList({action, parentNode, callback}) {
       if (action === 'LOAD_CHILDREN_OPTIONS') {
         getDeptList({pid: parentNode.id}).then(res => {
-          parentNode.children = res.data.map(function (obj) {
+          parentNode.children = res.records.map(function (obj) {
             if (obj.hasChildren) {
               obj.children = null
             }
@@ -231,7 +231,7 @@ export default {
     //获取部门树据
     getDeptList() {
       getDeptList({pid: null}).then(res => {
-        this.deptList = res.data.map(function (obj) {
+        this.deptList = res.records.map(function (obj) {
           if (obj.hasChildren) {
             obj.children = null
           }
@@ -247,18 +247,10 @@ export default {
         url: '/role',
         method: operation,
         data
-      }).then(res => {
-        if (res.code === 200) {
-          ElementUI.Message.success(res.message);
+      }).then(() => {
+          ElementUI.Message.success('操作成功');
           this.dialogFormVisible = false;
           this.getRoleList()
-        } else if (res.code === 400) {
-          if (res.data) {
-            ElementUI.Message.error(res.data)
-          } else {
-            ElementUI.Message.error(res.message)
-          }
-        }
       })
     }
   }

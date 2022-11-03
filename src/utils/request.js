@@ -19,9 +19,8 @@ request.interceptors.response.use(response => {
         if (code === 401) {
             //后台认证信息过期，浏览器cookie还存有token时，清除cookie，重定向回登录页
             removeToken();
-            router.replace('/').then(res => {})
+            router.replace('/').then(() => {})
         }
-
         return Promise.reject(error)
     })
 

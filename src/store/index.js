@@ -32,9 +32,9 @@ export default new Vuex.Store({
             const rememberMe = userInfo.rememberMe
             return new Promise((resolve, reject) => {
                 login(userInfo.username, userInfo.password, userInfo.code, userInfo.uuid).then(res => {
-                    setToken(res.data.token, rememberMe);
-                    commit('SET_TOKEN', res.data.token);
-                    setUserInfo(res.data.user, commit);
+                    setToken(res.token, rememberMe);
+                    commit('SET_TOKEN', res.token);
+                    setUserInfo(res.user, commit);
                     resolve(res)
                 }).catch(error => {
                     reject(error)
@@ -45,7 +45,7 @@ export default new Vuex.Store({
         GetUserInfo({commit}) {
             return new Promise((resolve, reject) => {
                 getUserInfo().then(res => {
-                    setUserInfo(res.data, commit);
+                    setUserInfo(res, commit);
                     resolve(res)
                 }).catch(error => {
                     reject(error)

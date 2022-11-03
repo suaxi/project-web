@@ -48,7 +48,6 @@
 <script>
 import Background from '@/assets/images/background.jpg';
 import {encrypt} from '@/utils/rsaEncrypt';
-import ElementUI from "element-ui";
 import Cookies from 'js-cookie';
 import Config from '@/settings';
 import {getCode} from "@/api/login";
@@ -96,8 +95,8 @@ export default {
     },
     getCode() {
       getCode().then(res => {
-        this.codeUrl = res.data.img;
-        this.loginForm.uuid = res.data.uuid;
+        this.codeUrl = res.img;
+        this.loginForm.uuid = res.uuid;
       })
     },
     handleLogin() {
@@ -126,16 +125,15 @@ export default {
           }
           this.loading = true
 
-          this.$store.dispatch('Login', user).then(res => {
+          this.$store.dispatch('Login', user).then(() => {
             this.loading = false
-            if (res.code === 200) {
-              //setToken(res.data.token, user.rememberMe)
-              this.$router.replace('/')
-            } else {
-              this.getCode()
-              ElementUI.Message.error(res.message)
-            }
+            this.$router.replace('/')
+          }).catch(() => {
+            this.loading = false
+            this.getCode()
           })
+        } else {
+          return false
         }
       })
     }
