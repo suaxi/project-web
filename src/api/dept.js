@@ -7,3 +7,12 @@ export function getDeptList(params) {
         params
     })
 }
+
+export function getDeptSuperiorList(ids) {
+    const data = ids.length || ids.length === 0 ? ids : Array.of(ids)
+    return request({
+        url: '/dept/querySuperiorListByIds',
+        method: 'post',
+        data
+    })
+}

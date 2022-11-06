@@ -22,6 +22,8 @@
                type="success"
                icon="el-icon-edit"
                v-permission="['roles:edit']"
+               @click="setOperation('put')"
+               :disabled="selectData.length !== 1"
            >
              修改
            </el-button>
@@ -206,7 +208,7 @@
 <script>
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
-import {getDeptList} from "@/api/dept";
+import {getDeptList, getDeptSuperiorList} from "@/api/dept";
 import ElementUI from "element-ui";
 import {getChild} from "@/api/menu";
 
@@ -238,11 +240,12 @@ export default {
       //树形下拉框选中的数据
       deptDataList: [],
       form: {
+        id: null,
         name: '',
         dataScope: '',
         description: '测试角色新增',
         level: 3,
-        dept: []
+        depts: []
       },
       //树形选择内置属性对照名称
       defaultProps: {children: 'children', label: 'label', isLeaf: 'leaf'},
@@ -255,7 +258,7 @@ export default {
   },
   methods: {
     getRoleList() {
-      this.$request.get('role/queryPage', {params: {pageSize: 10000}}).then(res => {
+      this.$request.get('role/queryPage').then(res => {
         this.tableData = res.records
       })
     },
@@ -263,7 +266,31 @@ export default {
       if (operation === 'post') {
         this.dialogFormVisible = true;
         this.$store.commit('SET_OPERATION', operation)
+      } else if (operation === 'put') {
+        this.form = {...this.selectData[0]};
+        this.$store.commit('SET_OPERATION', operation);
+        if (this.selectData[0].dataScope === '自定义') {
+          //自定义权限范围部门树回显
+          this.deptDataList = this.form.depts?.map(dept => dept.id)
+          getDeptSuperiorList(this.deptDataList).then(res => {
+            const depts = res.records;
+            this.buildDepts(depts);
+            this.deptList = depts
+          })
+        }
+        this.dialogFormVisible = true
       }
+    },
+    //父级部门添加下拉箭头
+    buildDepts(depts) {
+      depts.forEach(dept => {
+        if (dept.children) {
+          this.buildDepts(dept.children)
+        }
+        if (dept.hasChildren && !dept.children) {
+          dept.children = null
+        }
+      })
     },
     changeScope() {
       if (this.form.dataScope === '自定义') {
@@ -303,8 +330,10 @@ export default {
     },
     updateRole(data) {
       let operation = this.$store.state.operation
-      //数组对象转ids
-      data.dept = this.deptDataList.map(item => item.value)
+      //数据权限为自定义时，同步保存角色-部门关联数据
+      data.depts = this.deptDataList.map(item => {
+        return {id: item}
+      })
       this.$request({
         url: '/role',
         method: operation,
