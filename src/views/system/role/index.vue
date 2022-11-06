@@ -165,7 +165,7 @@
     </el-row>
 
     <!--角色信息编辑弹窗-->
-    <el-dialog :visible.sync="dialogFormVisible" :close-on-click-modal="false" append-to-body width="520px">
+    <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" width="520px">
       <el-form ref="form" :inline="true" :model="form" size="small" label-width="80px">
         <el-form-item label="角色名称" prop="name">
           <el-input v-model="form.name" style="width: 145px;"/>
@@ -198,7 +198,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="text" @click="dialogFormVisible = false">取消</el-button>
+        <el-button @click="dialogFormVisible = false">取消</el-button>
         <el-button type="primary" @click="updateRole(form)">确认</el-button>
       </div>
     </el-dialog>
@@ -233,20 +233,14 @@ export default {
     return {
       selectData: [],
       tableData: [],
+      dialogTitle: '',
       dialogFormVisible: false,
       dataScopeList: ['全部', '本级', '自定义'],
       //树形下拉框options
       deptList: [],
       //树形下拉框选中的数据
       deptDataList: [],
-      form: {
-        id: null,
-        name: '',
-        dataScope: '',
-        description: '测试角色新增',
-        level: 3,
-        depts: []
-      },
+      form: {},
       //树形选择内置属性对照名称
       defaultProps: {children: 'children', label: 'label', isLeaf: 'leaf'},
       menuList: [],
@@ -263,7 +257,11 @@ export default {
       })
     },
     setOperation(operation) {
+      //清空缓存
+      this.form = {};
+
       if (operation === 'post') {
+        this.dialogTitle = '新增角色';
         this.dialogFormVisible = true;
         this.$store.commit('SET_OPERATION', operation)
       } else if (operation === 'put') {
@@ -271,13 +269,14 @@ export default {
         this.$store.commit('SET_OPERATION', operation);
         if (this.selectData[0].dataScope === '自定义') {
           //自定义权限范围部门树回显
-          this.deptDataList = this.form.depts?.map(dept => dept.id)
+          this.deptDataList = this.form.depts.map(dept => dept.id)
           getDeptSuperiorList(this.deptDataList).then(res => {
             const depts = res.records;
             this.buildDepts(depts);
             this.deptList = depts
           })
         }
+        this.dialogTitle = '编辑角色';
         this.dialogFormVisible = true
       }
     },

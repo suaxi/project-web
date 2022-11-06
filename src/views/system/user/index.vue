@@ -180,18 +180,7 @@ export default {
       jobs: [],
       roleList: [],
       roles: [],
-      form: {
-        id: null,
-        deptId: '',
-        username: '',
-        nickName: '',
-        sex: '男',
-        phone: null,
-        email: '',
-        enabled: false,
-        roleIds: '',
-        jobIds: ''
-      },
+      form: {},
     }
   },
   methods: {
@@ -210,7 +199,7 @@ export default {
         this.dept = selectRow.deptName
         this.jobs = selectRow.jobIds.split(',').map(item => Number(item));
         this.roles = selectRow.roleIds.split(',').map(item => Number(item));
-        this.form = selectRow
+        this.form = {...selectRow}
       }
     },
     //新增、修改、删除
@@ -220,16 +209,8 @@ export default {
       this.jobs = [];
       this.roles = [];
       this.form = {
-        id: null,
-        deptId: '',
-        username: '',
-        nickName: '',
         sex: '男',
-        phone: null,
-        email: '',
-        enabled: false,
-        roleIds: '',
-        jobIds: ''
+        enabled: false
       };
 
       if (operation === 'put') {
