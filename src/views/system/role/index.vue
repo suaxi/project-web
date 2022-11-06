@@ -34,6 +34,7 @@
                icon="el-icon-delete"
                size="mini"
                v-permission="['roles:del']"
+               @click="setOperation('delete')"
            >
              删除
            </el-button>
@@ -211,6 +212,7 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import {getDeptList, getDeptSuperiorList} from "@/api/dept";
 import ElementUI from "element-ui";
 import {getChild} from "@/api/menu";
+import {del} from "@/api/role";
 
 export default {
   name: "ProjectRole",
@@ -262,7 +264,6 @@ export default {
 
       if (operation === 'post') {
         this.dialogTitle = '新增角色';
-        this.dialogFormVisible = true;
         this.$store.commit('SET_OPERATION', operation)
       } else if (operation === 'put') {
         this.form = {...this.selectData[0]};
@@ -277,6 +278,14 @@ export default {
           })
         }
         this.dialogTitle = '编辑角色';
+      } else if (operation === 'delete') {
+        let ids = this.selectData.map(item => item.id)
+        del(ids).then(() => {
+          this.getRoleList();
+          ElementUI.Message.success('删除成功')
+        })
+      }
+      if (operation !== 'delete') {
         this.dialogFormVisible = true
       }
     },
