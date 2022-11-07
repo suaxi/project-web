@@ -61,7 +61,7 @@
         </el-button-group>
       </div>
     </div>
-    <el-table :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column fixed prop="username" label="用户名" width="150"></el-table-column>
       <el-table-column prop="nickName" label="昵称" width="120"></el-table-column>
@@ -70,18 +70,28 @@
       <el-table-column prop="email" label="邮箱" width="200"></el-table-column>
       <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
       <el-table-column prop="enabled" label="状态" width="120">
-        <template slot-scope="scope">
+        <template v-slot>
           <el-switch ref="enabled"></el-switch>
         </template>
       </el-table-column>
       <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期" width="200"></el-table-column>
       <el-table-column prop="operation" label="操作" width="120">
-        <template slot-scope="scope">
+        <template v-slot>
           <el-button type="text" size="small">编辑</el-button>
           <el-button type="text" size="small">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <!--分页-->
+    <el-pagination
+        :page-size.sync="page.pageSize"
+        :total="page.total"
+        :current-page.sync="page.pageNum"
+        style="margin-top: 8px;"
+        layout="total, prev, pager, next, sizes"
+        @size-change="sizeChangeHandler"
+        @current-change="pageChangeHandler"
+    />
 
     <!-- 用户信息编辑弹框 -->
     <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" width="680px">
@@ -161,9 +171,20 @@ export default {
     window.addEventListener('beforeunload', () => {
       sessionStorage.setItem('store', JSON.stringify(this.$store.state))
     })
+    this.page.pageNum = 1;
+    this.page.pageSize = 10
   },
   data() {
     return {
+      loading: false,
+      page: {
+        //页码
+        pageNum: 0,
+        //每页数据条数
+        pageSize: 10,
+        //总数
+        total: 0
+      },
       selectData: [],
       tableData: [],
       dialogFormVisible: false,
@@ -185,9 +206,33 @@ export default {
   },
   methods: {
     getUserList() {
-      this.$request.get('/user/queryPage').then(res => {
-        this.tableData = res.records
+      let queryParams = {
+        pageNum: this.page.pageNum - 1,
+        pageSize: this.page.pageSize
+      }
+      this.loading = true;
+      this.$request.get('/user/queryPage', {params: queryParams}).then(res => {
+        this.tableData = res.records;
+        this.page.total = res.total;
+        this.loading = false
       })
+    },
+    //每页条数改变
+    sizeChangeHandler(size) {
+      this.page.pageSize = size;
+      this.page.pageNum = 1;
+      this.getUserList()
+    },
+    //页数改变
+    pageChangeHandler(num) {
+      this.page.pageNum = num;
+      this.getUserList()
+    },
+    delChangePage() {
+      //删除最后一页的最后一条数据时，或多选删除第二页的数据时，预防页码错误导致请求无数据
+      if (this.tableData.length === 1 && this.page.pageSize !== 1) {
+        this.page.pageSize -= 1
+      }
     },
     //选中行，解除处于disabled状态的按钮
     handleSelectionChange(rows) {
@@ -225,6 +270,7 @@ export default {
       if (operation !== 'delete') {
         this.getRoleAndJobInfo();
       } else {
+        this.delChangePage();
         this.updateUser(this.selectData.map(item => item.id))
       }
     },

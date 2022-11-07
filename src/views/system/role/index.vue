@@ -91,6 +91,7 @@
             <span class="role-span">角色列表</span>
           </div>
           <el-table
+              v-loading="loading"
               :data="tableData"
               style="width: 100%"
               highlight-current-row
@@ -127,6 +128,16 @@
                 label="创建时间">
             </el-table-column>
           </el-table>
+          <!--分页-->
+          <el-pagination
+              :page-size.sync="page.pageSize"
+              :total="page.total"
+              :current-page.sync="page.pageNum"
+              style="margin-top: 8px;"
+              layout="total, prev, pager, next, sizes"
+              @size-change="sizeChangeHandler"
+              @current-change="pageChangeHandler"
+          />
         </el-card>
       </el-col>
 
@@ -233,6 +244,15 @@ export default {
   },
   data() {
     return {
+      loading: false,
+      page: {
+        //页码
+        pageNum: 0,
+        //每页数据条数
+        pageSize: 10,
+        //总数
+        total: 0
+      },
       selectData: [],
       tableData: [],
       dialogTitle: '',
@@ -254,9 +274,33 @@ export default {
   },
   methods: {
     getRoleList() {
-      this.$request.get('role/queryPage').then(res => {
-        this.tableData = res.records
+      let queryParams = {
+        pageNum: this.page.pageNum - 1,
+        pageSize: this.page.pageSize
+      }
+      this.loading = true;
+      this.$request.get('role/queryPage', {params: queryParams}).then(res => {
+        this.tableData = res.records;
+        this.page.total = res.total;
+        this.loading = false
       })
+    },
+    //每页条数改变
+    sizeChangeHandler(size) {
+      this.page.pageSize = size;
+      this.page.pageNum = 1;
+      this.getUserList()
+    },
+    //页数改变
+    pageChangeHandler(num) {
+      this.page.pageNum = num;
+      this.getUserList()
+    },
+    delChangePage() {
+      //删除最后一页的最后一条数据时，或多选删除第二页的数据时，预防页码错误导致请求无数据
+      if (this.tableData.length === 1 && this.page.pageSize !== 1) {
+        this.page.pageSize -= 1
+      }
     },
     setOperation(operation) {
       //清空缓存
@@ -281,8 +325,9 @@ export default {
       } else if (operation === 'delete') {
         let ids = this.selectData.map(item => item.id)
         del(ids).then(() => {
-          this.getRoleList();
-          ElementUI.Message.success('删除成功')
+          ElementUI.Message.success('删除成功');
+          this.delChangePage();
+          this.getRoleList()
         })
       }
       if (operation !== 'delete') {
