@@ -247,7 +247,7 @@ export default {
       loading: false,
       page: {
         //页码
-        pageNum: 0,
+        pageNum: 1,
         //每页数据条数
         pageSize: 10,
         //总数
@@ -275,7 +275,7 @@ export default {
   methods: {
     getRoleList() {
       let queryParams = {
-        pageNum: this.page.pageNum - 1,
+        pageNum: this.page.pageNum,
         pageSize: this.page.pageSize
       }
       this.loading = true;
@@ -289,17 +289,17 @@ export default {
     sizeChangeHandler(size) {
       this.page.pageSize = size;
       this.page.pageNum = 1;
-      this.getUserList()
+      this.getRoleList()
     },
     //页数改变
     pageChangeHandler(num) {
       this.page.pageNum = num;
-      this.getUserList()
+      this.getRoleList()
     },
     delChangePage() {
       //删除最后一页的最后一条数据时，或多选删除第二页的数据时，预防页码错误导致请求无数据
       if (this.tableData.length === 1 && this.page.pageSize !== 1) {
-        this.page.pageSize -= 1
+        this.page.pageNum -= 1
       }
     },
     setOperation(operation) {
