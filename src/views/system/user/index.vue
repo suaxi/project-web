@@ -155,11 +155,13 @@
 
 <script>
 import ElementUI from "element-ui";
+import crud from "@/components/Crud/crud";
 
 export default {
   name: "ProjectUser",
+  mixins: [crud],
   created() {
-    this.getUserList()
+    this.refresh();
     this.$store.dispatch('GetUserInfo').then(() => {
 
     })
@@ -171,30 +173,14 @@ export default {
     window.addEventListener('beforeunload', () => {
       sessionStorage.setItem('store', JSON.stringify(this.$store.state))
     })
-    this.page.pageNum = 1;
-    this.page.pageSize = 10
   },
   data() {
     return {
-      loading: false,
-      page: {
-        //页码
-        pageNum: 1,
-        //每页数据条数
-        pageSize: 10,
-        //总数
-        total: 0
-      },
       selectData: [],
-      tableData: [],
       dialogFormVisible: false,
       dialogTitle: '',
       user_status: [{label: '激活', value: true}, {label: '禁用', value: false}],
-      props: {
-        label: 'name',
-        children: 'zones',
-        isLeaf: 'leaf',
-      },
+      props: {children: 'children', label: 'label', isLeaf: 'leaf'},
       deptList: [],
       dept: {},
       jobList: [],
@@ -205,38 +191,9 @@ export default {
     }
   },
   methods: {
-    getUserList() {
-      let queryParams = {
-        pageNum: this.page.pageNum,
-        pageSize: this.page.pageSize
-      }
-      this.loading = true;
-      this.$request.get('/user/queryPage', {params: queryParams}).then(res => {
-        this.tableData = res.records;
-        this.page.total = res.total;
-        this.loading = false
-      })
-    },
-    //每页条数改变
-    sizeChangeHandler(size) {
-      this.page.pageSize = size;
-      this.page.pageNum = 1;
-      this.getUserList()
-    },
-    //页数改变
-    pageChangeHandler(num) {
-      this.page.pageNum = num;
-      this.getUserList()
-    },
-    delChangePage() {
-      //删除最后一页的最后一条数据时，或多选删除第二页的数据时，预防页码错误导致请求无数据
-      if (this.tableData.length === 1 && this.page.pageSize !== 1) {
-        this.page.pageNum -= 1
-      }
-    },
-    //选中行，解除处于disabled状态的按钮
-    handleSelectionChange(rows) {
-      this.selectData = rows
+    beforeInit() {
+      this.url = '/user/queryPage';
+      return true
     },
     //修改时值映射
     mapForm(selectRow) {
@@ -312,7 +269,7 @@ export default {
       }).then(() => {
         ElementUI.Message.success('操作成功');
         this.dialogFormVisible = false;
-        this.getUserList()
+        this.refresh()
       })
     }
   }

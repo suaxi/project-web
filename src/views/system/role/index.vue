@@ -224,12 +224,17 @@ import {getDeptList, getDeptSuperiorList} from "@/api/dept";
 import ElementUI from "element-ui";
 import {getChild} from "@/api/menu";
 import {del} from "@/api/role";
+import crud from "@/components/Crud/crud";
 
 export default {
   name: "ProjectRole",
   components: {Treeselect},
+  mixins: [crud],
   created() {
-    this.getRoleList();
+    //this.$refs的属性需等待组件渲染完之后才能获取，避免undefined
+    this.$nextTick(() => {
+      this.refresh();
+    })
     this.$store.dispatch('GetUserInfo').then(() => {
 
     })
@@ -244,17 +249,7 @@ export default {
   },
   data() {
     return {
-      loading: false,
-      page: {
-        //页码
-        pageNum: 1,
-        //每页数据条数
-        pageSize: 10,
-        //总数
-        total: 0
-      },
       selectData: [],
-      tableData: [],
       dialogTitle: '',
       dialogFormVisible: false,
       dataScopeList: ['全部', '本级', '自定义'],
@@ -273,34 +268,11 @@ export default {
     }
   },
   methods: {
-    getRoleList() {
-      let queryParams = {
-        pageNum: this.page.pageNum,
-        pageSize: this.page.pageSize
-      }
-      this.loading = true;
-      this.$request.get('role/queryPage', {params: queryParams}).then(res => {
-        this.tableData = res.records;
-        this.page.total = res.total;
-        this.loading = false
-      })
-    },
-    //每页条数改变
-    sizeChangeHandler(size) {
-      this.page.pageSize = size;
-      this.page.pageNum = 1;
-      this.getRoleList()
-    },
-    //页数改变
-    pageChangeHandler(num) {
-      this.page.pageNum = num;
-      this.getRoleList()
-    },
-    delChangePage() {
-      //删除最后一页的最后一条数据时，或多选删除第二页的数据时，预防页码错误导致请求无数据
-      if (this.tableData.length === 1 && this.page.pageSize !== 1) {
-        this.page.pageNum -= 1
-      }
+    beforeInit() {
+      this.url = 'role/queryPage';
+      //清空菜单列表已选中的checkbox
+      this.$refs.menu.setCheckedKeys([])
+      return true
     },
     setOperation(operation) {
       //清空缓存
@@ -327,7 +299,7 @@ export default {
         del(ids).then(() => {
           ElementUI.Message.success('删除成功');
           this.delChangePage();
-          this.getRoleList()
+          this.refresh()
         })
       }
       if (operation !== 'delete') {
@@ -394,7 +366,7 @@ export default {
       }).then(() => {
           ElementUI.Message.success('操作成功');
           this.dialogFormVisible = false;
-          this.getRoleList()
+          this.refresh()
       })
     },
     //加载菜单列表
@@ -451,7 +423,7 @@ export default {
       this.$request.put('/role/menu', role).then(() => {
         ElementUI.Message.success('保存成功');
         this.menuLoading = false;
-        this.getRoleList()
+        this.refresh()
       }).catch(() => {
         this.menuLoading = false;
       })
