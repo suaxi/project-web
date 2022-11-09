@@ -91,8 +91,8 @@
             <span class="role-span">角色列表</span>
           </div>
           <el-table
-              v-loading="loading"
-              :data="tableData"
+              v-loading="crud.loading"
+              :data="crud.tableData"
               style="width: 100%"
               highlight-current-row
               @selection-change="handleSelectionChange"
@@ -130,13 +130,13 @@
           </el-table>
           <!--分页-->
           <el-pagination
-              :page-size.sync="page.pageSize"
-              :total="page.total"
-              :current-page.sync="page.pageNum"
+              :page-size.sync="crud.page.pageSize"
+              :total="crud.page.total"
+              :current-page.sync="crud.page.pageNum"
               style="margin-top: 8px;"
               layout="total, prev, pager, next, sizes"
-              @size-change="sizeChangeHandler"
-              @current-change="pageChangeHandler"
+              @size-change="crud.sizeChangeHandler"
+              @current-change="crud.pageChangeHandler"
           />
         </el-card>
       </el-col>
@@ -224,17 +224,16 @@ import {getDeptList, getDeptSuperiorList} from "@/api/dept";
 import ElementUI from "element-ui";
 import {getChild} from "@/api/menu";
 import {del} from "@/api/role";
-import crud from "@/components/Crud/crud";
+import CRUD, {presenter} from "@/components/Crud/crud";
 
+//crud交由presenter持有
+const crud = CRUD({title: '角色', url: '/role/queryPage'})
 export default {
   name: "ProjectRole",
   components: {Treeselect},
-  mixins: [crud],
+  mixins: [presenter(crud)],
   created() {
-    //this.$refs的属性需等待组件渲染完之后才能获取，避免undefined
-    this.$nextTick(() => {
-      this.refresh();
-    })
+    crud.refresh();
     this.$store.dispatch('GetUserInfo').then(() => {
 
     })
@@ -268,10 +267,19 @@ export default {
     }
   },
   methods: {
-    beforeInit() {
-      this.url = 'role/queryPage';
-      //清空菜单列表已选中的checkbox
+    //刷新列表后调用钩子函数执行apply
+    [CRUD.HOOK.afterRefresh]() {
       this.$refs.menu.setCheckedKeys([])
+    },
+    //提交前表单校验
+    [CRUD.HOOK.afterValidateCU]() {
+      if (this.form.dataScope === '自定义' && this.deptDataList.length === 0) {
+        this.$message({
+          message: '自定义数据权限不能为空',
+          type: 'warning'
+        });
+        return false
+      }
       return true
     },
     setOperation(operation) {
@@ -298,8 +306,8 @@ export default {
         let ids = this.selectData.map(item => item.id)
         del(ids).then(() => {
           ElementUI.Message.success('删除成功');
-          this.delChangePage();
-          this.refresh()
+          crud.delChangePage();
+          crud.refresh()
         })
       }
       if (operation !== 'delete') {
@@ -354,6 +362,9 @@ export default {
       })
     },
     updateRole(data) {
+      if (!this[CRUD.HOOK.afterValidateCU]) {
+        return
+      }
       let operation = this.$store.state.operation
       //数据权限为自定义时，同步保存角色-部门关联数据
       data.depts = this.deptDataList.map(item => {
@@ -366,7 +377,7 @@ export default {
       }).then(() => {
           ElementUI.Message.success('操作成功');
           this.dialogFormVisible = false;
-          this.refresh()
+          crud.refresh()
       })
     },
     //加载菜单列表
@@ -423,7 +434,7 @@ export default {
       this.$request.put('/role/menu', role).then(() => {
         ElementUI.Message.success('保存成功');
         this.menuLoading = false;
-        this.refresh()
+        crud.refresh()
       }).catch(() => {
         this.menuLoading = false;
       })

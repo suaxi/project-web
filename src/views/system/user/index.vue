@@ -34,7 +34,7 @@
               icon="el-icon-delete"
               size="mini"
               @click="setOperation('delete')"
-              :disabled="selectData.length !== 1"
+              :disabled="selectData.length === 0"
           >
             删除
           </el-button>
@@ -61,7 +61,12 @@
         </el-button-group>
       </div>
     </div>
-    <el-table v-loading="loading" :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
+    <el-table v-loading="crud.loading"
+              :data="crud.tableData"
+              style="width: 100%"
+              highlight-current-row
+              @current-change="handleCurrentChange"
+              @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column fixed prop="username" label="用户名" width="150"></el-table-column>
       <el-table-column prop="nickName" label="昵称" width="120"></el-table-column>
@@ -70,27 +75,21 @@
       <el-table-column prop="email" label="邮箱" width="200"></el-table-column>
       <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
       <el-table-column prop="enabled" label="状态" width="120">
-        <template v-slot>
-          <el-switch ref="enabled"></el-switch>
+        <template v-slot="scope">
+          <el-switch ref="enabled" v-model="scope.row.enabled"></el-switch>
         </template>
       </el-table-column>
       <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期" width="200"></el-table-column>
-      <el-table-column prop="operation" label="操作" width="120">
-        <template v-slot>
-          <el-button type="text" size="small">编辑</el-button>
-          <el-button type="text" size="small">删除</el-button>
-        </template>
-      </el-table-column>
     </el-table>
     <!--分页-->
     <el-pagination
-        :page-size.sync="page.pageSize"
-        :total="page.total"
-        :current-page.sync="page.pageNum"
+        :page-size.sync="crud.page.pageSize"
+        :total="crud.page.total"
+        :current-page.sync="crud.page.pageNum"
         style="margin-top: 8px;"
         layout="total, prev, pager, next, sizes"
-        @size-change="sizeChangeHandler"
-        @current-change="pageChangeHandler"
+        @size-change="crud.sizeChangeHandler"
+        @current-change="crud.pageChangeHandler"
     />
 
     <!-- 用户信息编辑弹框 -->
@@ -155,13 +154,16 @@
 
 <script>
 import ElementUI from "element-ui";
-import crud from "@/components/Crud/crud";
+import CRUD, {presenter} from "@/components/Crud/crud";
 
+//crud交由presenter持有
+const crud = CRUD({title: '用户', url: '/user/queryPage'})
 export default {
   name: "ProjectUser",
-  mixins: [crud],
+  mixins: [presenter(crud)],
   created() {
-    this.refresh();
+    //获取用户列表
+    crud.refresh();
     this.$store.dispatch('GetUserInfo').then(() => {
 
     })
@@ -191,9 +193,14 @@ export default {
     }
   },
   methods: {
-    beforeInit() {
-      this.url = '/user/queryPage';
-      return true
+    handleCurrentChange(selectRow) {
+      if (!selectRow) {
+        return
+      }
+      this.mapForm(selectRow);
+      this.$request.put('/user', this.form).then(() => {
+        crud.refresh()
+      })
     },
     //修改时值映射
     mapForm(selectRow) {
@@ -203,6 +210,10 @@ export default {
         this.roles = selectRow.roleIds.split(',').map(item => Number(item));
         this.form = {...selectRow}
       }
+    },
+    //选中某一行时
+    handleSelectionChange(rows) {
+      this.selectData = rows
     },
     //新增、修改、删除
     setOperation(operation) {
@@ -227,7 +238,7 @@ export default {
       if (operation !== 'delete') {
         this.getRoleAndJobInfo();
       } else {
-        this.delChangePage();
+        crud.delChangePage();
         this.updateUser(this.selectData.map(item => item.id))
       }
     },
@@ -269,7 +280,7 @@ export default {
       }).then(() => {
         ElementUI.Message.success('操作成功');
         this.dialogFormVisible = false;
-        this.refresh()
+        crud.refresh()
       })
     }
   }
