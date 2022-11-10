@@ -226,14 +226,15 @@ import {getChild} from "@/api/menu";
 import {del} from "@/api/role";
 import CRUD, {presenter} from "@/components/Crud/crud";
 
-//crud交由presenter持有
-const crud = CRUD({title: '角色', url: '/role/queryPage'})
 export default {
   name: "ProjectRole",
   components: {Treeselect},
-  mixins: [presenter(crud)],
+  cruds() {
+    return CRUD({title: '角色', url: '/role/queryPage'})
+  },
+  mixins: [presenter()],
   created() {
-    crud.refresh();
+    this.crud.refresh();
     this.$store.dispatch('GetUserInfo').then(() => {
 
     })
@@ -306,8 +307,8 @@ export default {
         let ids = this.selectData.map(item => item.id)
         del(ids).then(() => {
           ElementUI.Message.success('删除成功');
-          crud.delChangePage();
-          crud.refresh()
+          this.crud.delChangePage();
+          this.crud.refresh()
         })
       }
       if (operation !== 'delete') {
@@ -377,7 +378,7 @@ export default {
       }).then(() => {
           ElementUI.Message.success('操作成功');
           this.dialogFormVisible = false;
-          crud.refresh()
+          this.crud.refresh()
       })
     },
     //加载菜单列表
@@ -434,7 +435,7 @@ export default {
       this.$request.put('/role/menu', role).then(() => {
         ElementUI.Message.success('保存成功');
         this.menuLoading = false;
-        crud.refresh()
+        this.crud.refresh()
       }).catch(() => {
         this.menuLoading = false;
       })

@@ -156,14 +156,15 @@
 import ElementUI from "element-ui";
 import CRUD, {presenter} from "@/components/Crud/crud";
 
-//crud交由presenter持有
-const crud = CRUD({title: '用户', url: '/user/queryPage'})
 export default {
   name: "ProjectUser",
-  mixins: [presenter(crud)],
+  cruds() {
+    return CRUD({title: '用户', url: '/user/queryPage'})
+  },
+  mixins: [presenter()],
   created() {
     //获取用户列表
-    crud.refresh();
+    this.crud.refresh();
     this.$store.dispatch('GetUserInfo').then(() => {
 
     })
@@ -199,7 +200,7 @@ export default {
       }
       this.mapForm(selectRow);
       this.$request.put('/user', this.form).then(() => {
-        crud.refresh()
+        this.crud.refresh()
       })
     },
     //修改时值映射

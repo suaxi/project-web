@@ -1,9 +1,17 @@
 import {initData} from "@/api/data";
 import Vue from 'vue';
 
+/**
+ * CRUD配置实例
+ * @param options
+ * @returns crud instance
+ * @example 要使用多crud时，请在关联crud的组件处使用crud-tag进行标记，如：<jobForm :job-status="dict.job_status" crud-tag="job" />
+ */
 function CRUD(options) {
     const data = {
         ...options,
+        //CRUD实例tag标志，默认为default
+        tag: 'default',
         loading: true,
         //表格数据
         tableData: [],
@@ -141,6 +149,7 @@ CRUD.HOOK = {
 
 /**
  * crud主页
+ * 保留传入crud进行赋值的模式，同时新增通过this.$options.cruds的方式进行传入
  */
 function presenter(crud) {
     return {
@@ -151,8 +160,28 @@ function presenter(crud) {
             }
         },
         beforeCreate() {
-            this.crud = crud;
-            this.crud.registerVm('presenter', this, 0)
+            if (crud) {
+                this.crud = crud;
+                this.crud.registerVm('presenter', this, 0)
+                return
+            }
+            this.$crud = this.$crud || {};
+            //判断传入的crud是否是函数，如果是则直接调用
+            let cruds = this.$options.cruds instanceof Function ? this.$options.cruds() : crud;
+            if (!(cruds instanceof Array)) {
+                cruds = [cruds]
+            }
+            cruds.forEach(crudInstance => {
+                if (this.$crud[crudInstance.tag]) {
+                    console.error('[CRUD error]:' + 'crudInstance with tag' + crudInstance.tag + 'is already exist')
+                }
+                this.$crud[crudInstance.tag] = crudInstance;
+                crudInstance.registerVm('presenter', this, 0)
+            })
+            this.crud = this.$crud['default'] || cruds[0]
+        },
+        created() {
+            this.crud.refresh()
         },
         destroyed() {
             this.crud.unregisterVm(this)
