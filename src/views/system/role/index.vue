@@ -2,84 +2,7 @@
   <div>
     <div class="head-container">
       <!--增删改查按钮-->
-      <div class="crud-opts">
-      <span class="crud-opts-left">
-           <!--左侧插槽-->
-           <slot name="left"/>
-           <el-button
-               class="filter-item"
-               size="mini"
-               type="primary"
-               icon="el-icon-plus"
-               v-permission="['roles:add']"
-               @click="setOperation('post')"
-           >
-             新增
-           </el-button>
-           <el-button
-               class="filter-item"
-               size="mini"
-               type="success"
-               icon="el-icon-edit"
-               v-permission="['roles:edit']"
-               @click="setOperation('put')"
-               :disabled="selectData.length !== 1"
-           >
-             修改
-           </el-button>
-           <el-button
-               slot="reference"
-               class="filter-item"
-               type="danger"
-               icon="el-icon-delete"
-               size="mini"
-               v-permission="['roles:del']"
-               @click="setOperation('delete')"
-           >
-             删除
-           </el-button>
-           <el-button
-               class="filter-item"
-               size="mini"
-               type="warning"
-               icon="el-icon-download"
-           >导出</el-button>
-        <!--右侧-->
-           <slot name="right"/>
-        </span>
-        <el-button-group class="crud-opts-right">
-          <el-button
-              size="mini"
-              plain
-              type="info"
-              icon="el-icon-search"
-          />
-          <el-button
-              size="mini"
-              icon="el-icon-refresh"
-          />
-          <el-popover
-              placement="bottom-end"
-              width="150"
-              trigger="click"
-          >
-            <el-button
-                slot="reference"
-                size="mini"
-                icon="el-icon-s-grid"
-            >
-              <i
-                  class="fa fa-caret-down"
-                  aria-hidden="true"
-              />
-            </el-button>
-            <el-checkbox
-            >
-              全选
-            </el-checkbox>
-          </el-popover>
-        </el-button-group>
-      </div>
+      <CrudOperation></CrudOperation>
     </div>
 
     <el-row :gutter="15">
@@ -149,6 +72,7 @@
               <span class="role-span">菜单分配</span>
             </el-tooltip>
             <el-button
+                v-if="crud.optShow.edit"
                 v-permission="['roles:edit']"
                 :disabled="!showButton"
                 :loading="menuLoading"
@@ -225,31 +149,30 @@ import ElementUI from "element-ui";
 import {getChild} from "@/api/menu";
 import {del} from "@/api/role";
 import CRUD, {presenter} from "@/components/Crud/crud";
+import CrudOperation from "@/components/Crud/CRUD.operation";
 
 export default {
   name: "ProjectRole",
-  components: {Treeselect},
+  components: {
+    CrudOperation,
+    Treeselect
+  },
   cruds() {
     return CRUD({title: '角色', url: '/role/queryPage'})
   },
   mixins: [presenter()],
   created() {
-    this.crud.refresh();
     this.$store.dispatch('GetUserInfo').then(() => {
-
-    })
-    //页面加载时读取sessionStorage中的状态信息，解决页面刷新vuex状态清空的问题
-    if (sessionStorage.getItem('store')) {
-      this.$store.replaceState(JSON.parse(sessionStorage.getItem('store')))
-    }
-    //页面刷新时将vuex中的信息保存到sessionStorage中
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('store', JSON.stringify(this.$store.state))
+      this.crud.optShow = {
+        add: true,
+        edit: true,
+        delete: true,
+        download: true
+      }
     })
   },
   data() {
     return {
-      selectData: [],
       dialogTitle: '',
       dialogFormVisible: false,
       dataScopeList: ['全部', '本级', '自定义'],
@@ -283,7 +206,7 @@ export default {
       }
       return true
     },
-    setOperation(operation) {
+    [CRUD.HOOK.setOperation](operation) {
       //清空缓存
       this.form = {};
 
@@ -291,9 +214,9 @@ export default {
         this.dialogTitle = '新增角色';
         this.$store.commit('SET_OPERATION', operation)
       } else if (operation === 'put') {
-        this.form = {...this.selectData[0]};
+        this.form = {...this.crud.selectData[0]};
         this.$store.commit('SET_OPERATION', operation);
-        if (this.selectData[0].dataScope === '自定义') {
+        if (this.crud.selectData[0].dataScope === '自定义') {
           //自定义权限范围部门树回显
           this.deptDataList = this.form.depts.map(dept => dept.id)
           getDeptSuperiorList(this.deptDataList).then(res => {
@@ -304,7 +227,7 @@ export default {
         }
         this.dialogTitle = '编辑角色';
       } else if (operation === 'delete') {
-        let ids = this.selectData.map(item => item.id)
+        let ids = this.crud.selectData.map(item => item.id)
         del(ids).then(() => {
           ElementUI.Message.success('删除成功');
           this.crud.delChangePage();
@@ -333,7 +256,7 @@ export default {
     },
     //复选框触发事件
     handleSelectionChange(rows) {
-      this.selectData = rows
+      this.crud.selectData = rows
     },
     //懒加载部门树
     loadDeptList({action, parentNode, callback}) {

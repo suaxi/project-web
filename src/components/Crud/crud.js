@@ -25,7 +25,10 @@ function CRUD(options) {
             total: 0
         },
         //查询参数
-        params: {}
+        params: {},
+        //增删改查按钮
+        optShow: {add: false, edit: false, delete: false, download: false},
+        selectData: []
     }
 
     const methods = {
@@ -65,6 +68,10 @@ function CRUD(options) {
         //扩展crud的数据
         updateProp(name, value) {
             Vue.set(crud.props, name, value)
+        },
+        //点击新增、删除、编辑按钮 操作
+        setOperation(operation) {
+            callVmHook(this, CRUD.HOOK.setOperation, operation)
         }
     }
 
@@ -128,10 +135,15 @@ function callVmHook(crud, hook) {
     let ret = true;
     //部分组件为了扮演多个角色，在调用钩子时，需去重（即当一个组件混入presenter(), header(), form(), crud()其中的两个以上时，就会出现重复注册）
     const vmSet = new Set();
+    //处理crud实例，hook之后的参数，如新增操作，需传入vm,hook,'post'
+    const args = [crud]
+    for (let i = 2; i < arguments.length; ++i) {
+        args.push(arguments[i])
+    }
     crud.vms.forEach(vm => vm && vmSet.add(vm.vm));
     vmSet.forEach(vm => {
         if (vm[hook]) {
-            ret = vm[hook].apply() !== false && ret
+            ret = vm[hook].apply(vm, args) !== false && ret
         }
     })
     return ret
@@ -143,8 +155,10 @@ function callVmHook(crud, hook) {
 CRUD.HOOK = {
     //刷新之后
     afterRefresh: 'afterCrudRefresh',
-    //新建/编辑 ---> 校验之后
-    afterValidateCU: 'afterCrudValidateCU'
+    //新增、编辑 ---> 校验之后
+    afterValidateCU: 'afterCrudValidateCU',
+    //新增、编辑 弹窗
+    setOperation: 'setOperation'
 }
 
 /**
@@ -189,5 +203,60 @@ function presenter(crud) {
     }
 }
 
+/**
+ * 查找crud，使用crud组件时如果有crud-tag标签，则创建独立的crud
+ * @param vm
+ * @param tag
+ * @returns {*|undefined}
+ */
+function lookupCrud(vm, tag) {
+    tag = tag || vm.$attrs['crud-tag'] || 'default';
+    //此处的$crud是在presenter中定义的
+    if (vm.$crud) {
+        const ret = vm.$crud[tag];
+        if (ret) {
+            return ret
+        }
+    } else {
+        //如果不存在，则从引用crud的父组件中寻找
+        return vm.$parent ? lookupCrud(vm.$parent, tag) : undefined
+    }
+}
+
+function mergeOptions(src, opts) {
+    const optsRet = {
+        ...src
+    }
+    for (const key in src) {
+        optsRet[key] = opts[key]
+    }
+    return optsRet
+}
+
+/**
+ * 为提取出的通用组件提供混入方法
+ */
+function crud(options = {}) {
+    const defaultOptions = {
+        type: undefined
+    }
+    options = mergeOptions(defaultOptions, options)
+    return {
+        data() {
+            return {
+                crud: this.crud
+            }
+        },
+        beforeCreate() {
+            this.crud = lookupCrud(this);
+            this.crud.registerVm(options.type, this)
+        },
+        destroyed() {
+            this.crud.unregisterVm(options.type, this)
+        }
+    }
+}
+
+
 export default CRUD
-export {presenter}
+export {presenter, crud}
