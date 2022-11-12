@@ -2,64 +2,7 @@
   <div>
     <div class="head-container">
       <!--增删改查按钮-->
-      <div class="crud-opts">
-        <span class="crud-opts-left">
-          <!--左侧插槽-->
-          <slot name="left"/>
-          <el-button
-              class="filter-item"
-              size="mini"
-              type="primary"
-              icon="el-icon-plus"
-              v-permission="['user:add']"
-              @click="setOperation('post')"
-          >
-            新增
-          </el-button>
-          <el-button
-              class="filter-item"
-              size="mini"
-              type="success"
-              icon="el-icon-edit"
-              v-permission="['user:edit']"
-              @click="setOperation('put')"
-              :disabled="selectData.length !== 1"
-          >
-            修改
-          </el-button>
-          <el-button
-              slot="reference"
-              class="filter-item"
-              type="danger"
-              icon="el-icon-delete"
-              size="mini"
-              @click="setOperation('delete')"
-              :disabled="selectData.length === 0"
-          >
-            删除
-          </el-button>
-          <el-button
-              class="filter-item"
-              size="mini"
-              type="warning"
-              icon="el-icon-download"
-          >
-            导出
-          </el-button>
-          <!--右侧-->
-          <slot name="right"/>
-        </span>
-        <el-button-group class="crud-opts-right">
-          <el-button size="mini" plain type="info" icon="el-icon-search"/>
-          <el-button size="mini" icon="el-icon-refresh"/>
-          <el-popover placement="bottom-end" width="150" trigger="click">
-            <el-button slot="reference" size="mini" icon="el-icon-s-grid">
-              <i class="fa fa-caret-down" aria-hidden="true"/>
-            </el-button>
-            <el-checkbox> 全选</el-checkbox>
-          </el-popover>
-        </el-button-group>
-      </div>
+      <CrudOperation :permission="permission"></CrudOperation>
     </div>
     <el-table v-loading="crud.loading"
               :data="crud.tableData"
@@ -155,33 +98,36 @@
 <script>
 import ElementUI from "element-ui";
 import CRUD, {presenter} from "@/components/Crud/crud";
+import CrudOperation from "@/components/Crud/CRUD.operation";
 
 export default {
   name: "ProjectUser",
+  components: {
+    CrudOperation
+  },
   cruds() {
     return CRUD({title: '用户', url: '/user/queryPage'})
   },
   mixins: [presenter()],
   created() {
-    //获取用户列表
-    this.crud.refresh();
     this.$store.dispatch('GetUserInfo').then(() => {
-
-    })
-    //页面加载时读取sessionStorage中的状态信息，解决页面刷新vuex状态清空的问题
-    if (sessionStorage.getItem('store')) {
-      this.$store.replaceState(JSON.parse(sessionStorage.getItem('store')))
-    }
-    //页面刷新时将vuex中的信息保存到sessionStorage中
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('store', JSON.stringify(this.$store.state))
+      this.crud.optShow = {
+        add: true,
+        edit: true,
+        delete: true,
+        download: true
+      }
     })
   },
   data() {
     return {
-      selectData: [],
       dialogFormVisible: false,
       dialogTitle: '',
+      permission: {
+        add: ['user:add'],
+        edit: ['user:edit'],
+        del: ['user:del']
+      },
       user_status: [{label: '激活', value: true}, {label: '禁用', value: false}],
       props: {children: 'children', label: 'label', isLeaf: 'leaf'},
       deptList: [],
@@ -214,10 +160,10 @@ export default {
     },
     //选中某一行时
     handleSelectionChange(rows) {
-      this.selectData = rows
+      this.crud.selectData = rows
     },
     //新增、修改、删除
-    setOperation(operation) {
+    [CRUD.HOOK.setOperation](crud, operation) {
       //清空缓存
       this.dept = {};
       this.jobs = [];
@@ -229,7 +175,7 @@ export default {
 
       if (operation === 'put') {
         this.dialogTitle = '修改用户'
-        this.mapForm(this.selectData[0])
+        this.mapForm(this.crud.selectData[0])
       } else {
         this.dialogTitle = '新增用户'
       }
@@ -239,8 +185,8 @@ export default {
       if (operation !== 'delete') {
         this.getRoleAndJobInfo();
       } else {
-        crud.delChangePage();
-        this.updateUser(this.selectData.map(item => item.id))
+        this.crud.delChangePage();
+        this.updateUser(this.crud.selectData.map(item => item.id))
       }
     },
     getRoleAndJobInfo() {
@@ -281,7 +227,7 @@ export default {
       }).then(() => {
         ElementUI.Message.success('操作成功');
         this.dialogFormVisible = false;
-        crud.refresh()
+        this.crud.refresh()
       })
     }
   }

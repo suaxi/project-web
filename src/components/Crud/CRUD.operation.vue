@@ -9,7 +9,7 @@
                size="mini"
                type="primary"
                icon="el-icon-plus"
-               v-permission="['roles:add']"
+               v-permission="permission.add"
                @click="crud.setOperation('post')"
            >
              新增
@@ -20,7 +20,7 @@
                size="mini"
                type="success"
                icon="el-icon-edit"
-               v-permission="['roles:edit']"
+               v-permission="permission.edit"
                @click="crud.setOperation('put')"
                :disabled="crud.selectData.length !== 1"
            >
@@ -33,7 +33,7 @@
                type="danger"
                icon="el-icon-delete"
                size="mini"
-               v-permission="['roles:del']"
+               v-permission="permission.del"
                @click="crud.setOperation('delete')"
                :disabled="crud.selectData.length === 0"
            >
@@ -89,7 +89,13 @@ import {crud} from "@/components/Crud/crud";
 
 export default {
   name: 'CrudOperation',
-  mixins: [crud()]
+  mixins: [crud()],
+  props: {
+    permission: {
+      type: Object,
+      default: () => { return {} }
+    }
+  }
 }
 </script>
 

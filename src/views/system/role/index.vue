@@ -2,7 +2,7 @@
   <div>
     <div class="head-container">
       <!--增删改查按钮-->
-      <CrudOperation></CrudOperation>
+      <CrudOperation :permission="permission"></CrudOperation>
     </div>
 
     <el-row :gutter="15">
@@ -175,6 +175,11 @@ export default {
     return {
       dialogTitle: '',
       dialogFormVisible: false,
+      permission: {
+        add: ['roles:add'],
+        edit: ['roles:edit'],
+        del: ['roles:del']
+      },
       dataScopeList: ['全部', '本级', '自定义'],
       //树形下拉框options
       deptList: [],
@@ -206,7 +211,7 @@ export default {
       }
       return true
     },
-    [CRUD.HOOK.setOperation](operation) {
+    [CRUD.HOOK.setOperation](crud, operation) {
       //清空缓存
       this.form = {};
 
