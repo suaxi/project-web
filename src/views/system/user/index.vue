@@ -25,15 +25,7 @@
       <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期" width="200"></el-table-column>
     </el-table>
     <!--分页-->
-    <el-pagination
-        :page-size.sync="crud.page.pageSize"
-        :total="crud.page.total"
-        :current-page.sync="crud.page.pageNum"
-        style="margin-top: 8px;"
-        layout="total, prev, pager, next, sizes"
-        @size-change="crud.sizeChangeHandler"
-        @current-change="crud.pageChangeHandler"
-    />
+    <Pagination></Pagination>
 
     <!-- 用户信息编辑弹框 -->
     <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" width="680px">
@@ -99,10 +91,12 @@
 import ElementUI from "element-ui";
 import CRUD, {presenter} from "@/components/Crud/crud";
 import CrudOperation from "@/components/Crud/CRUD.operation";
+import Pagination from "@/components/Crud/Pagination";
 
 export default {
   name: "ProjectUser",
   components: {
+    Pagination,
     CrudOperation
   },
   cruds() {

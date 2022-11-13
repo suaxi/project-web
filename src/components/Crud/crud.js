@@ -257,6 +257,26 @@ function crud(options = {}) {
     }
 }
 
+/**
+ * 分页
+ */
+function pagination() {
+    return {
+        data() {
+            return {
+                crud: this.crud,
+                page: this.crud.page
+            }
+        },
+        beforeCreate() {
+            this.crud = lookupCrud(this);
+            this.crud.registerVm('pagination', this, 2)
+        },
+        destroyed() {
+            this.crud.unregisterVm('pagination', this)
+        }
+    }
+}
 
 export default CRUD
-export {presenter, crud}
+export {presenter, pagination, crud}

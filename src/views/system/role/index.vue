@@ -52,15 +52,7 @@
             </el-table-column>
           </el-table>
           <!--分页-->
-          <el-pagination
-              :page-size.sync="crud.page.pageSize"
-              :total="crud.page.total"
-              :current-page.sync="crud.page.pageNum"
-              style="margin-top: 8px;"
-              layout="total, prev, pager, next, sizes"
-              @size-change="crud.sizeChangeHandler"
-              @current-change="crud.pageChangeHandler"
-          />
+          <Pagination></Pagination>
         </el-card>
       </el-col>
 
@@ -150,10 +142,12 @@ import {getChild} from "@/api/menu";
 import {del} from "@/api/role";
 import CRUD, {presenter} from "@/components/Crud/crud";
 import CrudOperation from "@/components/Crud/CRUD.operation";
+import Pagination from "@/components/Crud/Pagination";
 
 export default {
   name: "ProjectRole",
   components: {
+    Pagination,
     CrudOperation,
     Treeselect
   },
