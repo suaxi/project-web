@@ -51,11 +51,7 @@ function CRUD(options) {
         },
         refresh() {
             this.loading = true;
-            let queryParams = {
-                pageNum: this.page.pageNum,
-                pageSize: this.page.pageSize
-            };
-            initData(this.url, queryParams).then(res => {
+            initData(this.url, crud.getQueryParams()).then(res => {
                 this.tableData = res.records;
                 this.page.total = res.total;
                 this.loading = false;
@@ -68,6 +64,29 @@ function CRUD(options) {
         //扩展crud的数据
         updateProp(name, value) {
             Vue.set(crud.props, name, value)
+        },
+        //头部模糊查询搜索
+        toQuery() {
+            crud.page.pageNum = 1;
+            crud.refresh()
+        },
+        //重置查询参数
+        resetQueryParams() {
+            crud.params = {};
+            crud.toQuery()
+        },
+        getQueryParams() {
+            //清除参数为空的情况
+            Object.keys(crud.params).length !== 0 && Object.keys(crud.params).forEach(item => {
+                if (crud.params[item] === null || crud.params[item] === '') {
+                    crud.params[item] = undefined
+                }
+            })
+            return {
+                pageNum: this.page.pageNum,
+                pageSize: this.page.pageSize,
+                ...crud.params
+            }
         },
         //点击新增、删除、编辑按钮 操作
         setOperation(operation) {

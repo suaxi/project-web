@@ -1,15 +1,25 @@
 <template>
-  <div>
+  <div class="app-container">
+    <!-- 工具栏 -->
     <div class="head-container">
-      <!--增删改查按钮-->
-      <CrudOperation :permission="permission"></CrudOperation>
+      <!-- 搜索 -->
+      <el-input v-model="crud.params.username" clearable size="small" placeholder="请输入名称" style="width: 200px;"
+                class="filter-item" @keyup.enter.native="crud.toQuery"/>
+      <el-select v-model="crud.params.enabled" clearable size="small" placeholder="状态" class="filter-item"
+                 style="width: 90px" @change="crud.toQuery">
+        <el-option
+            v-for="(item, index) in user_status"
+            :key="index"
+            :label="item.label"
+            :value="item.value"
+        />
+      </el-select>
+      <RrOperation/>
     </div>
-    <el-table v-loading="crud.loading"
-              :data="crud.tableData"
-              style="width: 100%"
-              highlight-current-row
-              @current-change="handleCurrentChange"
-              @selection-change="handleSelectionChange">
+    <!-- 增删改查按钮 -->
+    <CrudOperation :permission="permission"/>
+    <el-table v-loading="crud.loading" :data="crud.tableData" style="width: 100%" highlight-current-row
+              @current-change="handleCurrentChange" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column fixed prop="username" label="用户名" width="150"></el-table-column>
       <el-table-column prop="nickName" label="昵称" width="120"></el-table-column>
@@ -22,10 +32,11 @@
           <el-switch ref="enabled" v-model="scope.row.enabled"></el-switch>
         </template>
       </el-table-column>
-      <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期" width="200"></el-table-column>
+      <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期"
+                       width="200"></el-table-column>
     </el-table>
-    <!--分页-->
-    <Pagination></Pagination>
+    <!-- 分页 -->
+    <Pagination/>
 
     <!-- 用户信息编辑弹框 -->
     <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" width="680px">
@@ -92,10 +103,12 @@ import ElementUI from "element-ui";
 import CRUD, {presenter} from "@/components/Crud/crud";
 import CrudOperation from "@/components/Crud/CRUD.operation";
 import Pagination from "@/components/Crud/Pagination";
+import RrOperation from "@/components/Crud/RR.operation";
 
 export default {
   name: "ProjectUser",
   components: {
+    RrOperation,
     Pagination,
     CrudOperation
   },
@@ -228,6 +241,9 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style rel="stylesheet/scss" lang="scss" scoped>
+::v-deep .vue-treeselect__control, ::v-deep .vue-treeselect__placeholder, ::v-deep .vue-treeselect__single-value {
+  height: 30px;
+  line-height: 30px;
+}
 </style>

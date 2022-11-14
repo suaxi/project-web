@@ -1,58 +1,35 @@
 <template>
-  <div>
+  <div class="app-container">
+    <!-- 工具栏 -->
     <div class="head-container">
-      <!--增删改查按钮-->
-      <CrudOperation :permission="permission"></CrudOperation>
+      <!-- 搜索 -->
+      <el-input v-model="crud.params.name" clearable size="small" placeholder="请输入名称" style="width: 200px;"
+                class="filter-item" @keyup.enter.native="crud.toQuery"/>
+      <el-input v-model="crud.params.dataScope" clearable size="small" placeholder="请输入权限范围"
+                style="width: 200px;" class="filter-item" @keyup.enter.native="crud.toQuery"/>
+      <RrOperation/>
+      <!-- 增删改查按钮 -->
+      <CrudOperation :permission="permission"/>
     </div>
-
     <el-row :gutter="15">
 
-      <!--角色管理-->
+      <!-- 角色管理 -->
       <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="17" style="margin-bottom: 10px">
         <el-card class="box-card" shadow="never">
           <div slot="header" class="clearfix">
             <span class="role-span">角色列表</span>
           </div>
-          <el-table
-              v-loading="crud.loading"
-              :data="crud.tableData"
-              style="width: 100%"
-              highlight-current-row
-              @selection-change="handleSelectionChange"
-              @current-change="handleCurrentChange">
-            <el-table-column
-                type="selection"
-                width="55">
-            </el-table-column>
-            <el-table-column
-                fixed
-                prop="name"
-                label="名称"
-                width="150">
-            </el-table-column>
-            <el-table-column
-                prop="dataScope"
-                label="数据权限"
-                width="120">
-            </el-table-column>
-            <el-table-column
-                prop="level"
-                label="角色级别"
-                width="120">
-            </el-table-column>
-            <el-table-column
-                prop="description"
-                label="描述"
-                width="200">
-            </el-table-column>
-            <el-table-column
-                :show-overflow-tooltip="true"
-                prop="createTime"
-                label="创建时间">
-            </el-table-column>
+          <el-table v-loading="crud.loading" :data="crud.tableData" style="width: 100%" highlight-current-row
+                    @selection-change="handleSelectionChange" @current-change="handleCurrentChange">
+            <el-table-column type="selection" width="55"/>
+            <el-table-column fixed prop="name" label="名称" width="150"/>
+            <el-table-column prop="dataScope" label="数据权限" width="120"/>
+            <el-table-column prop="level" label="角色级别" width="120"/>
+            <el-table-column prop="description" label="描述" width="200"/>
+            <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建时间"/>
           </el-table>
-          <!--分页-->
-          <Pagination></Pagination>
+          <!-- 分页 -->
+          <Pagination/>
         </el-card>
       </el-col>
 
@@ -92,8 +69,9 @@
       </el-col>
     </el-row>
 
-    <!--角色信息编辑弹窗-->
-    <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" width="520px">
+    <!-- 角色信息编辑弹窗 -->
+    <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false"
+               width="520px">
       <el-form ref="form" :inline="true" :model="form" size="small" label-width="80px">
         <el-form-item label="角色名称" prop="name">
           <el-input v-model="form.name" style="width: 145px;"/>
@@ -143,10 +121,12 @@ import {del} from "@/api/role";
 import CRUD, {presenter} from "@/components/Crud/crud";
 import CrudOperation from "@/components/Crud/CRUD.operation";
 import Pagination from "@/components/Crud/Pagination";
+import RrOperation from "@/components/Crud/RR.operation";
 
 export default {
   name: "ProjectRole",
   components: {
+    RrOperation,
     Pagination,
     CrudOperation,
     Treeselect
@@ -298,9 +278,9 @@ export default {
         method: operation,
         data
       }).then(() => {
-          ElementUI.Message.success('操作成功');
-          this.dialogFormVisible = false;
-          this.crud.refresh()
+        ElementUI.Message.success('操作成功');
+        this.dialogFormVisible = false;
+        this.crud.refresh()
       })
     },
     //加载菜单列表
@@ -366,6 +346,10 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style rel="stylesheet/scss" lang="scss">
+.role-span {
+  font-weight: bold;
+  color: #303133;
+  font-size: 15px;
+}
 </style>
