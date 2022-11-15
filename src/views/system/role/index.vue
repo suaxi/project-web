@@ -302,6 +302,8 @@ export default {
           this.menuIds.push(menu.id)
         })
         this.showButton = true
+      } else {
+        this.showButton = false
       }
     },
     menuChange(menu) {
