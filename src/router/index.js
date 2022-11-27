@@ -4,6 +4,7 @@ import Login from "@/views/login";
 import {getToken} from "@/utils/auth";
 import User from "@/views/system/user";
 import Role from "@/views/system/role";
+import Menu from "@/views/system/menu";
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,11 @@ const routes = [
                 path: 'system/role',
                 name: 'Role',
                 component: Role
+            },
+            {
+                path: 'system/menu',
+                name: 'Menu',
+                component: Menu
             }
         ]
     }

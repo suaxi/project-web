@@ -28,7 +28,11 @@ function CRUD(options) {
         params: {},
         //增删改查按钮
         optShow: {add: false, edit: false, delete: false, download: false},
-        selectData: []
+        selectData: [],
+        //字段名 id
+        idField: 'id',
+        //记录数据状态
+        dataStatus: {}
     }
 
     const methods = {
@@ -91,7 +95,59 @@ function CRUD(options) {
         //点击新增、删除、编辑按钮 操作
         setOperation(operation) {
             callVmHook(this, CRUD.HOOK.setOperation, operation)
-        }
+        },
+        findVM(type) {
+            return crud.vms.find(vm => vm && vm.type === type).vm
+        },
+        getDataId(data) {
+          return data[this.idField]
+        },
+        getTable() {
+            return this.findVM('presenter').$refs.table
+        },
+        //树形表格单选、多选
+        selectChange(selection, row) {
+            if (selection.find(val => { return crud.getDataId(val) === crud.getDataId(row) })) {
+                if (row.children) {
+                    row.children.forEach(val => {
+                        crud.getTable().toggleRowSelection(val, true);
+                        selection.push(val);
+                        if (val.children) {
+                            crud.selectChange(selection, val)
+                        }
+                    })
+                }
+            } else {
+                crud.toggleRowSelection(selection, row)
+            }
+        },
+        //切换选中状态
+        toggleRowSelection(selection, data) {
+            if(data.children) {
+                data.children.forEach(val => {
+                    selection.splice(selection.findIndex(item => this.getDataId(item) === this.getDataId(val)), 1);
+                    crud.getTable().toggleRowSelection(val, false);
+                    if (val.children) {
+                        crud.toggleRowSelection(selection, val)
+                    }
+                })
+            }
+        },
+        //树形表格多选（选中所有）
+        selectAllChange(selection) {
+            // 如果选中的数目与请求到的数目相同就选中子节点，否则就清空选中
+            if (selection && selection.length === crud.data.length) {
+                selection.forEach(val => {
+                    crud.selectChange(selection, val)
+                })
+            } else {
+                crud.getTable().clearSelection()
+            }
+        },
+        //选择中行改变
+        selectionChangeHandler(val) {
+            crud.selections = val
+        },
     }
 
     const crud = Object.assign({}, data)

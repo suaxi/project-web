@@ -6,3 +6,10 @@ export function getChild(id) {
         method: 'get'
     })
 }
+
+export function getChildListByPid(pid) {
+    return request({
+        url: `/menu/queryChildListByPid?pid=${pid}`,
+        method: 'get'
+    })
+}
