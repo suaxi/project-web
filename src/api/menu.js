@@ -13,3 +13,18 @@ export function getChildListByPid(pid) {
         method: 'get'
     })
 }
+
+export function querySameLevelAndSuperiorMenuListById(id) {
+    return request({
+        url: `/menu/querySameLevelAndSuperiorMenuListById?id=${id}`,
+        method: 'get'
+    })
+}
+
+export function del(ids) {
+    return request({
+        url: '/menu',
+        method: 'delete',
+        data: ids
+    })
+}

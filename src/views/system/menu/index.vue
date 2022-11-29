@@ -142,9 +142,10 @@
 import CRUD, {presenter} from "@/components/Crud/crud";
 import CrudOperation from "@/components/Crud/CRUD.operation";
 import RrOperation from "@/components/Crud/RR.operation";
-import {getChildListByPid} from "@/api/menu";
+import {del, getChildListByPid, querySameLevelAndSuperiorMenuListById} from "@/api/menu";
 import IconSelect from "@/components/IconSelect";
 import treeselect from "@riophae/vue-treeselect";
+import ElementUI from "element-ui";
 
 export default {
   name: "ProjectMenu",
@@ -226,8 +227,19 @@ export default {
         this.dialogTitle = '编辑菜单';
         this.form = {...this.crud.selectData[0]}
         this.$store.commit('SET_OPERATION', operation)
+        //treeSelect根节点id处理
+        if (!this.form.pid) {
+          this.form.pid = 0
+        } else {
+          this.getChildMenuList(this.form.id)
+        }
       } else if (operation === 'delete') {
         let ids = this.crud.selectData.map(item => item.id)
+        del(ids).then(() => {
+          ElementUI.Message.success('删除成功');
+          this.crud.delChangePage();
+          this.crud.refresh()
+        })
       }
       if (operation !== 'delete') {
         this.dialogFormVisible = true
@@ -252,6 +264,19 @@ export default {
           }, 200)
         })
       }
+    },
+    //根据id查询同级与上级菜单列表
+    getChildMenuList(id) {
+      querySameLevelAndSuperiorMenuListById(id).then(res => {
+        const children = res.records.map(function (obj) {
+          if (!obj.leaf && !obj.children) {
+            obj.children = null
+          }
+          return obj
+        })
+        this.menus.splice(0)
+        this.menus = [{id: 0, label: '顶级类目', children: children}]
+      })
     },
     updateMenu(data) {
       let operation = this.$store.state.operation;

@@ -100,7 +100,7 @@ function CRUD(options) {
             return crud.vms.find(vm => vm && vm.type === type).vm
         },
         getDataId(data) {
-          return data[this.idField]
+            return data[this.idField]
         },
         getTable() {
             return this.findVM('presenter').$refs.table
@@ -136,7 +136,7 @@ function CRUD(options) {
         //树形表格多选（选中所有）
         selectAllChange(selection) {
             // 如果选中的数目与请求到的数目相同就选中子节点，否则就清空选中
-            if (selection && selection.length === crud.data.length) {
+            if (selection && selection.length === crud.tableData.length) {
                 selection.forEach(val => {
                     crud.selectChange(selection, val)
                 })
@@ -146,8 +146,8 @@ function CRUD(options) {
         },
         //选择中行改变
         selectionChangeHandler(val) {
-            crud.selections = val
-        },
+            crud.selectData = val
+        }
     }
 
     const crud = Object.assign({}, data)
