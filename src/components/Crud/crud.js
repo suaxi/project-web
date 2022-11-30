@@ -32,7 +32,9 @@ function CRUD(options) {
         //字段名 id
         idField: 'id',
         //记录数据状态
-        dataStatus: {}
+        dataStatus: {},
+        //自定义扩展属性
+        props: {}
     }
 
     const methods = {
@@ -76,8 +78,12 @@ function CRUD(options) {
         },
         //重置查询参数
         resetQueryParams() {
+            //查询参数
             crud.params = {};
-            crud.toQuery()
+            crud.toQuery();
+            //表单缓存
+            crud.selectData = [];
+            crud.tableData = []
         },
         getQueryParams() {
             //清除参数为空的情况
@@ -105,9 +111,34 @@ function CRUD(options) {
         getTable() {
             return this.findVM('presenter').$refs.table
         },
+        attachTable() {
+            const table = this.getTable();
+            this.updateProp('table', table);
+            const that = this;
+            table.$on('expand-change', (row, expanded) => {
+                if (!expanded) {
+                    return
+                }
+                const lazyTreeNodeMap = table.store.states.lazyTreeNodeMap;
+                row.children = lazyTreeNodeMap[crud.getDataId(row)];
+                if (row.children) {
+                    row.children.forEach(item => {
+                        const id = crud.getDataId(item);
+                        if (that.dataStatus[id] === undefined) {
+                            that.dataStatus[id] = {
+                                delete: 0,
+                                edit: 0
+                            }
+                        }
+                    })
+                }
+            })
+        },
         //树形表格单选、多选
         selectChange(selection, row) {
-            if (selection.find(val => { return crud.getDataId(val) === crud.getDataId(row) })) {
+            if (selection.find(val => {
+                return crud.getDataId(val) === crud.getDataId(row)
+            })) {
                 if (row.children) {
                     row.children.forEach(val => {
                         crud.getTable().toggleRowSelection(val, true);
@@ -123,7 +154,7 @@ function CRUD(options) {
         },
         //切换选中状态
         toggleRowSelection(selection, data) {
-            if(data.children) {
+            if (data.children) {
                 data.children.forEach(val => {
                     selection.splice(selection.findIndex(item => this.getDataId(item) === this.getDataId(val)), 1);
                     crud.getTable().toggleRowSelection(val, false);
@@ -274,6 +305,11 @@ function presenter(crud) {
         },
         destroyed() {
             this.crud.unregisterVm(this)
+        },
+        mounted() {
+            if (this.$refs.table !== undefined) {
+                this.crud.attachTable()
+            }
         }
     }
 }

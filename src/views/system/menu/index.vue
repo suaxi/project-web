@@ -254,7 +254,7 @@ export default {
       if (action === 'LOAD_CHILDREN_OPTIONS') {
         getChildListByPid(parentNode.id).then(res => {
           parentNode.children = res.records.map(function (obj) {
-            if (obj.hasChildren) {
+            if (!obj.leaf) {
               obj.children = null
             }
             return obj
