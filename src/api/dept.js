@@ -16,3 +16,11 @@ export function getDeptSuperiorList(ids) {
     data
   })
 }
+
+export function edit(data) {
+  return request({
+    url: '/dept',
+    method: 'put',
+    data
+  })
+}
