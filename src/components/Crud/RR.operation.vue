@@ -6,11 +6,11 @@
 </template>
 
 <script>
-import {crud} from "@/components/Crud/crud";
+import { crud } from '@/components/Crud/crud'
 
 export default {
-  name: "RrOperation",
-  mixins:[crud()]
+  name: 'RrOperation',
+  mixins: [crud()]
 }
 </script>
 

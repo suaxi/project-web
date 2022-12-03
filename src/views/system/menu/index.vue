@@ -3,53 +3,60 @@
     <!-- 工具栏 -->
     <div class="head-container">
       <!-- 搜索 -->
-      <el-input v-model="crud.params.title" clearable size="small" placeholder="请输入名称" style="width: 200px;"
-                class="filter-item" @keyup.enter.native="crud.toQuery"/>
-      <RrOperation/>
+      <el-input
+        v-model="crud.params.title"
+        clearable
+        size="small"
+        placeholder="请输入名称"
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="crud.toQuery"
+      />
+      <RrOperation />
       <!-- 增删改查按钮 -->
-      <CrudOperation :permission="permission"/>
+      <CrudOperation :permission="permission" />
     </div>
 
     <el-table
-        ref="table"
-        v-loading="crud.loading"
-        lazy
-        :load="getMenus"
-        :data="crud.tableData"
-        :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
-        row-key="id"
-        @select="crud.selectChange"
-        @select-all="crud.selectAllChange"
-        @selection-change="crud.selectionChangeHandler"
+      ref="table"
+      v-loading="crud.loading"
+      lazy
+      :load="getMenus"
+      :data="crud.tableData"
+      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      row-key="id"
+      @select="crud.selectChange"
+      @select-all="crud.selectAllChange"
+      @selection-change="crud.selectionChangeHandler"
     >
       <el-table-column type="selection" width="55" />
       <el-table-column :show-overflow-tooltip="true" label="菜单标题" width="auto" prop="title" />
       <el-table-column prop="icon" label="图标" align="center" width="60px">
-        <template v-slot="scope">
+        <template #default="scope">
           <svg-icon :icon-class="scope.row.icon ? scope.row.icon : ''" />
         </template>
       </el-table-column>
       <el-table-column prop="menuSort" align="center" label="排序">
-        <template v-slot="scope">
+        <template #default="scope">
           {{ scope.row.sort }}
         </template>
       </el-table-column>
       <el-table-column :show-overflow-tooltip="true" prop="permission" label="权限标识" />
       <el-table-column :show-overflow-tooltip="true" prop="component" label="组件路径" />
       <el-table-column prop="iFrame" label="外链" width="75px">
-        <template v-slot="scope">
+        <template #default="scope">
           <span v-if="scope.row.iFrame">是</span>
           <span v-else>否</span>
         </template>
       </el-table-column>
       <el-table-column prop="cache" label="缓存" width="75px">
-        <template v-slot="scope">
+        <template #default="scope">
           <span v-if="scope.row.cache">是</span>
           <span v-else>否</span>
         </template>
       </el-table-column>
       <el-table-column prop="hidden" label="可见" width="75px">
-        <template v-slot="scope">
+        <template #default="scope">
           <span v-if="scope.row.hidden">否</span>
           <span v-else>是</span>
         </template>
@@ -69,10 +76,10 @@
         </el-form-item>
         <el-form-item v-show="form.type !== 2" label="菜单图标" prop="icon">
           <el-popover
-              placement="bottom-start"
-              width="450"
-              trigger="click"
-              @show="$refs['iconSelect'].reset()"
+            placement="bottom-start"
+            width="450"
+            trigger="click"
+            @show="$refs['iconSelect'].reset()"
           >
             <IconSelect ref="iconSelect" @selected="selected" />
             <el-input slot="reference" v-model="form.icon" style="width: 450px;" placeholder="点击选择图标" readonly>
@@ -122,11 +129,11 @@
         </el-form-item>
         <el-form-item label="上级类目" prop="pid">
           <treeselect
-              v-model="form.pid"
-              :options="menus"
-              :load-options="loadMenuList"
-              style="width: 450px;"
-              placeholder="请选择上级类目"
+            v-model="form.pid"
+            :options="menus"
+            :load-options="loadMenuList"
+            style="width: 450px;"
+            placeholder="请选择上级类目"
           />
         </el-form-item>
       </el-form>
@@ -139,16 +146,16 @@
 </template>
 
 <script>
-import CRUD, {presenter} from "@/components/Crud/crud";
-import CrudOperation from "@/components/Crud/CRUD.operation";
-import RrOperation from "@/components/Crud/RR.operation";
-import {del, getChildListByPid, querySameLevelAndSuperiorMenuListById} from "@/api/menu";
-import IconSelect from "@/components/IconSelect";
-import treeselect from "@riophae/vue-treeselect";
-import ElementUI from "element-ui";
+import CRUD, { presenter } from '@/components/Crud/crud'
+import CrudOperation from '@/components/Crud/CRUD.operation'
+import RrOperation from '@/components/Crud/RR.operation'
+import { del, getChildListByPid, querySameLevelAndSuperiorMenuListById } from '@/api/menu'
+import IconSelect from '@/components/IconSelect'
+import treeselect from '@riophae/vue-treeselect'
+import ElementUI from 'element-ui'
 
 export default {
-  name: "ProjectMenu",
+  name: 'ProjectMenu',
   components: {
     RrOperation,
     CrudOperation,
@@ -156,21 +163,9 @@ export default {
     treeselect
   },
   cruds() {
-    return CRUD({title: '菜单', url: '/menu/queryPage'})
+    return CRUD({ title: '菜单', url: '/menu/queryPage' })
   },
   mixins: [presenter()],
-  created() {
-    this.$store.dispatch('GetUserInfo').then(() => {
-      this.crud.optShow = {
-        add: true,
-        edit: true,
-        delete: true,
-        download: true
-      }
-    });
-    this.menus.splice(0);
-    this.menus.push({ id: 0, label: '顶级类目', children: null })
-  },
   data() {
     return {
       dialogTitle: '',
@@ -190,8 +185,20 @@ export default {
         ]
       },
       menus: [],
-      buttonLoading: false,
+      buttonLoading: false
     }
+  },
+  created() {
+    this.$store.dispatch('GetUserInfo').then(() => {
+      this.crud.optShow = {
+        add: true,
+        edit: true,
+        delete: true,
+        download: true
+      }
+    })
+    this.menus.splice(0)
+    this.menus.push({ id: 0, label: '顶级类目', children: null })
   },
   methods: {
     getMenus(tree, treeNode, resolve) {
@@ -202,7 +209,7 @@ export default {
       }, 100)
     },
     [CRUD.HOOK.setOperation](crud, operation) {
-      //清空缓存
+      // 清空缓存
       this.form = {
         id: null,
         title: null,
@@ -218,26 +225,26 @@ export default {
         hidden: false,
         type: 0,
         permission: null
-      };
+      }
 
       if (operation === 'post') {
-        this.dialogTitle = '新增菜单';
-        this.$store.commit('SET_OPERATION', operation);
-      } else if (operation === 'put') {
-        this.dialogTitle = '编辑菜单';
-        this.form = {...this.crud.selectData[0]}
+        this.dialogTitle = '新增菜单'
         this.$store.commit('SET_OPERATION', operation)
-        //treeSelect根节点id处理
+      } else if (operation === 'put') {
+        this.dialogTitle = '编辑菜单'
+        this.form = { ...this.crud.selectData[0] }
+        this.$store.commit('SET_OPERATION', operation)
+        // treeSelect根节点id处理
         if (!this.form.pid) {
           this.form.pid = 0
         } else {
           this.getChildMenuList(this.form.id)
         }
       } else if (operation === 'delete') {
-        let ids = this.crud.selectData.map(item => item.id)
+        const ids = this.crud.selectData.map(item => item.id)
         del(ids).then(() => {
-          ElementUI.Message.success('删除成功');
-          this.crud.delChangePage();
+          ElementUI.Message.success('删除成功')
+          this.crud.delChangePage()
           this.crud.refresh()
         })
       }
@@ -245,48 +252,48 @@ export default {
         this.dialogFormVisible = true
       }
     },
-    //选择图标
+    // 选择图标
     selected(name) {
       this.form.icon = name
     },
-    //懒加载菜单树
-    loadMenuList({action, parentNode, callback}) {
+    // 懒加载菜单树
+    loadMenuList({ action, parentNode, callback }) {
       if (action === 'LOAD_CHILDREN_OPTIONS') {
         getChildListByPid(parentNode.id).then(res => {
-          parentNode.children = res.records.map(function (obj) {
+          parentNode.children = res.records.map(function(obj) {
             if (!obj.leaf) {
               obj.children = null
             }
             return obj
-          });
+          })
           setTimeout(() => {
             callback()
           }, 200)
         })
       }
     },
-    //根据id查询同级与上级菜单列表
+    // 根据id查询同级与上级菜单列表
     getChildMenuList(id) {
       querySameLevelAndSuperiorMenuListById(id).then(res => {
-        const children = res.records.map(function (obj) {
+        const children = res.records.map(function(obj) {
           if (!obj.leaf && !obj.children) {
             obj.children = null
           }
           return obj
         })
         this.menus.splice(0)
-        this.menus = [{id: 0, label: '顶级类目', children: children}]
+        this.menus = [{ id: 0, label: '顶级类目', children: children }]
       })
     },
     updateMenu(data) {
-      let operation = this.$store.state.operation;
+      const operation = this.$store.state.operation
       this.$request({
         url: 'menu',
         method: operation,
         data
       }).then(() => {
-        this.$message.success('操作成功');
-        this.dialogFormVisible = false;
+        this.$message.success('操作成功')
+        this.dialogFormVisible = false
         this.crud.refresh()
       })
     }

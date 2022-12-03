@@ -3,14 +3,14 @@
     <el-container style="height: 100%">
       <el-aside width="205px">
         <el-menu text-color="#bfcbd9" class="sidebar-container" style="text-align: left">
-          <el-submenu v-for="item in menuList" :index="item.name" :key="item.name">
+          <el-submenu v-for="item in menuList" :key="item.name" :index="item.name">
             <template slot="title">
-              <svg-icon slot="prefix" :icon-class="item.meta.icon"/>
+              <svg-icon slot="prefix" :icon-class="item.meta.icon" />
               {{ item.meta.title }}
             </template>
-            <el-menu-item v-for="child in item.children" :index="child.name" :key="child.name" @click="selectMenu(item.path, child.path)">
+            <el-menu-item v-for="child in item.children" :key="child.name" :index="child.name" @click="selectMenu(item.path, child.path)">
               <template slot="title">
-                <svg-icon slot="prefix" :icon-class="child.meta.icon"/>
+                <svg-icon slot="prefix" :icon-class="child.meta.icon" />
                 {{ child.meta.title }}
               </template>
             </el-menu-item>
@@ -30,7 +30,7 @@
           </el-dropdown>
         </el-header>
         <el-main>
-          <router-view></router-view>
+          <router-view />
         </el-main>
       </el-container>
     </el-container>
@@ -38,17 +38,17 @@
 </template>
 
 <script>
-import ElementUI from "element-ui";
+import ElementUI from 'element-ui'
 
 export default {
-  name: "ProjectHome",
-  created() {
-    this.getMenus()
-  },
+  name: 'ProjectHome',
   data() {
     return {
       menuList: []
     }
+  },
+  created() {
+    this.getMenus()
   },
   methods: {
     selectMenu(path1, path2) {
@@ -56,7 +56,7 @@ export default {
     },
     getMenus() {
       this.$request.get('/menu/getUserRouters').then(res => {
-        this.menuList = res;
+        this.menuList = res
       })
     },
     logout() {

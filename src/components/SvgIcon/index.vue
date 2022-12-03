@@ -1,12 +1,12 @@
 <template>
-  <svg v-else :class="svgClass" aria-hidden="true" v-on="$listeners">
-    <use :href="iconName"/>
+  <svg :class="svgClass" aria-hidden="true" v-on="$listeners">
+    <use :href="iconName" />
   </svg>
 </template>
 
 <script>
 export default {
-  name: "SvgIcon",
+  name: 'SvgIcon',
   props: {
     iconClass: {
       type: String,
