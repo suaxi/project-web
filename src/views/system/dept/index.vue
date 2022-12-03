@@ -154,7 +154,7 @@ export default {
     form: {
       deep: true,
       handler(value) {
-        if (value.isTop && this.$store.state.operation) {
+        if (value.isTop && this.$store.state.operation === 'put') {
           if (value.isTop === '0') {
             this.getRootDeptList()
           }
@@ -199,12 +199,11 @@ export default {
         this.dialogTitle = '编辑部门'
         this.form = { ...this.crud.selectData[0] }
         this.$store.commit('SET_OPERATION', operation)
-        if (this.form.pid !== null) {
+        if (this.form.pid) {
           this.form.isTop = '0'
           this.getSuperiorDeptList(this.form.id)
         } else {
-          this.form.isTop = '0'
-          this.getRootDeptList()
+          this.form.isTop = '1'
         }
       } else if (operation === 'delete') {
         const ids = this.crud.selectData.map(item => item.id)
