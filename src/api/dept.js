@@ -24,3 +24,11 @@ export function edit(data) {
     data
   })
 }
+
+export function del(ids) {
+  return request({
+    url: '/dept',
+    method: 'delete',
+    data: ids
+  })
+}

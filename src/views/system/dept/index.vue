@@ -112,7 +112,7 @@ import CRUD, { presenter } from '@/components/Crud/crud'
 import CrudOperation from '@/components/Crud/CRUD.operation'
 import RrOperation from '@/components/Crud/RR.operation'
 import { getDeptList, getDeptSuperiorList, edit } from '@/api/dept'
-import { del } from '@/api/menu'
+import { del } from '@/api/dept'
 import treeselect from '@riophae/vue-treeselect'
 import ElementUI from 'element-ui'
 
@@ -154,7 +154,7 @@ export default {
     form: {
       deep: true,
       handler(value) {
-        if (value.isTop && this.$store.state.operation === 'put') {
+        if (value.isTop && this.$store.state.operation === 'post') {
           if (value.isTop === '0') {
             this.getRootDeptList()
           }
@@ -197,13 +197,21 @@ export default {
         this.$store.commit('SET_OPERATION', operation)
       } else if (operation === 'put') {
         this.dialogTitle = '编辑部门'
-        this.form = { ...this.crud.selectData[0] }
         this.$store.commit('SET_OPERATION', operation)
-        if (this.form.pid) {
-          this.form.isTop = '0'
+        const selectData = { ...this.crud.selectData[0] }
+        if (selectData.pid) {
+          // radio不支持对未创建的对象直接复制，即不能使用 this.form.isTop = '0'的方式
+          this.form = {
+            isTop: '0',
+            ...selectData
+          }
           this.getSuperiorDeptList(this.form.id)
         } else {
-          this.form.isTop = '1'
+          this.form = {
+            isTop: '1',
+            ...selectData
+          }
+          this.getRootDeptList()
         }
       } else if (operation === 'delete') {
         const ids = this.crud.selectData.map(item => item.id)
