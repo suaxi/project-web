@@ -7,6 +7,7 @@ import Role from '@/views/system/role'
 import Menu from '@/views/system/menu'
 import Dept from '@/views/system/dept'
 import Job from '@/views/system/job'
+import Dict from '@/views/system/dict'
 
 Vue.use(VueRouter)
 
@@ -45,6 +46,11 @@ const routes = [
         path: 'system/job',
         name: 'Job',
         component: Job
+      },
+      {
+        path: 'system/dict',
+        name: 'Dict',
+        component: Dict
       }
     ]
   }
