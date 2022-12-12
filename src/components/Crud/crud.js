@@ -8,13 +8,36 @@ import Vue from 'vue'
  * @example 要使用多crud时，请在关联crud的组件处使用crud-tag进行标记，如：<jobForm :job-status="dict.job_status" crud-tag="job" />
  */
 function CRUD(options) {
-  const data = {
-    ...options,
+  const defaultOptions = {
     // CRUD实例tag标志，默认为default
     tag: 'default',
-    loading: true,
+    // 字段名 id
+    idField: 'id',
+    // 标题
+    title: '',
+    // 分页查询url
+    url: '',
     // 表格数据
     tableData: [],
+    // 当前选中项
+    selectData: [],
+    // 查询参数
+    params: {},
+    // Form 表单
+    form: {},
+    // 重置表单
+    defaultForm: () => {},
+    // 增删改查按钮
+    optShow: { add: false, edit: false, delete: false, download: false },
+    // 自定义扩展属性
+    props: {},
+    // created同步执行查询
+    queryOnPresenterCreated: true
+  }
+  options = mergeOptions(defaultOptions, options)
+  const data = {
+    ...options,
+    loading: false,
     // 分页参数
     page: {
       // 页码
@@ -24,17 +47,8 @@ function CRUD(options) {
       // 总数
       total: 0
     },
-    // 查询参数
-    params: {},
-    // 增删改查按钮
-    optShow: { add: false, edit: false, delete: false, download: false },
-    selectData: [],
-    // 字段名 id
-    idField: 'id',
     // 记录数据状态
-    dataStatus: {},
-    // 自定义扩展属性
-    props: {}
+    dataStatus: {}
   }
 
   const methods = {
@@ -301,7 +315,12 @@ function presenter(crud) {
       this.crud = this.$crud['default'] || cruds[0]
     },
     created() {
-      this.crud.refresh()
+      for (const i in this.$crud) {
+        console.log(i + ':', this.$crud[i])
+        if (this.$crud[i].queryOnPresenterCreated) {
+          this.$crud[i].toQuery()
+        }
+      }
     },
     destroyed() {
       this.crud.unregisterVm(this)
@@ -339,7 +358,9 @@ function mergeOptions(src, opts) {
     ...src
   }
   for (const key in src) {
-    optsRet[key] = opts[key]
+    if (Object.hasOwnProperty.call(opts, key)) {
+      optsRet[key] = opts[key]
+    }
   }
   return optsRet
 }
