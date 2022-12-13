@@ -8,7 +8,10 @@
           <div class="head-container">
             <!-- 搜索 -->
             <el-input v-model="crud.params.name" clearable size="small" placeholder="请输入名称" style="width: 200px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
-            <RrOperation />
+            <span>
+              <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="crud.toQuery">搜索</el-button>
+              <el-button class="filter-item" size="mini" type="warning" icon="el-icon-refresh-left" @click="reset">重置</el-button>
+            </span>
             <!-- 增删改查按钮 -->
             <crudOperation :permission="permission" />
           </div>
@@ -23,9 +26,28 @@
           <Pagination />
         </el-card>
       </el-col>
+      <!-- 字典详情列表 -->
+      <el-col :xs="24" :sm="24" :md="14" :lg="13" :xl="13">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>字典详情</span>
+            <el-button
+              v-if="$refs.dictDetail && $refs.dictDetail.crud.tableData.length > 0"
+              v-permission="['dict:edit']"
+              class="filter-item"
+              size="mini"
+              style="float: right;padding: 4px 10px"
+              type="primary"
+              icon="el-icon-plus"
+              @click="$refs.dictDetail && $refs.dictDetail.crud.setOperation('post')"
+            >新增</el-button>
+          </div>
+          <dictDetail ref="dictDetail" :permission="permission" />
+        </el-card>
+      </el-col>
     </el-row>
 
-    <!-- 字典信息编辑框 -->
+    <!-- 数据字典信息编辑框 -->
     <el-dialog append-to-body :close-on-click-modal="false" :visible="dialogFormVisible" :title="dialogTitle" width="500px">
       <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
         <el-form-item label="字典名称" prop="name">
@@ -46,16 +68,16 @@
 <script>
 import CRUD, { presenter } from '@/components/Crud/crud'
 import CrudOperation from '@/components/Crud/CRUD.operation'
-import RrOperation from '@/components/Crud/RR.operation'
 import Pagination from '@/components/Crud/Pagination'
 import { del } from '@/api/dict'
+import dictDetail from '@/views/system/dict/dictDetail'
 
 export default {
   name: 'ProjectDict',
   components: {
     CrudOperation,
-    RrOperation,
-    Pagination
+    Pagination,
+    dictDetail
   },
   cruds() {
     return CRUD({ title: '字典', url: '/dict/queryPage' })
@@ -99,10 +121,10 @@ export default {
       }
 
       if (operation === 'post') {
-        this.dialogTitle = '新增字典'
+        this.dialogTitle = '新增数据字典'
         this.$store.commit('SET_OPERATION', operation)
       } else if (operation === 'put') {
-        this.dialogTitle = '编辑字典'
+        this.dialogTitle = '编辑数据字典'
         this.$store.commit('SET_OPERATION', operation)
         this.form = { ...this.crud.selectData[0] }
       } else if (operation === 'delete') {
@@ -133,8 +155,19 @@ export default {
         this.buttonLoading = false
       })
     },
-    handleCurrentChange() {
-
+    // 选中数据字典项时设置字典详情数据
+    handleCurrentChange(val) {
+      if (val) {
+        this.$refs.dictDetail.crud.params.dictId = val.id
+        this.$refs.dictDetail.dictName = val.name
+        this.$refs.dictDetail.crud.toQuery()
+      }
+    },
+    reset() {
+      this.crud.resetQueryParams()
+      // 清除数据字典详细信息缓存
+      this.$refs.dictDetail.dictName = ''
+      this.$refs.dictDetail.crud.tableData.splice(0)
     }
   }
 }

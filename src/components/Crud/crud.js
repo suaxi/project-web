@@ -316,7 +316,6 @@ function presenter(crud) {
     },
     created() {
       for (const i in this.$crud) {
-        console.log(i + ':', this.$crud[i])
         if (this.$crud[i].queryOnPresenterCreated) {
           this.$crud[i].toQuery()
         }
