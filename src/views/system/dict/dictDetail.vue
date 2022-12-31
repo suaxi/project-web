@@ -114,22 +114,28 @@ export default {
       }
     },
     updateDictDetail(data) {
-      this.buttonLoading = true
-      const operation = this.$store.state.operation
-      this.$request({
-        url: '/dictDetail',
-        method: operation,
-        data: {
-          dictId: this.crud.params.dictId,
-          ...data
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.buttonLoading = true
+          const operation = this.$store.state.operation
+          this.$request({
+            url: '/dictDetail',
+            method: operation,
+            data: {
+              dictId: this.crud.params.dictId,
+              ...data
+            }
+          }).then(() => {
+            this.buttonLoading = false
+            this.$message.success('操作成功')
+            this.dialogFormVisible = false
+            this.crud.refresh()
+          }).catch(() => {
+            this.buttonLoading = false
+          })
+        } else {
+          return false
         }
-      }).then(() => {
-        this.buttonLoading = false
-        this.$message.success('操作成功')
-        this.dialogFormVisible = false
-        this.crud.refresh()
-      }).catch(() => {
-        this.buttonLoading = false
       })
     },
     doEdit(data) {

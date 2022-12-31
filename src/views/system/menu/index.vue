@@ -286,19 +286,25 @@ export default {
       })
     },
     updateMenu(data) {
-      this.buttonLoading = true
-      const operation = this.$store.state.operation
-      this.$request({
-        url: 'menu',
-        method: operation,
-        data
-      }).then(() => {
-        this.buttonLoading = false
-        this.$message.success('操作成功')
-        this.dialogFormVisible = false
-        this.crud.refresh()
-      }).catch(() => {
-        this.buttonLoading = false
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.buttonLoading = true
+          const operation = this.$store.state.operation
+          this.$request({
+            url: 'menu',
+            method: operation,
+            data
+          }).then(() => {
+            this.buttonLoading = false
+            this.$message.success('操作成功')
+            this.dialogFormVisible = false
+            this.crud.refresh()
+          }).catch(() => {
+            this.buttonLoading = false
+          })
+        } else {
+          return false
+        }
       })
     }
   }

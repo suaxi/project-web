@@ -97,7 +97,7 @@
       :close-on-click-modal="false"
       width="520px"
     >
-      <el-form ref="form" :inline="true" :model="form" size="small" label-width="80px">
+      <el-form ref="form" :inline="true" :model="form" :rules="rules" size="small" label-width="80px">
         <el-form-item label="角色名称" prop="name">
           <el-input v-model="form.name" style="width: 145px;" />
         </el-form-item>
@@ -114,7 +114,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="form.dataScope === '自定义'" label="数据权限" prop="depts">
+        <el-form-item v-if="form.dataScope === '自定义'" label="数据权限" prop="deptDataList">
           <treeselect
             v-model="deptDataList"
             :load-options="loadDeptList"
@@ -175,6 +175,18 @@ export default {
       // 树形下拉框选中的数据
       deptDataList: [],
       form: {},
+      rules: {
+        name: [
+          { required: true, message: '请输入角色名', trigger: 'blur' },
+          { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+        ],
+        dataScope: [
+          { required: true, message: '请选择数据范围', trigger: 'blur' }
+        ],
+        deptDataList: [
+          { required: true, message: '请选择数据权限', trigger: 'blur' }
+        ]
+      },
       // 树形选择内置属性对照名称
       defaultProps: { children: 'children', label: 'label', isLeaf: 'leaf' },
       menuList: [],
@@ -293,19 +305,25 @@ export default {
       if (!this[CRUD.HOOK.afterValidateCU]) {
         return
       }
-      const operation = this.$store.state.operation
-      // 数据权限为自定义时，同步保存角色-部门关联数据
-      data.depts = this.deptDataList.map(item => {
-        return { id: item }
-      })
-      this.$request({
-        url: '/role',
-        method: operation,
-        data
-      }).then(() => {
-        ElementUI.Message.success('操作成功')
-        this.dialogFormVisible = false
-        this.crud.refresh()
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          const operation = this.$store.state.operation
+          // 数据权限为自定义时，同步保存角色-部门关联数据
+          data.depts = this.deptDataList.map(item => {
+            return { id: item }
+          })
+          this.$request({
+            url: '/role',
+            method: operation,
+            data
+          }).then(() => {
+            ElementUI.Message.success('操作成功')
+            this.dialogFormVisible = false
+            this.crud.refresh()
+          })
+        } else {
+          return false
+        }
       })
     },
     // 加载菜单列表

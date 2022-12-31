@@ -64,20 +64,20 @@
 
     <!-- 用户信息编辑弹框 -->
     <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" width="680px">
-      <el-form :model="form" :inline="true" size="small" label-width="66px">
-        <el-form-item label="用户名">
+      <el-form ref="form" :model="form" :rules="rules" :inline="true" size="small" label-width="66px">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" autocomplete="off" />
         </el-form-item>
         <el-form-item label="电话">
           <el-input v-model="form.phone" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="昵称">
+        <el-form-item label="昵称" prop="nickName">
           <el-input v-model="form.nickName" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="邮箱">
+        <el-form-item label="邮箱" prop="email">
           <el-input v-model="form.email" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="部门">
+        <el-form-item label="部门" prop="dept">
           <el-select ref="deptSelect" v-model="dept" placeholder="请选择部门">
             <el-option v-model="dept" style="height: max-content;width: 100%;padding: 0">
               <el-tree
@@ -157,7 +157,26 @@ export default {
       jobs: [],
       roleList: [],
       roles: [],
-      form: {}
+      form: {},
+      rules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+        ],
+        nickName: [
+          { required: true, message: '请输入昵称', trigger: 'blur' },
+          { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' }
+        ],
+        dept: [
+          { required: true, message: '请选择部门', trigger: 'blur' }
+        ],
+        roles: [
+          { required: true, message: '请选择角色', trigger: 'blur' }
+        ]
+      }
     }
   },
   created() {
@@ -250,15 +269,21 @@ export default {
       this.form.roleIds = this.roles.join(',')
     },
     updateUser(data) {
-      const operation = this.$store.state.operation
-      this.$request({
-        url: '/user',
-        method: operation,
-        data
-      }).then(() => {
-        ElementUI.Message.success('操作成功')
-        this.dialogFormVisible = false
-        this.crud.refresh()
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          const operation = this.$store.state.operation
+          this.$request({
+            url: '/user',
+            method: operation,
+            data
+          }).then(() => {
+            ElementUI.Message.success('操作成功')
+            this.dialogFormVisible = false
+            this.crud.refresh()
+          })
+        } else {
+          return false
+        }
       })
     }
   }
