@@ -111,8 +111,8 @@
 import CRUD, { presenter } from '@/components/Crud/crud'
 import CrudOperation from '@/components/Crud/CRUD.operation'
 import RrOperation from '@/components/Crud/RR.operation'
-import { getDeptList, getDeptSuperiorList, edit } from '@/api/dept'
-import { del } from '@/api/dept'
+import { getDeptList, getDeptSuperiorList, edit } from '@/api/system/dept'
+import { del } from '@/api/system/dept'
 import treeselect from '@riophae/vue-treeselect'
 import ElementUI from 'element-ui'
 

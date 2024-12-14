@@ -13,11 +13,17 @@ import 'element-ui/lib/theme-chalk/index.css'
 import './assets/styles/index.scss'
 // global svg
 import './assets/icons/index'
+// vform
+import vform from '@/components/workflow/vform/VFormDesigner.umd.min'
+import '@/components/workflow/vform/VFormDesigner.css'
+import modelerStore from '@/components/workflow/Process/common/global'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
+Vue.use(vform)
 Vue.use(permission)
 Vue.prototype.$request = request
+Vue.prototype.modelerStore = modelerStore
 
 new Vue({
   router,

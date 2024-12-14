@@ -2,12 +2,22 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '@/views/login'
 import { getToken } from '@/utils/auth'
+// system
 import User from '@/views/system/user'
 import Role from '@/views/system/role'
 import Menu from '@/views/system/menu'
 import Dept from '@/views/system/dept'
 import Job from '@/views/system/job'
 import Dict from '@/views/system/dict'
+// workflow
+import Definition from '@/views/workflow/definition/index'
+import WorkFlowDesignerModel from '@/views/workflow/definition/model'
+import TaskList from '@/views/workflow/task/myProcess/index'
+import ToDoTaskList from '@/views/workflow/task/todo/index'
+import FinishedTaskList from '@/views/workflow/task/finished/index'
+import TaskStartProcess from '@/views/workflow/task/myProcess/start/index'
+import TaskForm from '@/views/workflow/task/form/index'
+import TaskFlowForm from '@/views/workflow/task/flowForm/index'
 
 Vue.use(VueRouter)
 
@@ -51,6 +61,47 @@ const routes = [
         path: 'system/dict',
         name: 'Dict',
         component: Dict
+      },
+      {
+        path: 'workflow/definition',
+        name: 'Definition',
+        component: Definition
+      },
+      {
+        path: 'workflow/definition/model',
+        name: 'WorkFlowDesignerModel',
+        component: WorkFlowDesignerModel
+      },
+      {
+        path: 'workflow/task/form',
+        name: 'TaskForm',
+        component: TaskForm
+      },
+      {
+        path: 'workflow/task/list',
+        name: 'TaskList',
+        component: TaskList
+      },
+      {
+        path: 'workflow/task/todo',
+        name: 'ToDoTaskList',
+        component: ToDoTaskList
+      },
+      {
+        path: 'workflow/task/finished',
+        name: 'FinishedTaskList',
+        component: FinishedTaskList
+      },
+      {
+        path: 'workflow/task/myProcess/start',
+        name: 'TaskStartProcess',
+        meta: { title: '流程发起', icon: '' },
+        component: TaskStartProcess
+      },
+      {
+        path: 'workflow/task/flowForm',
+        name: 'TaskFlowForm',
+        component: TaskFlowForm
       }
     ]
   }

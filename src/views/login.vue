@@ -71,7 +71,7 @@ import Background from '@/assets/images/background.jpg'
 import { encrypt } from '@/utils/rsaEncrypt'
 import Cookies from 'js-cookie'
 import Config from '@/settings'
-import { getCode } from '@/api/login'
+import { getCode } from '@/api/system/login'
 
 export default {
   name: 'ProjectLogin',

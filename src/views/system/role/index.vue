@@ -139,10 +139,10 @@
 <script>
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
-import { getDeptList, getDeptSuperiorList } from '@/api/dept'
+import { getDeptList, getDeptSuperiorList } from '@/api/system/dept'
 import ElementUI from 'element-ui'
-import { getChild } from '@/api/menu'
-import { del } from '@/api/role'
+import { getChild } from '@/api/system/menu'
+import { del } from '@/api/system/role'
 import CRUD, { presenter } from '@/components/Crud/crud'
 import CrudOperation from '@/components/Crud/CRUD.operation'
 import Pagination from '@/components/Crud/Pagination'

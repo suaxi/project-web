@@ -54,7 +54,7 @@
 <script>
 import CRUD, { presenter } from '@/components/Crud/crud'
 import Pagination from '@/components/Crud/Pagination'
-import { del } from '@/api/dictDetail'
+import { del } from '@/api/system/dictDetail'
 
 export default {
   name: 'DictDetail',

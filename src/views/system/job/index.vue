@@ -96,7 +96,7 @@ import CRUD, { presenter } from '@/components/Crud/crud'
 import CrudOperation from '@/components/Crud/CRUD.operation'
 import RrOperation from '@/components/Crud/RR.operation'
 import Pagination from '@/components/Crud/Pagination'
-import { del, edit } from '@/api/job'
+import { del, edit } from '@/api/system/job'
 
 export default {
   name: 'ProjectJob',

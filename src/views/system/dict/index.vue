@@ -32,7 +32,7 @@
           <div slot="header" class="clearfix">
             <span>字典详情</span>
             <el-button
-              v-if="$refs.dictDetail && $refs.dictDetail.crud.tableData.length > 0"
+              v-if="$refs.dictDetail"
               v-permission="['dict:edit']"
               class="filter-item"
               size="mini"
@@ -69,7 +69,7 @@
 import CRUD, { presenter } from '@/components/Crud/crud'
 import CrudOperation from '@/components/Crud/CRUD.operation'
 import Pagination from '@/components/Crud/Pagination'
-import { del } from '@/api/dict'
+import { del } from '@/api/system/dict'
 import dictDetail from '@/views/system/dict/dictDetail'
 
 export default {

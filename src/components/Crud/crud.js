@@ -1,4 +1,4 @@
-import { initData } from '@/api/data'
+import { initData } from '@/api/system/data'
 import Vue from 'vue'
 
 /**

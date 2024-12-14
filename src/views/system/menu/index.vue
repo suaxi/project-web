@@ -149,7 +149,7 @@
 import CRUD, { presenter } from '@/components/Crud/crud'
 import CrudOperation from '@/components/Crud/CRUD.operation'
 import RrOperation from '@/components/Crud/RR.operation'
-import { del, getChildListByPid, querySameLevelAndSuperiorMenuListById } from '@/api/menu'
+import { del, getChildListByPid, querySameLevelAndSuperiorMenuListById } from '@/api/system/menu'
 import IconSelect from '@/components/IconSelect'
 import treeselect from '@riophae/vue-treeselect'
 import ElementUI from 'element-ui'
