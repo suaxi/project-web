@@ -12,7 +12,7 @@ export function listDefinition(query) {
 // 部署流程实例
 export function definitionStart(procDefId, data) {
   return request({
-    url: `/workflow/definition/start/${procDefId}`,
+    url: `/workflow/definition/startProcess/${procDefId}`,
     method: 'post',
     data: data
   })

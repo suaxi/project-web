@@ -16,6 +16,7 @@ import TaskList from '@/views/workflow/task/myProcess/index'
 import ToDoTaskList from '@/views/workflow/task/todo/index'
 import FinishedTaskList from '@/views/workflow/task/finished/index'
 import TaskStartProcess from '@/views/workflow/task/myProcess/start/index'
+import TaskProcessDetail from '@/views/workflow/task/myProcess/detail/index'
 import TaskForm from '@/views/workflow/task/form/index'
 import TaskFlowForm from '@/views/workflow/task/flowForm/index'
 
@@ -95,8 +96,12 @@ const routes = [
       {
         path: 'workflow/task/myProcess/start',
         name: 'TaskStartProcess',
-        meta: { title: '流程发起', icon: '' },
         component: TaskStartProcess
+      },
+      {
+        path: 'workflow/task/myProcess/detail',
+        name: 'TaskProcessDetail',
+        component: TaskProcessDetail
       },
       {
         path: 'workflow/task/flowForm',

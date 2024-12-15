@@ -40,15 +40,15 @@ import { definitionStart, flowXmlAndNode } from '@/api/workflow/definition'
 import BpmnViewer from '@/components/workflow/Process/viewer'
 import { flowFormData } from '@/api/workflow/process'
 import { getNextFlowNodeByStart } from '@/api/workflow/todo'
-import FlowUser from '@/components/workflow/Flow/User'
-import FlowRole from '@/components/workflow/Flow/Role'
+// import FlowUser from '@/components/workflow/Flow/User'
+// import FlowRole from '@/components/workflow/Flow/Role'
 
 export default {
   name: 'WorkFlowMyProcessStart',
   components: {
-    BpmnViewer,
-    FlowUser,
-    FlowRole
+    BpmnViewer
+    // FlowUser,
+    // FlowRole
   },
   props: {},
   data() {
@@ -88,7 +88,7 @@ export default {
     handleClick(tab, event) {
       if (tab.name === '2') {
         flowXmlAndNode(null, this.deployId).then(res => {
-          this.flowData = res.data
+          this.flowData = res
         })
       }
     },
@@ -99,39 +99,37 @@ export default {
         // 流程过程中不存在初始化表单 直接读取的流程变量中存储的表单值
         this.$nextTick(() => {
           // 回显数据
-          this.$refs.vFormRef.setFormJson(res.data)
-          this.formJson = res.data
+          this.$refs.vFormRef.setFormJson(res)
+          this.formJson = res
         })
-      }).catch(res => {
+      }).catch(() => {
         this.goBack()
       })
     },
     /** 返回页面 */
     goBack() {
       // 关闭当前标签页并返回上个页面
-      const obj = { path: '/task/process', query: { t: Date.now() }}
-      this.$tab.closeOpenPage(obj)
+      this.$router.push({ path: '/workflow/task/list' })
     },
     /** 申请流程表单数据提交 */
     submitForm() {
       this.$refs.vFormRef.getFormData().then(formData => {
         // 根据当前任务或者流程设计配置的下一步节点 todo 暂时未涉及到考虑网关、表达式和多节点情况
         getNextFlowNodeByStart({ deploymentId: this.deployId, variables: formData }).then(res => {
-          const data = res.data
-          if (data) {
+          if (res) {
             this.formData = formData
-            if (data.dataType === 'dynamic') {
-              if (data.type === 'assignee') { // 指定人员
+            if (res.dataType === 'dynamic') {
+              if (res.type === 'assignee') { // 指定人员
                 this.checkSendUser = true
                 this.checkType = 'single'
-              } else if (data.type === 'candidateUsers') { // 候选人员(多个)
+              } else if (res.type === 'candidateUsers') { // 候选人员(多个)
                 this.checkSendUser = true
                 this.checkType = 'multiple'
-              } else if (data.type === 'candidateGroups') { // 指定组(所属角色接收任务)
+              } else if (res.type === 'candidateGroups') { // 指定组(所属角色接收任务)
                 this.checkSendRole = true
               } else { // 会签
                 // 流程设计指定的 elementVariable 作为会签人员列表
-                this.multiInstanceVars = data.vars
+                this.multiInstanceVars = res.vars
                 this.checkSendUser = true
                 this.checkType = 'multiple'
               }
@@ -145,15 +143,15 @@ export default {
                 // 复制对象的属性值给新的对象
                 Object.assign(param, formData)
                 // 启动流程并将表单数据加入流程变量
-                definitionStart(this.procDefId, param).then(res => {
-                  this.$modal.msgSuccess(res.msg)
+                definitionStart(this.procDefId, param).then(() => {
+                  this.message.success('操作成功！')
                   this.goBack()
                 })
               }
             }
           }
         })
-      }).catch()
+      })
     },
     /** 重置表单 */
     resetForm() {
@@ -162,11 +160,11 @@ export default {
     /** 提交流程 */
     submitTask() {
       if (!this.checkValues && this.checkSendUser) {
-        this.$modal.msgError('请选择任务接收!')
+        this.$message.error('请选择任务接收！')
         return
       }
       if (!this.checkValues && this.checkSendRole) {
-        this.$modal.msgError('请选择流程接收角色组!')
+        this.$message.error('请选择流程接收角色组！')
         return
       }
       if (this.formData) {
@@ -181,8 +179,8 @@ export default {
           this.$set(param, 'approval', this.checkValues)
         }
         // 启动流程并将表单数据加入流程变量
-        definitionStart(this.procDefId, param).then(res => {
-          this.$modal.msgSuccess(res.msg)
+        definitionStart(this.procDefId, param).then(() => {
+          this.$message.success('操作成功！')
           this.goBack()
         })
       }
@@ -190,27 +188,29 @@ export default {
     // 用户信息选中数据
     handleUserSelect(selection) {
       if (selection) {
-        if (selection instanceof Array) {
-          const selectVal = selection.map(item => item.userId)
-          if (this.multiInstanceVars) {
-            this.checkValues = selectVal
-          } else {
-            this.checkValues = selectVal.join(',')
-          }
-        } else {
-          this.checkValues = selection.userId
-        }
+        // if (selection instanceof Array) {
+        //   const selectVal = selection.map(item => item.userId)
+        //   if (this.multiInstanceVars) {
+        //     this.checkValues = selectVal
+        //   } else {
+        //     this.checkValues = selectVal.join(',')
+        //   }
+        // } else {
+        //   this.checkValues = selection.userId
+        // }
+        this.checkValues = 1
       }
     },
     // 角色信息选中数据
     handleRoleSelect(selection) {
       if (selection) {
-        if (selection instanceof Array) {
-          const selectVal = selection.map(item => item.roleId)
-          this.checkValues = selectVal.join(',')
-        } else {
-          this.checkValues = selection
-        }
+        // if (selection instanceof Array) {
+        //   const selectVal = selection.map(item => item.roleId)
+        //   this.checkValues = selectVal.join(',')
+        // } else {
+        //   this.checkValues = selection
+        // }
+        this.checkValues = 1
       }
     }
   }

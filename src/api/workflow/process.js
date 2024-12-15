@@ -38,7 +38,7 @@ export function complete(data) {
 export function stopProcess(data) {
   return request({
     url: '/workflow/task/stopProcess',
-    method: 'post',
+    method: 'put',
     data: data
   })
 }
@@ -65,7 +65,7 @@ export function returnList(data) {
 export function deployStart(deployId) {
   return request({
     url: '/workflow/process/startFlow/' + deployId,
-    method: 'get',
+    method: 'get'
   })
 }
 
