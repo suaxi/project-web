@@ -20,35 +20,35 @@
                 <el-timeline-item
                   v-for="(item,index ) in flowRecordList"
                   :key="index"
-                  :icon="setIcon(item.finishTime)"
-                  :color="setColor(item.finishTime)"
+                  :icon="setIcon(item.completedTime)"
+                  :color="setColor(item.completedTime)"
                 >
                   <p style="font-weight: 700">{{ item.taskName }}</p>
                   <el-card :body-style="{ padding: '10px' }">
                     <el-descriptions class="margin-top" :column="1" size="small" border>
                       <el-descriptions-item v-if="item.assigneeName" label-class-name="my-label">
-                        <template slot="label"><i class="el-icon-user" />办理人</template>
+                        <template #default><i class="el-icon-user" />办理人</template>
                         {{ item.assigneeName }}
                         <el-tag type="info" size="mini">{{ item.deptName }}</el-tag>
                       </el-descriptions-item>
                       <el-descriptions-item v-if="item.candidate" label-class-name="my-label">
-                        <template slot="label"><i class="el-icon-user" />候选办理</template>
+                        <template #default><i class="el-icon-user" />候选办理</template>
                         {{ item.candidate }}
                       </el-descriptions-item>
                       <el-descriptions-item label-class-name="my-label">
-                        <template slot="label"><i class="el-icon-date" />接收时间</template>
+                        <template #default><i class="el-icon-date" />接收时间</template>
                         {{ item.createTime }}
                       </el-descriptions-item>
                       <el-descriptions-item v-if="item.finishTime" label-class-name="my-label">
-                        <template slot="label"><i class="el-icon-date" />处理时间</template>
+                        <template #default><i class="el-icon-date" />处理时间</template>
                         {{ item.finishTime }}
                       </el-descriptions-item>
                       <el-descriptions-item v-if="item.duration" label-class-name="my-label">
-                        <template slot="label"><i class="el-icon-time" />耗时</template>
+                        <template #default><i class="el-icon-time" />耗时</template>
                         {{ item.duration }}
                       </el-descriptions-item>
                       <el-descriptions-item v-if="item.comment" label-class-name="my-label">
-                        <template slot="label"><i class="el-icon-tickets" />处理意见</template>
+                        <template #default><i class="el-icon-tickets" />处理意见</template>
                         {{ item.comment.comment }}
                       </el-descriptions-item>
                     </el-descriptions>
@@ -116,7 +116,7 @@ export default {
     handleClick(tab, event) {
       if (tab.name === '3') {
         flowXmlAndNode(this.taskForm.procInsId, this.taskForm.deployId).then(res => {
-          this.flowData = res.data
+          this.flowData = res
         })
       }
     },
@@ -138,8 +138,8 @@ export default {
     getFlowRecordList(procInsId, deployId) {
       const that = this
       flowRecord(procInsId, deployId).then(res => {
-        that.flowRecordList = res.data.flowList
-      }).catch(res => {
+        that.flowRecordList = res.flowList
+      }).catch(() => {
         this.goBack()
       })
     },
@@ -150,10 +150,10 @@ export default {
         getProcessVariables(taskId).then(res => {
           // 回显表单
           this.$nextTick(() => {
-            this.$refs.vFormRef.setFormJson(res.data.formJson)
+            this.$refs.vFormRef.setFormJson(res.formJson)
             this.$nextTick(() => {
               // 加载表单填写的数据
-              this.$refs.vFormRef.setFormData(res.data)
+              this.$refs.vFormRef.setFormData(res)
               this.$nextTick(() => {
                 // 表单禁用
                 this.$refs.vFormRef.disableForm()
@@ -166,8 +166,7 @@ export default {
     /** 返回页面 */
     goBack() {
       // 关闭当前标签页并返回上个页面
-      const obj = { path: '/task/finished', query: { t: Date.now() }}
-      this.$tab.closeOpenPage(obj)
+      this.$router.push({ path: '/workflow/task/finished' })
     }
   }
 }

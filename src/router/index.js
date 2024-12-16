@@ -14,7 +14,9 @@ import Definition from '@/views/workflow/definition/index'
 import WorkFlowDesignerModel from '@/views/workflow/definition/model'
 import TaskList from '@/views/workflow/task/myProcess/index'
 import ToDoTaskList from '@/views/workflow/task/todo/index'
+import ToDoTaskDetail from '@/views/workflow/task/todo/detail/index'
 import FinishedTaskList from '@/views/workflow/task/finished/index'
+import FinishedTaskDetail from '@/views/workflow/task/finished/detail/index'
 import TaskStartProcess from '@/views/workflow/task/myProcess/start/index'
 import TaskProcessDetail from '@/views/workflow/task/myProcess/detail/index'
 import TaskForm from '@/views/workflow/task/form/index'
@@ -89,9 +91,19 @@ const routes = [
         component: ToDoTaskList
       },
       {
+        path: 'workflow/task/todo/detail',
+        name: 'ToDoTaskDetail',
+        component: ToDoTaskDetail
+      },
+      {
         path: 'workflow/task/finished',
         name: 'FinishedTaskList',
         component: FinishedTaskList
+      },
+      {
+        path: 'workflow/task/finished/detail',
+        name: 'FinishedTaskDetail',
+        component: FinishedTaskDetail
       },
       {
         path: 'workflow/task/myProcess/start',

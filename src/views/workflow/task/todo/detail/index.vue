@@ -27,8 +27,8 @@
                 <el-timeline-item
                   v-for="(item,index ) in flowRecordList"
                   :key="index"
-                  :icon="setIcon(item.finishTime)"
-                  :color="setColor(item.finishTime)"
+                  :icon="setIcon(item.completedTime)"
+                  :color="setColor(item.completedTime)"
                 >
                   <p style="font-weight: 700">{{ item.taskName }}</p>
                   <el-card :body-style="{ padding: '10px' }">
@@ -221,7 +221,7 @@ export default {
     handleClick(tab, event) {
       if (tab.name === '3') {
         flowXmlAndNode(this.taskForm.procInsId, this.taskForm.deployId).then(res => {
-          this.flowData = res.data
+          this.flowData = res
         })
       }
     },
@@ -269,8 +269,8 @@ export default {
     getFlowRecordList(procInsId, deployId) {
       const that = this
       flowRecord(procInsId, deployId).then(res => {
-        that.flowRecordList = res.data.flowList
-      }).catch(res => {
+        that.flowRecordList = res.flowList
+      }).catch(() => {
         this.goBack()
       })
     },
@@ -280,11 +280,11 @@ export default {
         // 提交流程申请时填写的表单存入了流程变量中后续任务处理时需要展示
         flowTaskForm({ taskId: taskId }).then(res => {
           // 回显表单
-          this.$refs.vFormRef.setFormJson(res.data.formJson)
-          this.formJson = res.data.formJson
+          this.$refs.vFormRef.setFormJson(res.formJson)
+          this.formJson = res.formJson
           this.$nextTick(() => {
             // 加载表单填写的数据
-            this.$refs.vFormRef.setFormData(res.data)
+            this.$refs.vFormRef.setFormData(res)
             // this.$nextTick(() => {
             //   // 表单禁用
             //   this.$refs.vFormRef.disableForm();
@@ -305,8 +305,7 @@ export default {
     /** 返回页面 */
     goBack() {
       // 关闭当前标签页并返回上个页面
-      const obj = { path: '/task/todo', query: { t: Date.now() }}
-      this.$tab.closeOpenPage(obj)
+      this.$router.push({ path: '/workflow/task/todo' })
     },
     /** 驳回任务 */
     handleReject() {
@@ -317,8 +316,8 @@ export default {
     taskReject() {
       this.$refs['taskForm'].validate(valid => {
         if (valid) {
-          rejectTask(this.taskForm).then(res => {
-            this.$modal.msgSuccess(res.msg)
+          rejectTask(this.taskForm).then(() => {
+            this.$message.success('驳回成功！')
             this.goBack()
           })
         }
@@ -336,8 +335,8 @@ export default {
     taskReturn() {
       this.$refs['taskForm'].validate(valid => {
         if (valid) {
-          returnTask(this.taskForm).then(res => {
-            this.$modal.msgSuccess(res.msg)
+          returnTask(this.taskForm).then(() => {
+            this.$message.success('操作成功！')
             this.goBack()
           })
         }
@@ -353,8 +352,8 @@ export default {
     submitDeleteTask() {
       this.$refs['taskForm'].validate(valid => {
         if (valid) {
-          delegate(this.taskForm).then(response => {
-            this.$modal.msgSuccess(response.msg)
+          delegate(this.taskForm).then(() => {
+            this.$message.success('操作成功！')
             this.goBack()
           })
         }
@@ -375,25 +374,25 @@ export default {
     /** 用户审批任务 */
     taskComplete() {
       if (!this.taskForm.variables && this.checkSendUser) {
-        this.$modal.msgError('请选择流程接收人员!')
+        this.$message.error('请选择流程接收人员!')
         return
       }
       if (!this.taskForm.variables && this.checkSendRole) {
-        this.$modal.msgError('请选择流程接收角色组!')
+        this.$message.error('请选择流程接收角色组!')
         return
       }
       if (!this.taskForm.comment) {
-        this.$modal.msgError('请输入审批意见!')
+        this.$message.error('请输入审批意见!')
         return
       }
       if (this.taskForm) {
-        complete(this.taskForm).then(response => {
-          this.$modal.msgSuccess(response.msg)
+        complete(this.taskForm).then(() => {
+          this.$message.success('操作成功！')
           this.goBack()
         })
       } else {
-        complete(this.taskForm).then(response => {
-          this.$modal.msgSuccess(response.msg)
+        complete(this.taskForm).then(() => {
+          this.$message.success('操作成功！')
           this.goBack()
         })
       }
@@ -407,7 +406,7 @@ export default {
           Object.assign(this.taskForm.variables, formData)
           this.taskForm.variables.formJson = this.formJson
           console.log(this.taskForm, '流程审批提交表单数据1')
-        }).catch(error => {
+        }).catch(() => {
           // this.$modal.msgError(error)
         })
         const data = res.data

@@ -1,53 +1,41 @@
 <template>
   <div class="app-container">
-    <el-form v-show="showSearch" ref="queryForm" :model="queryParams" :inline="true" label-width="68px">
-      <el-form-item label="名称" prop="name">
-        <el-input
-          v-model="queryParams.name"
-          placeholder="请输入名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="开始时间" prop="deployTime">
-        <el-date-picker
-          v-model="queryParams.deployTime"
-          clearable
-          size="small"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择时间"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <!-- 工具栏 -->
+    <div class="head-container">
+      <!-- 搜索 -->
+      <el-input
+        v-model="crud.params.name"
+        clearable
+        size="small"
+        placeholder="请输入名称"
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="crud.toQuery"
+      />
+      <el-date-picker
+        v-model="crud.params.deployTime"
+        clearable
+        size="small"
+        type="date"
+        placeholder="选择时间"
+        value-format="yyyy-MM-dd"
+        @keyup.enter.native="crud.toQuery"
+      />
+      <RrOperation :permission="{}" />
+    </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          v-hasPermi="['system:deployment:remove']"
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-        >删除</el-button>
-      </el-col>
-      <right-toolbar :show-search.sync="showSearch" @queryTable="getList" />
-    </el-row>
-
-    <el-table v-loading="loading" :data="finishedList" border @selection-change="handleSelectionChange">
+    <el-table
+      v-loading="crud.loading"
+      :data="crud.tableData"
+      border
+      @selection-change="handleSelectionChange"
+    >
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="任务编号" align="center" prop="taskId" :show-overflow-tooltip="true" />
       <el-table-column label="流程名称" align="center" prop="procDefName" :show-overflow-tooltip="true" />
       <el-table-column label="任务节点" align="center" prop="taskName" />
       <el-table-column label="流程发起人" align="center">
-        <template slot-scope="scope">
+        <template #default="scope">
           <label>{{ scope.row.startUserName }} <el-tag type="info" size="mini">{{ scope.row.startDeptName }}</el-tag></label>
         </template>
       </el-table-column>
@@ -55,7 +43,7 @@
       <el-table-column label="审批时间" align="center" prop="finishTime" width="180" />
       <el-table-column label="耗时" align="center" prop="duration" width="180" />
       <el-table-column label="操作" width="150" fixed="right" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
             size="mini"
             type="text"
@@ -72,28 +60,29 @@
         </template>
       </el-table-column>
     </el-table>
-
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <!-- 分页 -->
+    <Pagination />
   </div>
 </template>
 
 <script>
-import { finishedList, getDeployment, delDeployment, addDeployment, updateDeployment, exportDeployment, revokeProcess } from '@/api/workflow/finished'
+import CRUD, { presenter } from '@/components/Crud/crud'
+import { getDeployment, addDeployment, updateDeployment, revokeProcess } from '@/api/workflow/finished'
+import RrOperation from '@/components/Crud/RR.operation.vue'
+import Pagination from '@/components/Crud/Pagination.vue'
 
 export default {
   name: 'WorkFlowTaskFinished',
   components: {
+    Pagination,
+    RrOperation
   },
+  cruds() {
+    return CRUD({ title: '已办任务', url: '/workflow/task/finishedList' })
+  },
+  mixins: [presenter()],
   data() {
     return {
-      // 遮罩层
-      loading: true,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -111,20 +100,6 @@ export default {
       // 是否显示弹出层
       open: false,
       src: '',
-      // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        name: null,
-        category: null,
-        key: null,
-        tenantId: null,
-        deployTime: null,
-        derivedFrom: null,
-        derivedFromRoot: null,
-        parentDeploymentId: null,
-        engineVersion: null
-      },
       // 表单参数
       form: {},
       // 表单校验
@@ -132,40 +107,7 @@ export default {
       }
     }
   },
-  created() {
-    this.getList()
-  },
   methods: {
-    /** 查询流程定义列表 */
-    getList() {
-      this.loading = true
-      finishedList(this.queryParams).then(response => {
-        this.finishedList = response.data.records
-        this.total = response.data.total
-        this.loading = false
-      })
-    },
-    // 取消按钮
-    cancel() {
-      this.open = false
-      this.reset()
-    },
-    // 表单重置
-    reset() {
-      this.form = {
-        id: null,
-        name: null,
-        category: null,
-        key: null,
-        tenantId: null,
-        deployTime: null,
-        derivedFrom: null,
-        derivedFromRoot: null,
-        parentDeploymentId: null,
-        engineVersion: null
-      }
-      this.resetForm('form')
-    },
     setIcon(val) {
       if (val) {
         return 'el-icon-check'
@@ -179,16 +121,6 @@ export default {
       } else {
         return '#b3bdbb'
       }
-    },
-    /** 搜索按钮操作 */
-    handleQuery() {
-      this.queryParams.pageNum = 1
-      this.getList()
-    },
-    /** 重置按钮操作 */
-    resetQuery() {
-      this.resetForm('queryForm')
-      this.handleQuery()
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
@@ -204,7 +136,7 @@ export default {
     },
     /** 流程流转记录 */
     handleFlowRecord(row) {
-      this.$router.push({ path: '/flowable/task/finished/detail/index',
+      this.$router.push({ path: '/workflow/task/finished/detail',
         query: {
           procInsId: row.procInsId,
           deployId: row.deployId,
@@ -216,8 +148,8 @@ export default {
       const params = {
         instanceId: row.procInsId
       }
-      revokeProcess(params).then(res => {
-        this.$modal.msgSuccess(res.msg)
+      revokeProcess(params).then(() => {
+        this.$message.success('撤回成功！')
         this.getList()
       })
     },
@@ -225,8 +157,8 @@ export default {
     handleUpdate(row) {
       this.reset()
       const id = row.id || this.ids
-      getDeployment(id).then(response => {
-        this.form = response.data
+      getDeployment(id).then(res => {
+        this.form = res
         this.open = true
         this.title = '修改流程定义'
       })
@@ -236,46 +168,19 @@ export default {
       this.$refs['form'].validate(valid => {
         if (valid) {
           if (this.form.id != null) {
-            updateDeployment(this.form).then(response => {
-              this.$modal.msgSuccess('修改成功')
+            updateDeployment(this.form).then(() => {
+              this.$message.success('修改成功！')
               this.open = false
-              this.getList()
+              this.crud.refresh()
             })
           } else {
-            addDeployment(this.form).then(response => {
-              this.$modal.msgSuccess('新增成功')
+            addDeployment(this.form).then(() => {
+              this.$message.success('新增成功！')
               this.open = false
-              this.getList()
+              this.crud.refresh()
             })
           }
         }
-      })
-    },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const ids = row.id || this.ids
-      this.$confirm('是否确认删除流程定义编号为"' + ids + '"的数据项?', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(function() {
-        return delDeployment(ids)
-      }).then(() => {
-        this.getList()
-        this.$modal.msgSuccess('删除成功')
-      })
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      const queryParams = this.queryParams
-      this.$confirm('是否确认导出所有流程定义数据项?', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(function() {
-        return exportDeployment(queryParams)
-      }).then(response => {
-        this.download(response.msg)
       })
     }
   }

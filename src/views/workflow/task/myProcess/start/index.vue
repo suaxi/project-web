@@ -144,7 +144,7 @@ export default {
                 Object.assign(param, formData)
                 // 启动流程并将表单数据加入流程变量
                 definitionStart(this.procDefId, param).then(() => {
-                  this.message.success('操作成功！')
+                  this.$message.success('操作成功！')
                   this.goBack()
                 })
               }
@@ -160,7 +160,7 @@ export default {
     /** 提交流程 */
     submitTask() {
       if (!this.checkValues && this.checkSendUser) {
-        this.$message.error('请选择任务接收！')
+        this.$message.error('请选择任务接收人！')
         return
       }
       if (!this.checkValues && this.checkSendRole) {
