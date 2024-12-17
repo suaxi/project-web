@@ -2,135 +2,60 @@
   <div
     class="el-input-tag input-tag-wrapper"
     :class="[size ? 'el-input-tag--' + size : '']"
-    @click="focusTagInput"
   >
     <el-tag
-      v-for="(tag, idx) in innerTags"
-      v-bind="$attrs"
-      :key="tag"
+      v-for="(item, index) in innerTags"
+      :key="index"
       :size="size"
       effect="dark"
       closable
       :disable-transitions="false"
-      @close="remove(idx)"
+      @close="remove(item.id)"
     >
-      {{ tag }}
+      {{ item.name }}
     </el-tag>
-    <input
-      v-if="!readOnly"
-      class="tag-input"
-      :placeholder="placeholder"
-      :value="newTag"
-      @input="inputTag"
-      @keydown.delete.stop="removeLastTag"
-    >
-    <!--    @keydown = "addNew"
-        @blur = "addNew"-->
   </div>
 </template>
 
 <script>
-import { StrUtil } from '@/utils/StrUtil'
 
 export default {
   name: 'WorkFlowElInputTag',
-  /** 组件传值  */
   props: {
-    value: {
-      type: String,
-      default: ''
-    },
-    addTagOnKeys: {
+    tagContent: {
       type: Array,
       default: () => []
     },
     size: {
       type: String,
       default: 'small'
-    },
-    placeholder: String
+    }
   },
   data() {
     return {
-      newTag: '',
       innerTags: [],
       readOnly: true
     }
   },
   /** 传值监听 */
   watch: {
-    value: {
+    tagContent: {
       handler(newVal) {
-        if (StrUtil.isNotBlank(newVal)) {
-          this.innerTags = newVal.split(',')
-        } else {
-          this.innerTags = []
+        if (newVal) {
+          this.innerTags = newVal
         }
       },
       immediate: true // 立即生效
     }
   },
   methods: {
-    focusTagInput() {
-      if (this.readOnly || !this.$el.querySelector('.tag-input')) {
-        return
-      } else {
-        this.$el.querySelector('.tag-input').focus()
-      }
-    },
-
-    inputTag(ev) {
-      this.newTag = ev.target.value
-    },
-
-    addNew(e) {
-      if (e && (!this.addTagOnKeys.includes(e.keyCode)) && (e.type !== 'blur')) {
-        return
-      }
-      if (e) {
-        e.stopPropagation()
-        e.preventDefault()
-      }
-      let addSuccess = false
-      if (this.newTag.includes(',')) {
-        this.newTag.split(',').forEach(item => {
-          if (this.addTag(item.trim())) {
-            addSuccess = true
-          }
-        })
-      } else {
-        if (this.addTag(this.newTag.trim())) {
-          addSuccess = true
-        }
-      }
-      if (addSuccess) {
-        this.tagChange()
-        this.newTag = ''
-      }
-    },
-
-    addTag(tag) {
-      tag = tag.trim()
-      if (tag && !this.innerTags.includes(tag)) {
-        this.innerTags.push(tag)
-        return true
-      }
-      return false
-    },
-
-    remove(index) {
-      this.innerTags.splice(index, 1)
+    remove(id) {
+      this.innerTags = this.innerTags.filter(item => {
+        return id !== item.id
+      })
       this.tagChange()
+      this.$emit('handleInputValueChange', id)
     },
-
-    removeLastTag() {
-      if (this.newTag) {
-        return
-      }
-      this.innerTags.pop()
-      this.tagChange()
-    },
-
     tagChange() {
       this.$emit('input', this.innerTags)
     }
@@ -160,15 +85,6 @@ export default {
 }
 .el-tag {
   margin-right: 4px;
-}
-
-.tag-input {
-  background: transparent;
-  border: 0;
-  font-size: inherit;
-  outline: none;
-  padding-left: 0;
-  width: 100px;
 }
 .el-input-tag {
   min-height: 42px;

@@ -40,14 +40,14 @@ import { definitionStart, flowXmlAndNode } from '@/api/workflow/definition'
 import BpmnViewer from '@/components/workflow/Process/viewer'
 import { flowFormData } from '@/api/workflow/process'
 import { getNextFlowNodeByStart } from '@/api/workflow/todo'
-// import FlowUser from '@/components/workflow/Flow/User'
+import FlowUser from '@/components/workflow/Flow/User'
 // import FlowRole from '@/components/workflow/Flow/Role'
 
 export default {
   name: 'WorkFlowMyProcessStart',
   components: {
-    BpmnViewer
-    // FlowUser,
+    BpmnViewer,
+    FlowUser
     // FlowRole
   },
   props: {},
@@ -117,6 +117,7 @@ export default {
         // 根据当前任务或者流程设计配置的下一步节点 todo 暂时未涉及到考虑网关、表达式和多节点情况
         getNextFlowNodeByStart({ deploymentId: this.deployId, variables: formData }).then(res => {
           if (res) {
+            console.log('res', res)
             this.formData = formData
             if (res.dataType === 'dynamic') {
               if (res.type === 'assignee') { // 指定人员
@@ -188,17 +189,16 @@ export default {
     // 用户信息选中数据
     handleUserSelect(selection) {
       if (selection) {
-        // if (selection instanceof Array) {
-        //   const selectVal = selection.map(item => item.userId)
-        //   if (this.multiInstanceVars) {
-        //     this.checkValues = selectVal
-        //   } else {
-        //     this.checkValues = selectVal.join(',')
-        //   }
-        // } else {
-        //   this.checkValues = selection.userId
-        // }
-        this.checkValues = 1
+        if (selection instanceof Array) {
+          const selectVal = selection.map(item => item.id)
+          if (this.multiInstanceVars) {
+            this.checkValues = selectVal
+          } else {
+            this.checkValues = selectVal.join(',')
+          }
+        } else {
+          this.checkValues = selection.id
+        }
       }
     },
     // 角色信息选中数据

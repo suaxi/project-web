@@ -243,14 +243,14 @@ export default {
     handleUserSelect(selection) {
       if (selection) {
         if (selection instanceof Array) {
-          const selectVal = selection.map(item => item.userId.toString())
+          const selectVal = selection.map(item => item.id.toString())
           if (this.multiInstanceVars) {
             this.$set(this.taskForm.variables, this.multiInstanceVars, selectVal)
           } else {
             this.$set(this.taskForm.variables, 'approval', selectVal.join(','))
           }
         } else {
-          this.$set(this.taskForm.variables, 'approval', selection.userId.toString())
+          this.$set(this.taskForm.variables, 'approval', selection.id.toString())
         }
       }
     },

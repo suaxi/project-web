@@ -17,6 +17,8 @@
   </div>
 </template>
 <script>
+import { list as userList } from '@/api/system/user'
+import { list as roleList } from '@/api/system/role'
 import { readXml, saveXml } from '@/api/workflow/definition'
 import BpmnModel from '@/components/workflow/Process'
 import vkBeautify from 'vkbeautify'
@@ -75,6 +77,7 @@ export default {
     if (deployId) {
       this.getXmlData(deployId)
     }
+    this.getDataList()
   },
   methods: {
     /** xml 文件 */
@@ -92,23 +95,23 @@ export default {
         category: data.process.category,
         xml: data.xml
       }
-      saveXml(params).then(res => {
+      saveXml(params).then(() => {
         this.$message.success('保存成功！')
       })
     },
     /** 指定流程办理人员列表 */
-    // getDataList() {
-    //   userList().then(res => {
-    //     this.modelerStore.userList = res.data
-    //   })
-    //   roleList().then(res => {
-    //     this.modelerStore.roleList = res.data
-    //   })
+    getDataList() {
+      userList({}).then(res => {
+        this.modelerStore.userList = res
+      })
+      roleList({}).then(res => {
+        this.modelerStore.roleList = res
+      })
     //   expList().then(res => {
     //     this.modelerStore.expList = res.data
     //     this.dataExit = true
     //   })
-    // },
+    },
     /** 展示xml */
     showXML(xmlData) {
       this.xmlTitle = 'xml查看'

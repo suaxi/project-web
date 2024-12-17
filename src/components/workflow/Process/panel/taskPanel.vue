@@ -16,7 +16,7 @@
       </el-form-item>
 
       <el-form-item v-if="bpmnFormData.userType === 'assignee'" label="指定人员">
-        <el-input-tag v-model="bpmnFormData.assignee" :value="bpmnFormData.assignee" />
+        <el-input-tag :tag-content="selectData" @handleInputValueChange="inputValueChange" />
         <el-button-group class="ml-4" style="margin-top: 4px">
           <!--指定人员-->
           <el-tooltip class="box-item" effect="dark" content="指定人员" placement="bottom">
@@ -30,7 +30,7 @@
       </el-form-item>
 
       <el-form-item v-else-if="bpmnFormData.userType === 'candidateUsers'" label="候选人员">
-        <el-input-tag v-model="bpmnFormData.candidateUsers" :value="bpmnFormData.candidateUsers" />
+        <el-input-tag :tag-content="selectData" @handleInputValueChange="inputValueChange" />
         <el-button-group class="ml-4" style="margin-top: 4px">
           <!--候选人员-->
           <el-tooltip class="box-item" effect="dark" content="候选人员" placement="bottom">
@@ -44,7 +44,7 @@
       </el-form-item>
 
       <el-form-item v-else label="候选角色">
-        <el-input-tag v-model="bpmnFormData.candidateGroups" :value="bpmnFormData.candidateGroups" />
+        <el-input-tag :tag-content="selectData" @handleInputValueChange="inputValueChange" />
         <el-button-group class="ml-4" style="margin-top: 4px">
           <!--候选角色-->
           <el-tooltip class="box-item" effect="dark" content="候选角色" placement="bottom">
@@ -73,7 +73,7 @@
       :close-on-press-escape="false"
       :show-close="false"
     >
-      <flow-user v-if="userVisible" :check-type="checkType" :select-values="selectData.assignee || selectData.candidateUsers" @handleUserSelect="userSelect" />
+      <flow-user v-if="userVisible" :check-type="checkType" :select-values="selectData" @handleUserSelect="userSelect" />
       <div slot="footer" class="dialog-footer">
         <el-button size="small" @click="userVisible = false">取 消</el-button>
         <el-button size="small" type="primary" @click="checkUserComplete">确 定</el-button>
@@ -88,7 +88,7 @@
       :close-on-press-escape="false"
       :show-close="false"
     >
-      <flow-role v-if="roleVisible" :select-values="selectData.candidateGroups" @handleRoleSelect="roleSelect" />
+      <flow-role v-if="roleVisible" :select-values="selectData" @handleRoleSelect="roleSelect" />
       <div slot="footer" class="dialog-footer">
         <el-button size="small" @click="roleVisible = false">取 消</el-button>
         <el-button size="small" type="primary" @click="checkRoleComplete">确 定</el-button>
@@ -103,7 +103,7 @@
       :close-on-press-escape="false"
       :show-close="false"
     >
-      <flow-exp v-if="expVisible" :select-values="selectData.exp" @handleSingleExpSelect="expSelect" />
+      <flow-exp v-if="expVisible" :select-values="selectData" @handleSingleExpSelect="expSelect" />
       <div slot="footer" class="dialog-footer">
         <el-button size="small" @click="expVisible = false">取 消</el-button>
         <el-button size="small" type="primary" @click="checkExpComplete">确 定</el-button>
@@ -160,12 +160,7 @@ export default {
         expId: ''
       },
       // 数据回显
-      selectData: {
-        assignee: null,
-        candidateUsers: null,
-        candidateGroups: null,
-        exp: null
-      },
+      selectData: [],
       otherExtensionList: []
     }
   },
@@ -198,12 +193,7 @@ export default {
         dataType: '',
         expId: ''
       }
-      this.selectData = {
-        assignee: null,
-        candidateUsers: null,
-        candidateGroups: null,
-        exp: null
-      }
+      this.selectData = []
       // 流程节点信息上取值
       for (const key in this.bpmnFormData) {
         const value = this.modelerStore.element?.businessObject[key] || this.bpmnFormData[key]
@@ -234,12 +224,7 @@ export default {
       delete this.modelerStore.element.businessObject[`userType`]
       // 清除已选人员数据
       this.bpmnFormData[val] = null
-      this.selectData = {
-        assignee: null,
-        candidateUsers: null,
-        candidateGroups: null,
-        exp: null
-      }
+      this.selectData = []
       // 写入userType节点信息到xml
       this.updateCustomElement('userType', val)
     },
@@ -261,33 +246,45 @@ export default {
     getExpList(val, key) {
       if (StrUtil.isNotBlank(val)) {
         this.bpmnFormData[key] = this.modelerStore.expList?.find(item => item.id.toString() === val).name
-        this.selectData.exp = this.modelerStore.expList?.find(item => item.id.toString() === val).id
+        this.selectData = []
       }
     },
 
     // 获取人员信息
     getUserList(val, key) {
       if (StrUtil.isNotBlank(val)) {
-        const newArr = this.modelerStore.userList?.filter(i => val.split(',').includes(i.userId.toString()))
+        const newArr = this.modelerStore.userList?.filter(i => val.split(',').includes(i.id.toString()))
         this.bpmnFormData[key] = newArr.map(item => item.nickName).join(',')
-        if (key === 'assignee') {
-          this.selectData[key] = newArr.find(item => item.userId.toString() === val).userId
-        } else {
-          this.selectData[key] = newArr.map(item => item.userId)
-        }
+
+        this.selectData = []
+        newArr.forEach(item => {
+          if (val === item.id.toString()) {
+            const obj = {
+              id: item.id,
+              name: item.nickName
+            }
+            this.selectData.push(obj)
+          }
+        })
       }
     },
 
     // 获取角色信息
     getRoleList(val, key) {
       if (StrUtil.isNotBlank(val)) {
-        const newArr = this.modelerStore.roleList?.filter(i => val.split(',').includes(i.roleId.toString()))
-        this.bpmnFormData[key] = newArr.map(item => item.roleName).join(',')
-        if (key === 'assignee') {
-          this.selectData[key] = newArr.find(item => item.roleId.toString() === val).roleId
-        } else {
-          this.selectData[key] = newArr.map(item => item.roleId)
-        }
+        const newArr = this.modelerStore.roleList?.filter(i => val.split(',').includes(i.id.toString()))
+        this.bpmnFormData[key] = newArr.map(item => item.name).join(',')
+
+        this.selectData = []
+        newArr.forEach(item => {
+          if (val === item.id.toString()) {
+            const obj = {
+              id: item.id,
+              name: item.name
+            }
+            this.selectData.push(obj)
+          }
+        })
       }
     },
 
@@ -333,47 +330,72 @@ export default {
       }
     },
 
-    // 用户选中数据 TODO: 后面更改为 点击确认按钮再赋值人员信息
+    // 用户选中数据
     userSelect(selection) {
       if (selection) {
         this.deleteFlowAttar()
         this.updateCustomElement('dataType', 'fixed')
         if (selection instanceof Array) {
-          const userIds = selection.map(item => item.userId)
+          const userIds = selection.map(item => item.id.toString())
           const nickName = selection.map(item => item.nickName)
           // userType = candidateUsers
           this.bpmnFormData[this.bpmnFormData.userType] = nickName.join(',')
           this.updateCustomElement(this.bpmnFormData.userType, userIds.join(','))
-          this.handleSelectData(this.bpmnFormData.userType, userIds)
+          this.handleSelectData(selection)
         } else {
           // userType = assignee
           this.bpmnFormData[this.bpmnFormData.userType] = selection.nickName
-          this.updateCustomElement(this.bpmnFormData.userType, selection.userId)
-          this.handleSelectData(this.bpmnFormData.userType, selection.userId)
+          this.updateCustomElement(this.bpmnFormData.userType, selection.id)
+          this.handleSelectData(selection)
         }
+      }
+    },
+
+    // input-tag 数据
+    inputValueChange(val) {
+      this.deleteFlowAttar()
+      this.updateCustomElement('dataType', 'fixed')
+      this.selectData = this.selectData?.filter(item => {
+        return val !== item.id
+      })
+      this.bpmnFormData[this.bpmnFormData.userType] = this.selectData.map(item => item.name).join(',')
+      const updateValue = this.selectData.map(item => item.id).join(',')
+      if (updateValue) {
+        this.updateCustomElement(this.bpmnFormData.userType, updateValue)
+      } else {
+        this.updateCustomElement(this.bpmnFormData.userType, null)
       }
     },
 
     // 角色选中数据
-    roleSelect(selection, name) {
-      if (selection && name) {
+    roleSelect(selection) {
+      if (selection) {
         this.deleteFlowAttar()
         this.bpmnFormData[this.bpmnFormData.userType] = name
         this.updateCustomElement('dataType', 'fixed')
         // userType = candidateGroups
-        this.updateCustomElement(this.bpmnFormData.userType, selection)
-        this.handleSelectData(this.bpmnFormData.userType, selection)
+        this.updateCustomElement(this.bpmnFormData.userType, selection.map(item => item.id.toString()))
+        this.handleSelectData(selection)
       }
     },
 
-    // 处理人员回显
-    handleSelectData(key, value) {
-      for (const oldKey in this.selectData) {
-        if (key !== oldKey) {
-          this.$set(this.selectData, oldKey, null)
-        } else {
-          this.$set(this.selectData, oldKey, value)
+    // 处理数据回显
+    handleSelectData(val) {
+      this.selectData = []
+      if (val instanceof Array) {
+        val.forEach(item => {
+          const obj = {
+            id: item.id,
+            name: item.name || item.nickName
+          }
+          this.selectData.push(obj)
+        })
+      } else {
+        const obj = {
+          id: val.id,
+          name: val.name || val.nickName
         }
+        this.selectData.push(obj)
       }
     },
 

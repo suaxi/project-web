@@ -69,10 +69,10 @@ export default {
     // 获取表单信息
     getListForm() {
       listAllForm({}).then(res => {
-        res.data.forEach(item => {
+        res?.forEach(item => {
           item.formId = item.formId.toString()
         })
-        this.formList = res.data
+        this.formList = res
       })
     }
   }

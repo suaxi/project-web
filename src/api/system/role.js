@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function list(data) {
+  return request({
+    url: '/role/list',
+    method: 'post',
+    data
+  })
+}
+
 export function queryPage() {
   return request({
     url: '/role/queryPage',

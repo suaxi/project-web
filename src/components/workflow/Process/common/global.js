@@ -14,5 +14,5 @@ const modelerStore = {
 }
 export default
 {
-  modelerStore,
+  modelerStore
 }
