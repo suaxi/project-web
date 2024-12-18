@@ -115,21 +115,33 @@ export default {
     selectValues: {
       handler(newVal) {
         if (StrUtil.isNotBlank(newVal)) {
-          if (newVal instanceof Number) {
-            this.radioSelected = newVal
+          if (this.checkType === 'single') {
+            this.radioSelected = newVal[0].id
           } else {
-            newVal.forEach(item => {
-              this.crud.tableData.forEach(row => {
-                if (item === row.id.toString()) {
-                  this.$refs.dataTable.toggleRowSelection(row, true)
-                }
-              })
-            })
+            this.selectUserList = newVal
           }
         }
       },
       immediate: true
+    },
+    userList: {
+      handler(newVal) {
+        if (StrUtil.isNotBlank(newVal) && this.selectUserList.length > 0) {
+          this.$nextTick(() => {
+            this.$refs.dataTable.clearSelection()
+            this.selectUserList.forEach(item => {
+              this.$refs.dataTable.toggleRowSelection(newVal.find(
+                val => item.id === val.id
+              ), true)
+            })
+          })
+        }
+      }
     }
+  },
+  mounted() {
+    this.userList = []
+    this.userList = this.modelerStore.userList
   },
   methods: {
     // 保存选中的数据id,row-key就是要指定一个key标识这一行的数据
