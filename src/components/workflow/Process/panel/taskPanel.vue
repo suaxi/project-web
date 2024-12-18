@@ -160,6 +160,7 @@ export default {
         expId: ''
       },
       // 数据回显
+      tempSelectData: [],
       selectData: [],
       otherExtensionList: []
     }
@@ -176,9 +177,6 @@ export default {
       immediate: true // 立即生效
     }
   },
-  created() {
-
-  },
   methods: {
     // 初始化表单
     resetTaskForm() {
@@ -193,6 +191,7 @@ export default {
         dataType: '',
         expId: ''
       }
+      this.tempSelectData = []
       this.selectData = []
       // 流程节点信息上取值
       for (const key in this.bpmnFormData) {
@@ -333,21 +332,16 @@ export default {
     // 用户选中数据
     userSelect(selection) {
       if (selection) {
-        this.deleteFlowAttar()
-        this.updateCustomElement('dataType', 'fixed')
-        if (selection instanceof Array) {
-          const userIds = selection.map(item => item.id.toString())
-          const nickName = selection.map(item => item.nickName)
-          // userType = candidateUsers
-          this.bpmnFormData[this.bpmnFormData.userType] = nickName.join(',')
-          this.updateCustomElement(this.bpmnFormData.userType, userIds.join(','))
-          this.handleSelectData(selection)
-        } else {
-          // userType = assignee
-          this.bpmnFormData[this.bpmnFormData.userType] = selection.nickName
-          this.updateCustomElement(this.bpmnFormData.userType, selection.id)
-          this.handleSelectData(selection)
-        }
+        this.tempSelectData = []
+        this.tempSelectData = selection
+      }
+    },
+
+    // 角色选中数据
+    roleSelect(selection) {
+      if (selection) {
+        this.tempSelectData = []
+        this.tempSelectData = selection
       }
     },
 
@@ -367,16 +361,45 @@ export default {
       }
     },
 
-    // 角色选中数据
-    roleSelect(selection) {
-      if (selection) {
+    /* 用户选中赋值*/
+    checkUserComplete() {
+      this.userVisible = false
+      this.checkType = ''
+      if (this.tempSelectData) {
         this.deleteFlowAttar()
-        this.bpmnFormData[this.bpmnFormData.userType] = name
+        this.updateCustomElement('dataType', 'fixed')
+        if (this.tempSelectData instanceof Array) {
+          const userIds = this.tempSelectData.map(item => item.id.toString())
+          const nickName = this.tempSelectData.map(item => item.nickName)
+          // userType = candidateUsers
+          this.bpmnFormData[this.bpmnFormData.userType] = nickName.join(',')
+          this.updateCustomElement(this.bpmnFormData.userType, userIds.join(','))
+          this.handleSelectData(this.tempSelectData)
+        } else {
+          // userType = assignee
+          this.bpmnFormData[this.bpmnFormData.userType] = this.tempSelectData.nickName
+          this.updateCustomElement(this.bpmnFormData.userType, this.tempSelectData.id.toString())
+          this.handleSelectData(this.tempSelectData)
+        }
+      }
+    },
+
+    /* 候选角色选中赋值*/
+    checkRoleComplete() {
+      this.roleVisible = false
+      if (this.tempSelectData) {
+        this.deleteFlowAttar()
+        this.bpmnFormData[this.bpmnFormData.userType] = this.tempSelectData.map(item => item.name)
         this.updateCustomElement('dataType', 'fixed')
         // userType = candidateGroups
-        this.updateCustomElement(this.bpmnFormData.userType, selection.map(item => item.id.toString()))
-        this.handleSelectData(selection)
+        this.updateCustomElement(this.bpmnFormData.userType, this.tempSelectData.map(item => item.id.toString()))
+        this.handleSelectData(this.tempSelectData)
       }
+    },
+
+    /* 表达式选中赋值*/
+    checkExpComplete() {
+      this.expVisible = false
     },
 
     // 处理数据回显
@@ -397,22 +420,6 @@ export default {
         }
         this.selectData.push(obj)
       }
-    },
-
-    /* 用户选中赋值*/
-    checkUserComplete() {
-      this.userVisible = false
-      this.checkType = ''
-    },
-
-    /* 候选角色选中赋值*/
-    checkRoleComplete() {
-      this.roleVisible = false
-    },
-
-    /* 表达式选中赋值*/
-    checkExpComplete() {
-      this.expVisible = false
     },
 
     // 删除节点
