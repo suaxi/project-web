@@ -12,6 +12,7 @@ import Dict from '@/views/system/dict'
 // workflow
 import Definition from '@/views/workflow/definition/index'
 import WorkFlowDesignerModel from '@/views/workflow/definition/model'
+import Expression from '@/views/workflow/expression'
 import TaskList from '@/views/workflow/task/myProcess/index'
 import ToDoTaskList from '@/views/workflow/task/todo/index'
 import ToDoTaskDetail from '@/views/workflow/task/todo/detail/index'
@@ -74,6 +75,11 @@ const routes = [
         path: 'workflow/definition/model',
         name: 'WorkFlowDesignerModel',
         component: WorkFlowDesignerModel
+      },
+      {
+        path: 'workflow/expression',
+        name: 'Expression',
+        component: Expression
       },
       {
         path: 'workflow/task/form',

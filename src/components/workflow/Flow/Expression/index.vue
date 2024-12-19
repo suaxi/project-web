@@ -1,68 +1,71 @@
 <template>
   <div class="app-container">
-    <el-form v-show="showSearch" ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="68px">
-      <el-form-item label="名称" prop="name">
-        <el-input
-          v-model="queryParams.name"
-          placeholder="请输入表达式名称"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <!-- 工具栏 -->
+    <div class="head-container">
+      <!-- 搜索 -->
+      <el-input
+        v-model="crud.params.name"
+        clearable
+        size="small"
+        placeholder="请输入名称"
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="crud.toQuery"
+      />
+      <RrOperation />
+    </div>
 
-    <el-table v-loading="loading" :data="expressionList" @current-change="handleSingleExpSelect">
+    <el-table
+      v-loading="crud.loading"
+      :data="crud.tableData.filter(item => item.status === 1)"
+      @current-change="handleSingleExpSelect"
+    >
       <el-table-column width="55" align="center">
-        <template slot-scope="scope">
+        <template #default="scope">
           <!-- 可以手动的修改label的值，从而控制选择哪一项 -->
           <el-radio v-model="radioSelected" :label="scope.row.id">{{ '' }}</el-radio>
         </template>
       </el-table-column>
       <el-table-column label="名称" align="center" prop="name" />
-      <el-table-column label="表达式内容" align="center" prop="expression" />
-      <el-table-column label="表达式类型" align="center" prop="dataType">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.exp_data_type" :value="scope.row.dataType" />
+      <el-table-column label="类型" align="center" prop="type">
+        <template #default="scope">
+          <div v-if="scope.row.type === 1">动态选择</div>
+          <div v-if="scope.row.type === 2">动态选择</div>
         </template>
       </el-table-column>
+      <el-table-column label="表达式内容" align="center" prop="expression" />
     </el-table>
-
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page-sizes="[5,10]"
-      layout="prev, pager, next"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <!-- 分页 -->
+    <Pagination />
   </div>
 </template>
 
 <script>
-import { listExpression } from '@/api/workflow/expression'
+import CRUD, { presenter } from '@/components/Crud/crud'
 import { StrUtil } from '@/utils/StrUtil'
+import RrOperation from '@/components/Crud/RR.operation.vue'
+import Pagination from '@/components/Crud/Pagination'
 
 export default {
   name: 'WorkFlowExpression',
-  dicts: ['sys_common_status', 'exp_data_type'],
-  // 接受父组件的值
+  components: {
+    RrOperation,
+    Pagination
+  },
+  cruds() {
+    return CRUD({ title: '流程表达式', url: '/workflow/expression/queryPage' })
+  },
+  mixins: [presenter()],
   props: {
     // 回显数据传值
     selectValues: {
-      type: Number | String,
-      default: null,
+      type: Array,
+      default: () => [],
       required: false
     }
   },
   data() {
     return {
-      // 遮罩层
-      loading: true,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -75,18 +78,8 @@ export default {
       total: 0,
       // 流程达式表格数据
       expressionList: [],
-      // 弹出层标题
-      title: '',
       // 是否显示弹出层
       open: false,
-      // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        name: null,
-        expression: null,
-        status: null
-      },
       radioSelected: null // 单选框传值
     }
   },
@@ -94,37 +87,19 @@ export default {
     selectValues: {
       handler(newVal) {
         if (StrUtil.isNotBlank(newVal)) {
-          this.radioSelected = newVal
+          this.radioSelected = newVal[0].id
         }
       },
       immediate: true
     }
   },
-  created() {
-    this.getList()
-  },
   methods: {
-    /** 查询流程达式列表 */
-    getList() {
-      this.loading = true
-      listExpression(this.queryParams).then(response => {
-        this.expressionList = response.rows
-        this.total = response.total
-        this.loading = false
-      })
-    },
-    /** 搜索按钮操作 */
-    handleQuery() {
-      this.queryParams.pageNum = 1
-      this.getList()
-    },
-    /** 重置按钮操作 */
-    resetQuery() {
-      this.resetForm('queryForm')
-      this.handleQuery()
-    },
     // 单选框选中数据
     handleSingleExpSelect(selection) {
+      if (selection.status === 0) {
+        this.$message.error(`流程表达式“${selection.name}”未启用，请重新选择！`)
+        return
+      }
       this.radioSelected = selection.id// 点击当前行时,radio同样有选中效果
       this.$emit('handleSingleExpSelect', selection)
     }

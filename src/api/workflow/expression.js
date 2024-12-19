@@ -1,44 +1,45 @@
 import request from '@/utils/request'
 
-// 查询流程达式列表
-export function listExpression(query) {
-  return request({
-    url: '/system/expression/list',
-    method: 'get',
-    params: query
-  })
-}
-
-// 查询流程达式详细
-export function getExpression(id) {
-  return request({
-    url: '/system/expression/' + id,
-    method: 'get'
-  })
-}
-
 // 新增流程达式
-export function addExpression(data) {
+export function add(data) {
   return request({
-    url: '/system/expression',
+    url: '/workflow/expression',
     method: 'post',
     data: data
   })
 }
 
 // 修改流程达式
-export function updateExpression(data) {
+export function update(data) {
   return request({
-    url: '/system/expression',
+    url: '/workflow/expression',
     method: 'put',
     data: data
   })
 }
 
 // 删除流程达式
-export function delExpression(id) {
+export function del(ids) {
   return request({
-    url: '/system/expression/' + id,
-    method: 'delete'
+    url: '/workflow/expression',
+    method: 'delete',
+    data: ids
+  })
+}
+
+// 根据ID查询流程达式信息
+export function findById(id) {
+  return request({
+    url: `/workflow/expression/id/${id}`,
+    method: 'get'
+  })
+}
+
+// 查询流程达式列表
+export function list(data) {
+  return request({
+    url: '/workflow/expression/list',
+    method: 'post',
+    data
   })
 }

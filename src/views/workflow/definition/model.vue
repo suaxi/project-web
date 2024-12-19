@@ -19,6 +19,7 @@
 <script>
 import { list as userList } from '@/api/system/user'
 import { list as roleList } from '@/api/system/role'
+import { list as expList } from '@/api/workflow/expression'
 import { readXml, saveXml } from '@/api/workflow/definition'
 import BpmnModel from '@/components/workflow/Process'
 import vkBeautify from 'vkbeautify'
@@ -107,10 +108,10 @@ export default {
       roleList({}).then(res => {
         this.modelerStore.roleList = res
       })
-    //   expList().then(res => {
-    //     this.modelerStore.expList = res.data
-    //     this.dataExit = true
-    //   })
+      expList({}).then(res => {
+        this.modelerStore.expList = res
+        this.dataExit = true
+      })
     },
     /** 展示xml */
     showXML(xmlData) {

@@ -319,18 +319,22 @@ export default {
 
     // 表达式选中数据
     expSelect(selection) {
+      if (!this.bpmnFormData.userType) {
+        this.$message.error('请先设置用户类型！')
+        return
+      }
       if (selection) {
-        this.deleteFlowAttar()
-        this.bpmnFormData[this.bpmnFormData.userType] = selection.name
-        this.updateCustomElement('dataType', selection.dataType)
-        this.updateCustomElement('expId', selection.id.toString())
-        this.updateCustomElement(this.bpmnFormData.userType, selection.expression)
-        this.handleSelectData('exp', selection.id)
+        this.tempSelectData = []
+        this.tempSelectData = selection
       }
     },
 
     // 用户选中数据
     userSelect(selection) {
+      if (!this.bpmnFormData.userType) {
+        this.$message.error('请先设置用户类型！')
+        return
+      }
       if (selection) {
         this.tempSelectData = []
         this.tempSelectData = selection
@@ -339,6 +343,10 @@ export default {
 
     // 角色选中数据
     roleSelect(selection) {
+      if (!this.bpmnFormData.userType) {
+        this.$message.error('请先设置用户类型！')
+        return
+      }
       if (selection) {
         this.tempSelectData = []
         this.tempSelectData = selection
@@ -400,6 +408,14 @@ export default {
     /* 表达式选中赋值*/
     checkExpComplete() {
       this.expVisible = false
+      if (this.tempSelectData) {
+        this.deleteFlowAttar()
+        this.bpmnFormData[this.bpmnFormData.userType] = this.tempSelectData.name
+        this.updateCustomElement('dataType', this.tempSelectData.type)
+        this.updateCustomElement('expId', this.tempSelectData.id.toString())
+        this.updateCustomElement(this.bpmnFormData.userType, this.tempSelectData.expression)
+        this.handleSelectData(this.tempSelectData)
+      }
     },
 
     // 处理数据回显
