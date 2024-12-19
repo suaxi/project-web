@@ -113,8 +113,6 @@ export default {
     },
     roleList: {
       handler(newVal) {
-        console.log('newVal', newVal)
-        console.log('this.selectRoleList', this.selectRoleList)
         if (StrUtil.isNotBlank(newVal) && this.selectRoleList.length > 0) {
           this.$nextTick(() => {
             this.$refs.dataTable.clearSelection()
