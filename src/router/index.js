@@ -13,6 +13,7 @@ import Dict from '@/views/system/dict'
 import Definition from '@/views/workflow/definition/index'
 import WorkFlowDesignerModel from '@/views/workflow/definition/model'
 import Expression from '@/views/workflow/expression'
+import Listener from '@/views/workflow/listener'
 import TaskList from '@/views/workflow/task/myProcess/index'
 import ToDoTaskList from '@/views/workflow/task/todo/index'
 import ToDoTaskDetail from '@/views/workflow/task/todo/detail/index'
@@ -80,6 +81,11 @@ const routes = [
         path: 'workflow/expression',
         name: 'Expression',
         component: Expression
+      },
+      {
+        path: 'workflow/listener',
+        name: 'Listener',
+        component: Listener
       },
       {
         path: 'workflow/task/form',

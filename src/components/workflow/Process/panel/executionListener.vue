@@ -166,15 +166,10 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="名称" align="center" prop="name" />
         <el-table-column label="类型" align="center" prop="eventType"/>
-        <el-table-column label="监听类型" align="center" prop="valueType">
-          <template slot-scope="scope">
-            <dict-tag :options="dict.type.sys_listener_value_type" :value="scope.row.valueType"/>
-          </template>
-        </el-table-column>
-        <el-table-column label="执行内容" align="center" prop="value" :show-overflow-tooltip="true"/>
+        <el-table-column label="监听类型" align="center" prop="valueType"/>
+        <el-table-column label="执行内容" align="center" prop="executeContent" :show-overflow-tooltip="true"/>
       </el-table>
-
-      <pagination
+      <el-pagination
           v-show="total>0"
           :total="total"
           layout="prev, pager, next"
@@ -192,7 +187,7 @@
 </template>
 
 <script>
-import { listListener } from '@/api/workflow/listener'
+import { queryPage as taskListenerList } from '@/api/workflow/listener'
 import {
   changeListenerObject,
   createListenerObject,
@@ -419,12 +414,12 @@ export default {
 
     /** 查询流程达式列表 */
     getList() {
-      // this.loading = true;
-      // listListener(this.queryParams).then(response => {
-      //   this.listenerList = response.rows;
-      //   this.total = response.total;
-      //   this.loading = false;
-      // });
+      this.loading = true;
+      taskListenerList(this.queryParams).then(res => {
+        this.listenerList = res.records
+        this.total = res.total
+        this.loading = false
+      })
     },
 
     // 多选框选中数据
