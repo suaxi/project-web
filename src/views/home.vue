@@ -2,7 +2,7 @@
   <div style="height: 100%">
     <el-container style="height: 100%">
       <el-aside width="205px">
-        <el-menu text-color="#bfcbd9" class="sidebar-container" style="text-align: left">
+        <el-menu :unique-opened="true" text-color="#bfcbd9" class="sidebar-container" style="text-align: left">
           <el-submenu v-for="item in menuList" :key="item.name" :index="item.name">
             <template slot="title">
               <svg-icon slot="prefix" :icon-class="item.meta.icon" />
@@ -21,7 +21,7 @@
         <el-header style="text-align: right">
           <el-dropdown>
             <i class="el-icon-setting" style="margin: 15px">
-              孙笑川
+              {{ username }}
             </i>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>个人中心</el-dropdown-item>
@@ -38,12 +38,12 @@
 </template>
 
 <script>
-import ElementUI from 'element-ui'
 
 export default {
   name: 'ProjectHome',
   data() {
     return {
+      username: localStorage.getItem('username') || '默认用户',
       menuList: []
     }
   },
@@ -62,7 +62,6 @@ export default {
     logout() {
       this.$store.dispatch('LogOut').then(() => {
         this.$router.replace('/login')
-        ElementUI.Message.success('退出成功')
       })
     }
   }

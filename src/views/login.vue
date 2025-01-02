@@ -9,7 +9,7 @@
       class="login-form"
     >
       <h3 class="title">
-        抽象艺术
+        Project
       </h3>
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
@@ -147,6 +147,7 @@ export default {
           this.loading = true
 
           this.$store.dispatch('Login', user).then(() => {
+            localStorage.setItem('username', user.username)
             this.loading = false
             this.$router.replace('/')
           }).catch(() => {
