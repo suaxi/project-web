@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getDeptList(params) {
   return request({
-    url: '/dept/queryChildListByPid',
+    url: `/dept/child-list`,
     method: 'get',
     params
   })

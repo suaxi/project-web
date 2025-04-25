@@ -15,3 +15,10 @@ export function del(ids) {
     data: ids
   })
 }
+
+export function list() {
+  return request({
+    url: '/job/list',
+    method: 'get'
+  })
+}

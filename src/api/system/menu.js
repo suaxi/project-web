@@ -2,21 +2,21 @@ import request from '@/utils/request'
 
 export function getChild(id) {
   return request({
-    url: `/menu/queryMenuListById?id=${id}`,
+    url: `/menu/menu-list?id=${id}`,
     method: 'get'
   })
 }
 
 export function getChildListByPid(pid) {
   return request({
-    url: `/menu/queryChildListByPid?pid=${pid}`,
+    url: `/menu/child-list?pid=${pid}`,
     method: 'get'
   })
 }
 
 export function querySameLevelAndSuperiorMenuListById(id) {
   return request({
-    url: `/menu/querySameLevelAndSuperiorMenuListById?id=${id}`,
+    url: `/menu/superior-menu-list?id=${id}`,
     method: 'get'
   })
 }

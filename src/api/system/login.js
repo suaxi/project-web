@@ -15,14 +15,14 @@ export function login(username, password, code, uuid) {
 
 export function getUserInfo() {
   return request({
-    url: 'user/getUserInfo',
+    url: 'user/user-info',
     method: 'get'
   })
 }
 
 export function getCode() {
   return request({
-    url: 'auth/getCaptcha',
+    url: 'auth/captcha',
     method: 'get'
   })
 }
