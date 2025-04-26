@@ -75,7 +75,6 @@
       :data="tableData"
       style="width: 100%"
       highlight-current-row
-      @current-change="handleCurrentChange"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" />
@@ -98,7 +97,12 @@
       />
     </el-table>
     <!-- 分页 -->
-    <Pagination />
+    <Pagination
+      :page-num.sync="queryParams.pageNum"
+      :page-size.sync="queryParams.pageSize"
+      :total="total"
+      @page="queryPage"
+    />
 
     <!-- 用户信息编辑弹框 -->
     <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" destroy-on-close width="680px">
@@ -176,15 +180,20 @@ export default {
   data() {
     return {
       loading: false,
-      permission: [],
+      permission: {
+        add: ['user:add'],
+        edit: ['user:edit'],
+        del: ['user:del']
+      },
       queryParams: {
-        num: 1,
-        size: 10,
+        pageNum: 1,
+        pageSize: 10,
         username: undefined,
         enabled: undefined
       },
+      total: 0,
       userStatus: [{ label: '激活', value: true }, { label: '禁用', value: false }],
-      tableDate: [],
+      tableData: [],
       selectData: [],
       dialogFormVisible: false,
       dialogTitle: '',
@@ -215,28 +224,15 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('GetUserInfo').then(res => {
-      res?.permissions
-        .filter(item => item.startsWith('user'))
-        .forEach(item => {
-          this.permission[item.split(':')[0]] = item
-        })
-    })
+    this.$store.dispatch('GetUserInfo').then(() => {})
     this.queryPage()
   },
   methods: {
     queryPage() {
-      const params = {
-        pageNum: this.queryParams.num,
-        pageSize: this.queryParams.size,
-        username: this.queryParams.username,
-        enabled: this.queryParams.enabled
-      }
       this.loading = true
-      page(params).then(res => {
-        this.tableDate = res.data
+      page(this.queryParams).then(res => {
         this.tableData = res.records
-        this.page.total = res.total
+        this.total = res.total
         this.loading = false
       }).catch(() => {
         this.loading = false
@@ -252,6 +248,13 @@ export default {
       this.queryPage()
     },
     resetForm() {
+      this.queryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        username: undefined,
+        enabled: undefined
+      }
+      this.total = 0
       this.form = {
         id: undefined,
         deptId: undefined,
