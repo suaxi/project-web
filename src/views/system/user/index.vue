@@ -224,7 +224,6 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('GetUserInfo').then(() => {})
     this.queryPage()
   },
   methods: {

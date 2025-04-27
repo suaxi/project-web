@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '@/views/login'
 import { getToken } from '@/utils/auth'
+import store from '@/store'
 // system
 import User from '@/views/system/user'
 import Role from '@/views/system/role'
@@ -147,7 +148,13 @@ router.beforeEach((to, from, next) => {
       // 已登录
       next('/')
     } else {
-      next()
+      if (store.state.roles.length === 0) {
+        store.dispatch('GetUserInfo').then(() => {
+          next()
+        })
+      } else {
+        next()
+      }
     }
   } else if (to.name !== 'Login') {
     // 未登录
