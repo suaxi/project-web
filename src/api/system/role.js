@@ -1,19 +1,5 @@
 import request from '@/utils/request'
-
-export function list(data) {
-  return request({
-    url: '/role/list',
-    method: 'post',
-    data
-  })
-}
-
-export function queryPage() {
-  return request({
-    url: '/role/queryPage',
-    method: 'get'
-  })
-}
+import qs from 'qs'
 
 export function add(data) {
   return request({
@@ -23,7 +9,7 @@ export function add(data) {
   })
 }
 
-export function edit(data) {
+export function update(data) {
   return request({
     url: '/role',
     method: 'put',
@@ -39,17 +25,32 @@ export function del(ids) {
   })
 }
 
-export function editRoleMenu(data) {
+export function updateRoleMenu(data) {
   return request({
-    url: '/role/menu',
+    url: '/role/update-role-menu',
     method: 'put',
     data
   })
 }
 
-export function queryById(id) {
+export function getRole(id) {
   return request({
     url: `/role/id/${id}`,
+    method: 'get'
+  })
+}
+
+export function list(data) {
+  return request({
+    url: '/role/list',
+    method: 'post',
+    data
+  })
+}
+
+export function page(params) {
+  return request({
+    url: '/role/page?' + qs.stringify(params, { indices: false }),
     method: 'get'
   })
 }

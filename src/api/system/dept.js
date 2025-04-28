@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-export function getDeptList(params) {
+export function childList(params) {
   return request({
     url: `/dept/child-list`,
     method: 'get',
@@ -8,10 +8,10 @@ export function getDeptList(params) {
   })
 }
 
-export function getDeptSuperiorList(ids) {
+export function superiorList(ids) {
   const data = ids.length || ids.length === 0 ? ids : Array.of(ids)
   return request({
-    url: '/dept/querySuperiorListByIds',
+    url: '/dept/superior-list',
     method: 'post',
     data
   })

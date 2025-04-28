@@ -1,13 +1,13 @@
 import request from '@/utils/request'
 
-export function getChild(id) {
+export function child(id) {
   return request({
     url: `/menu/menu-list?id=${id}`,
     method: 'get'
   })
 }
 
-export function getChildListByPid(pid) {
+export function childList(pid) {
   return request({
     url: `/menu/child-list?pid=${pid}`,
     method: 'get'
