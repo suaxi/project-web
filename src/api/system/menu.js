@@ -1,5 +1,12 @@
 import request from '@/utils/request'
 
+export function getUserRouter() {
+  return request({
+    url: '/menu/user-routers',
+    method: 'get'
+  })
+}
+
 export function child(id) {
   return request({
     url: `/menu/menu-list?id=${id}`,

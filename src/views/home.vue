@@ -55,9 +55,7 @@ export default {
       this.$router.replace(path1 + '/' + path2).catch(err => err)
     },
     getMenus() {
-      this.$request.get('/menu/user-routers').then(res => {
-        this.menuList = res
-      })
+      this.menuList = this.$store.state.menus
     },
     logout() {
       this.$store.dispatch('LogOut').then(() => {

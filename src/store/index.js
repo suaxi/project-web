@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import { getToken, removeToken, setToken } from '@/utils/auth'
 import { getUserInfo, login, logout } from '@/api/system/login'
+import { getUserRouter } from '@/api/system/menu'
 
 Vue.use(Vuex)
 
@@ -10,7 +11,8 @@ export default new Vuex.Store({
     operation: '',
     token: getToken(),
     user: {},
-    roles: []
+    roles: [],
+    menus: []
   },
   mutations: {
     SET_OPERATION: (state, payload) => {
@@ -24,6 +26,9 @@ export default new Vuex.Store({
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
+    },
+    SET_MENUS: (state, menus) => {
+      state.menus = menus
     }
   },
   actions: {
@@ -60,6 +65,17 @@ export default new Vuex.Store({
           resolve(res)
         }).catch(error => {
           logOut(commit)
+          reject(error)
+        })
+      })
+    },
+    // 获取用户路由
+    GetUserRouter({ commit }) {
+      return new Promise((resolve, reject) => {
+        getUserRouter().then(res => {
+          commit('SET_MENUS', res)
+          resolve(res)
+        }).catch(error => {
           reject(error)
         })
       })
