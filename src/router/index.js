@@ -57,8 +57,8 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-function buildAsyncRouter(menus, asyncRouters) {
-  menus.forEach(item => {
+function buildAsyncRouter(userRouter, asyncRouters) {
+  userRouter.forEach(item => {
     if (item.hasChildren) {
       item.children.forEach(child => {
         if (child.component === 'Layout' || child.component === 'ParentView') {
