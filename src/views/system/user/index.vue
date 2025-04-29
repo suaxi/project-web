@@ -168,7 +168,7 @@
 import ElementUI from 'element-ui'
 import Pagination from '@/components/Crud/Pagination'
 import { getUser, page, add, update, del } from '@/api/system/user'
-import { getDeptList } from '@/api/system/dept'
+import { childList as getDeptList } from '@/api/system/dept'
 import { list as getRoleList } from '@/api/system/role'
 import { list as getJobList } from '@/api/system/job'
 
