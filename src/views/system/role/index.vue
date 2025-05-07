@@ -226,9 +226,6 @@ export default {
         dataScope: [
           { required: true, message: '请选择数据范围', trigger: 'blur' }
         ]
-        // deptDataList: [
-        //   { required: true, message: '请选择数据权限', trigger: 'blur' }
-        // ]
       },
       // 树形选择内置属性对照名称
       props: { children: 'children', label: 'label', isLeaf: 'leaf' },
@@ -305,53 +302,6 @@ export default {
         })
       }
     },
-    // 刷新列表后调用钩子函数执行apply
-    // [CRUD.HOOK.afterRefresh]() {
-    //   this.$refs.menu.setCheckedKeys([])
-    // },
-    // 提交前表单校验
-    // [CRUD.HOOK.afterValidateCU]() {
-    //   if (this.form.dataScope === '自定义' && this.deptDataList.length === 0) {
-    //     this.$message({
-    //       message: '自定义数据权限不能为空',
-    //       type: 'warning'
-    //     })
-    //     return false
-    //   }
-    //   return true
-    // },
-    // [CRUD.HOOK.setOperation](crud, operation) {
-    //   // 清空缓存
-    //   this.form = {}
-    //
-    //   if (operation === 'post') {
-    //     this.dialogTitle = '新增角色'
-    //     this.$store.commit('SET_OPERATION', operation)
-    //   } else if (operation === 'put') {
-    //     this.form = { ...this.crud.selectData[0] }
-    //     this.$store.commit('SET_OPERATION', operation)
-    //     if (this.crud.selectData[0].dataScope === '自定义') {
-    //       // 自定义权限范围部门树回显
-    //       this.deptDataList = this.form.depts.map(dept => dept.id)
-    //       getDeptSuperiorList(this.deptDataList).then(res => {
-    //         const depts = res.records
-    //         this.buildDepts(depts)
-    //         this.deptList = depts
-    //       })
-    //     }
-    //     this.dialogTitle = '编辑角色'
-    //   } else if (operation === 'delete') {
-    //     const ids = this.crud.selectData.map(item => item.id)
-    //     del(ids).then(() => {
-    //       ElementUI.Message.success('删除成功')
-    //       this.crud.delChangePage()
-    //       this.crud.refresh()
-    //     })
-    //   }
-    //   if (operation !== 'delete') {
-    //     this.dialogFormVisible = true
-    //   }
-    // },
     // 父级部门添加下拉箭头
     buildDepts(depts) {
       depts.forEach(dept => {

@@ -1,4 +1,29 @@
 import request from '@/utils/request'
+import qs from 'qs'
+
+export function add(data) {
+  return request({
+    url: '/menu',
+    method: 'post',
+    data
+  })
+}
+
+export function update(data) {
+  return request({
+    url: '/menu',
+    method: 'put',
+    data
+  })
+}
+
+export function del(ids) {
+  return request({
+    url: '/menu',
+    method: 'delete',
+    data: ids
+  })
+}
 
 export function getUserRouter() {
   return request({
@@ -21,17 +46,23 @@ export function childList(pid) {
   })
 }
 
-export function querySameLevelAndSuperiorMenuListById(id) {
+export function superiorMenuList(id) {
   return request({
     url: `/menu/superior-menu-list?id=${id}`,
     method: 'get'
   })
 }
 
-export function del(ids) {
+export function getMenu(id) {
   return request({
-    url: '/menu',
-    method: 'delete',
-    data: ids
+    url: `/menu/id/${id}`,
+    method: 'get'
+  })
+}
+
+export function page(params) {
+  return request({
+    url: '/menu/page?' + qs.stringify(params, { indices: false }),
+    method: 'get'
   })
 }

@@ -4,30 +4,61 @@
     <div class="head-container">
       <!-- 搜索 -->
       <el-input
-        v-model="crud.params.title"
+        v-model="queryParams.title"
         clearable
         size="small"
         placeholder="请输入名称"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="crud.toQuery"
+        @keyup.enter.native="queryPage"
       />
-      <RrOperation />
-      <!-- 增删改查按钮 -->
-      <CrudOperation :permission="permission" />
+      <span>
+        <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
+        <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
+      </span>
+    </div>
+
+    <div class="crud-opts">
+      <span class="crud-opts-left">
+        <el-button
+          v-permission="permission.add"
+          class="filter-item"
+          size="mini"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleAdd"
+        >新增</el-button>
+        <el-button
+          v-permission="permission.edit"
+          class="filter-item"
+          size="mini"
+          type="success"
+          icon="el-icon-edit"
+          :disabled="selectData.length !== 1"
+          @click="handleUpdate"
+        >修改</el-button>
+        <el-button
+          v-permission="permission.del"
+          class="filter-item"
+          type="danger"
+          icon="el-icon-delete"
+          size="mini"
+          @click="handleDelete"
+        >删除</el-button>
+      </span>
     </div>
 
     <el-table
       ref="table"
-      v-loading="crud.loading"
-      lazy
-      :load="getMenus"
-      :data="crud.tableData"
-      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      v-loading="loading"
       row-key="id"
-      @select="crud.selectChange"
-      @select-all="crud.selectAllChange"
-      @selection-change="crud.selectionChangeHandler"
+      lazy
+      :load="loadMenu"
+      :data="tableData"
+      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      @select="handleSelectChange"
+      @select-all="handleSelectAllChange"
+      @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" />
       <el-table-column :show-overflow-tooltip="true" label="菜单标题" width="auto" prop="title" />
@@ -127,11 +158,11 @@
         <el-form-item v-show="form.iFrame !== true && form.type === 1" label="组件路径" prop="component">
           <el-input v-model="form.component" style="width: 178px;" placeholder="组件路径" />
         </el-form-item>
-        <el-form-item label="上级类目" prop="pid">
+        <el-form-item label="上级类目">
           <treeselect
             v-model="form.pid"
-            :options="menus"
             :load-options="loadMenuList"
+            :options="menuList"
             style="width: 450px;"
             placeholder="请选择上级类目"
           />
@@ -139,42 +170,43 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="text" @click="dialogFormVisible = false">取消</el-button>
-        <el-button :loading="buttonLoading" type="primary" @click="updateMenu(form)">确认</el-button>
+        <el-button :loading="buttonLoading" type="primary" @click="submit(form)">确认</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import CRUD, { presenter } from '@/components/Crud/crud'
-import CrudOperation from '@/components/Crud/CRUD.operation'
-import RrOperation from '@/components/Crud/RR.operation'
-import { del, getChildListByPid, querySameLevelAndSuperiorMenuListById } from '@/api/system/menu'
-import IconSelect from '@/components/IconSelect'
-import treeselect from '@riophae/vue-treeselect'
 import ElementUI from 'element-ui'
+import { getMenu, page, add, update, del, childList, superiorMenuList } from '@/api/system/menu'
+import IconSelect from '@/components/IconSelect'
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 export default {
   name: 'ProjectMenu',
   components: {
-    RrOperation,
-    CrudOperation,
     IconSelect,
-    treeselect
+    Treeselect
   },
-  cruds() {
-    return CRUD({ title: '菜单', url: '/menu/queryPage' })
-  },
-  mixins: [presenter()],
   data() {
     return {
-      dialogTitle: '',
-      dialogFormVisible: false,
+      loading: false,
       permission: {
         add: ['menu:add'],
         edit: ['menu:edit'],
         del: ['menu:del']
       },
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        title: undefined
+      },
+      tableData: [],
+      selectData: [],
+      dialogFormVisible: false,
+      dialogTitle: '',
+      menuList: [],
       form: {},
       rules: {
         title: [
@@ -184,32 +216,39 @@ export default {
           { required: true, message: '请输入地址', trigger: 'blur' }
         ]
       },
-      menus: [],
       buttonLoading: false
     }
   },
   created() {
-    this.$store.dispatch('GetUserInfo').then(() => {
-      this.crud.optShow = {
-        add: true,
-        edit: true,
-        delete: true,
-        download: true
-      }
-    })
-    this.menus.splice(0)
-    this.menus.push({ id: 0, label: '顶级类目', children: null })
+    this.queryPage()
+    this.menuList.splice(0)
+    this.menuList.push({ id: 0, label: '顶级类目', children: null })
   },
   methods: {
-    getMenus(tree, treeNode, resolve) {
-      setTimeout(() => {
-        getChildListByPid(tree.id).then(res => {
-          resolve(res.records)
-        })
-      }, 100)
+    queryPage() {
+      this.loading = true
+      page(this.queryParams).then(res => {
+        this.tableData = res.records
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
     },
-    [CRUD.HOOK.setOperation](crud, operation) {
-      // 清空缓存
+    resetQuery() {
+      this.queryParams = {
+        num: 1,
+        size: 10,
+        name: undefined,
+        dataScope: undefined
+      }
+      this.queryPage()
+    },
+    resetForm() {
+      this.queryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        title: undefined
+      }
       this.form = {
         id: null,
         title: null,
@@ -218,7 +257,6 @@ export default {
         component: null,
         name: null,
         iFrame: false,
-        roles: [],
         pid: 0,
         icon: null,
         cache: false,
@@ -226,31 +264,113 @@ export default {
         type: 0,
         permission: null
       }
-
-      if (operation === 'post') {
-        this.dialogTitle = '新增菜单'
-        this.$store.commit('SET_OPERATION', operation)
-      } else if (operation === 'put') {
-        this.dialogTitle = '编辑菜单'
-        this.form = { ...this.crud.selectData[0] }
-        this.$store.commit('SET_OPERATION', operation)
-        // treeSelect根节点id处理
-        if (!this.form.pid) {
-          this.form.pid = 0
-        } else {
-          this.getChildMenuList(this.form.id)
+    },
+    handleSelectChange(selection, row) {
+      if (selection.find(val => { return val.id === row.id })) {
+        if (row.children) {
+          row.children.forEach(val => {
+            this.$refs.table.toggleRowSelection(val, true)
+            selection.push(val)
+            if (val.children) {
+              this.handleSelectChange(selection, val)
+            }
+          })
         }
-      } else if (operation === 'delete') {
-        const ids = this.crud.selectData.map(item => item.id)
-        del(ids).then(() => {
-          ElementUI.Message.success('删除成功')
-          this.crud.delChangePage()
-          this.crud.refresh()
+      } else {
+        this.toggleRowSelection(selection, row)
+      }
+    },
+    toggleRowSelection(selection, data) {
+      if (data.children) {
+        data.children.forEach(val => {
+          selection.splice(selection.findIndex(item => item.id === val.id), 1)
+          this.$refs.table.toggleRowSelection(val, false)
+          if (val.children) {
+            this.toggleRowSelection(selection, val)
+          }
         })
       }
-      if (operation !== 'delete') {
-        this.dialogFormVisible = true
+    },
+    handleSelectAllChange(selection) {
+      // 如果选中的数目与请求到的数目相同就选中子节点，否则就清空选中
+      if (selection && selection.length === this.tableData.length) {
+        selection.forEach(val => {
+          this.handleSelectChange(selection, val)
+        })
+      } else {
+        this.$refs.table.clearSelection()
       }
+    },
+    handleSelectionChange(rows) {
+      this.selectData = rows
+    },
+    handleAdd() {
+      this.resetForm()
+      this.dialogFormVisible = true
+      this.dialogTitle = '新增菜单'
+    },
+    handleUpdate() {
+      this.resetForm()
+      this.dialogFormVisible = true
+      this.dialogTitle = '修改菜单'
+      getMenu(this.selectData[0].id).then(res => {
+        this.form = { ...res }
+      })
+      // treeSelect根节点id处理
+      // if (!this.form.pid) {
+      //   this.form.pid = 0
+      // } else {
+      //   this.getSuperiorMenuList(this.form.pid)
+      // }
+    },
+    loadMenu(tree, treeNode, resolve) {
+      setTimeout(() => {
+        childList(tree.id).then(res => {
+          resolve(res.records)
+          tree.children = res.records
+        })
+      }, 100)
+    },
+    submit() {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.buttonLoading = true
+          if (this.form.id) {
+            update(this.form).then(() => {
+              ElementUI.Message.success('修改成功')
+              this.dialogFormVisible = false
+              this.queryPage()
+              this.buttonLoading = false
+            })
+          } else {
+            add(this.form).then(() => {
+              ElementUI.Message.success('保存成功')
+              this.dialogFormVisible = false
+              this.queryPage()
+              this.buttonLoading = false
+            })
+          }
+        } else {
+          return false
+        }
+      })
+    },
+    handleDelete() {
+      if (this.selectData.length === 0) {
+        ElementUI.Message.warning('请选择要删除的菜单！')
+        return
+      }
+      const ids = this.selectData.map(item => item.id)
+      this.$confirm('是否确认删除？', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return del(ids)
+      }).then(() => {
+        this.$message.success('删除成功！')
+        this.queryPage()
+      })
     },
     // 选择图标
     selected(name) {
@@ -259,7 +379,7 @@ export default {
     // 懒加载菜单树
     loadMenuList({ action, parentNode, callback }) {
       if (action === 'LOAD_CHILDREN_OPTIONS') {
-        getChildListByPid(parentNode.id).then(res => {
+        childList(parentNode.id).then(res => {
           parentNode.children = res.records.map(function(obj) {
             if (!obj.leaf) {
               obj.children = null
@@ -273,38 +393,16 @@ export default {
       }
     },
     // 根据id查询同级与上级菜单列表
-    getChildMenuList(id) {
-      querySameLevelAndSuperiorMenuListById(id).then(res => {
+    getSuperiorMenuList(id) {
+      superiorMenuList(id).then(res => {
         const children = res.records.map(function(obj) {
           if (!obj.leaf && !obj.children) {
             obj.children = null
           }
           return obj
         })
-        this.menus.splice(0)
-        this.menus = [{ id: 0, label: '顶级类目', children: children }]
-      })
-    },
-    updateMenu(data) {
-      this.$refs.form.validate(valid => {
-        if (valid) {
-          this.buttonLoading = true
-          const operation = this.$store.state.operation
-          this.$request({
-            url: 'menu',
-            method: operation,
-            data
-          }).then(() => {
-            this.buttonLoading = false
-            this.$message.success('操作成功')
-            this.dialogFormVisible = false
-            this.crud.refresh()
-          }).catch(() => {
-            this.buttonLoading = false
-          })
-        } else {
-          return false
-        }
+        this.menuList.splice(0)
+        this.menuList = [{ id: 0, label: '顶级类目', children: children }]
       })
     }
   }
