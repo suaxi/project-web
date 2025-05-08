@@ -203,6 +203,7 @@ export default {
         title: undefined
       },
       tableData: [],
+      lazyTreeNodeData: {},
       selectData: [],
       dialogFormVisible: false,
       dialogTitle: '',
@@ -315,15 +316,17 @@ export default {
       this.dialogTitle = '修改菜单'
       getMenu(this.selectData[0].id).then(res => {
         this.form = { ...res }
+
+        // 上级类目回显
+        if (!this.form.pid) {
+          this.form.pid = 0
+        } else {
+          this.getSuperiorMenuList(this.form.pid)
+        }
       })
-      // treeSelect根节点id处理
-      // if (!this.form.pid) {
-      //   this.form.pid = 0
-      // } else {
-      //   this.getSuperiorMenuList(this.form.pid)
-      // }
     },
     loadMenu(tree, treeNode, resolve) {
+      this.lazyTreeNodeData[tree.id] = { tree, treeNode, resolve }
       setTimeout(() => {
         childList(tree.id).then(res => {
           resolve(res.records)
@@ -338,15 +341,15 @@ export default {
           if (this.form.id) {
             update(this.form).then(() => {
               ElementUI.Message.success('修改成功')
+              this.reloadMenu(this.form)
               this.dialogFormVisible = false
-              this.queryPage()
               this.buttonLoading = false
             })
           } else {
-            add(this.form).then(() => {
+            add(this.form).then(res => {
               ElementUI.Message.success('保存成功')
+              this.reloadMenu(res)
               this.dialogFormVisible = false
-              this.queryPage()
               this.buttonLoading = false
             })
           }
@@ -369,7 +372,13 @@ export default {
         return del(ids)
       }).then(() => {
         this.$message.success('删除成功！')
-        this.queryPage()
+
+        this.selectData.forEach(item => {
+          this.$refs.table.store.states.lazyTreeNodeMap[item.id] = []
+          const { tree, treeNode, resolve } = this.lazyTreeNodeData[item.pid]
+          this.loadMenu(tree, treeNode, resolve)
+        })
+        this.$refs.table.clearSelection()
       })
     },
     // 选择图标
@@ -404,6 +413,14 @@ export default {
         this.menuList.splice(0)
         this.menuList = [{ id: 0, label: '顶级类目', children: children }]
       })
+    },
+    reloadMenu(data) {
+      this.$refs.table.clearSelection()
+      if (data.id) {
+        this.$refs.table.store.states.lazyTreeNodeMap[data.id] = []
+      }
+      const { tree, treeNode, resolve } = this.lazyTreeNodeData[data.pid]
+      this.loadMenu(tree, treeNode, resolve)
     }
   }
 }
