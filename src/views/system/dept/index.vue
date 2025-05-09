@@ -4,22 +4,22 @@
     <div class="head-container">
       <!-- 搜索 -->
       <el-input
-        v-model="crud.params.name"
+        v-model="queryParams.name"
         clearable
         size="small"
         placeholder="请输入名称"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="crud.toQuery"
+        @keyup.enter.native="queryPage"
       />
       <el-select
-        v-model="crud.params.enabled"
+        v-model="queryParams.enabled"
         clearable
         size="small"
         placeholder="状态"
         class="filter-item"
         style="width: 90px"
-        @change="crud.toQuery"
+        @change="queryPage"
       >
         <el-option
           v-for="(item, index) in dept_status"
@@ -28,35 +28,62 @@
           :value="item.value"
         />
       </el-select>
-      <RrOperation />
+      <span>
+        <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
+        <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
+      </span>
     </div>
-    <!-- 增删改查按钮 -->
-    <CrudOperation :permission="permission" />
+
+    <div class="crud-opts">
+      <span class="crud-opts-left">
+        <el-button
+          v-permission="permission.add"
+          class="filter-item"
+          size="mini"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleAdd"
+        >新增</el-button>
+        <el-button
+          v-permission="permission.edit"
+          class="filter-item"
+          size="mini"
+          type="success"
+          icon="el-icon-edit"
+          :disabled="selectData.length !== 1"
+          @click="handleUpdate"
+        >修改</el-button>
+        <el-button
+          v-permission="permission.del"
+          class="filter-item"
+          type="danger"
+          icon="el-icon-delete"
+          size="mini"
+          @click="handleDelete"
+        >删除</el-button>
+      </span>
+    </div>
 
     <el-table
       ref="table"
-      v-loading="crud.loading"
-      lazy
-      :load="getDepts"
-      :data="crud.tableData"
-      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      v-loading="loading"
       row-key="id"
-      @select="crud.selectChange"
-      @select-all="crud.selectAllChange"
-      @selection-change="crud.selectionChangeHandler"
+      lazy
+      :load="loadDept"
+      :data="tableData"
+      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+      @select="handleSelectChange"
+      @select-all="handleSelectAllChange"
+      @selection-change="handleSelectionChange"
     >
-      <el-table-column :selectable="checkboxT" type="selection" width="55" />
+      <!--      <el-table-column :selectable="checkboxT" type="selection" width="55" />-->
+      <el-table-column type="selection" width="55" />
       <el-table-column label="名称" prop="name" />
       <el-table-column label="排序" prop="sort" />
       <el-table-column label="状态" align="center" prop="enabled">
         <template #default="scope">
-          <el-switch
-            v-model="scope.row.enabled"
-            :disabled="scope.row.id === 1"
-            active-color="#409EFF"
-            inactive-color="#F56C6C"
-            @change="changeEnabled(scope.row, scope.row.enabled,)"
-          />
+          <el-tag v-if="scope.row.enabled" type="success" size="small">启用</el-tag>
+          <el-tag v-else type="danger" size="small">禁用</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="创建日期" />
@@ -85,15 +112,15 @@
         </el-form-item>
         <el-form-item label="状态" prop="enabled">
           <el-radio-group v-model="form.enabled" size="mini">
-            <el-radio-button label="true">正常</el-radio-button>
-            <el-radio-button label="false">禁用</el-radio-button>
+            <el-radio-button :label="true">正常</el-radio-button>
+            <el-radio-button :label="false">禁用</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="form.isTop === '0'" style="margin-bottom: 0;" label="上级部门" prop="pid">
           <treeselect
             v-model="form.pid"
-            :load-options="loadDepts"
-            :options="depts"
+            :load-options="loadDeptList"
+            :options="deptList"
             style="width: 370px;"
             placeholder="选择上级类目"
           />
@@ -101,42 +128,45 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="text" @click="dialogFormVisible = false">取消</el-button>
-        <el-button :loading="buttonLoading" type="primary" @click="updateDept(form)">确认</el-button>
+        <el-button :loading="buttonLoading" type="primary" @click="submit(form)">确认</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import CRUD, { presenter } from '@/components/Crud/crud'
-import CrudOperation from '@/components/Crud/CRUD.operation'
-import RrOperation from '@/components/Crud/RR.operation'
-import { getDeptList, getDeptSuperiorList, edit } from '@/api/system/dept'
-import { del } from '@/api/system/dept'
-import treeselect from '@riophae/vue-treeselect'
 import ElementUI from 'element-ui'
+import { getDept, page, add, update, del, childList, superiorList } from '@/api/system/dept'
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 export default {
   name: 'ProjectDept',
   components: {
-    CrudOperation,
-    RrOperation,
-    treeselect
+    Treeselect
   },
-  cruds() {
-    return CRUD({ title: '部门', url: '/dept/queryPage' })
-  },
-  mixins: [presenter()],
   data() {
     return {
-      dialogTitle: '',
-      dialogFormVisible: false,
+      loading: false,
       permission: {
         add: ['dept:add'],
         edit: ['dept:edit'],
         del: ['dept:del']
       },
-      depts: [],
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined,
+        enabled: undefined
+      },
+      dept_status: [{ label: '启用', value: true }, { label: '禁用', value: false }],
+      tableData: [],
+      lazyTreeNodeData: {},
+      selectData: [],
+      dialogFormVisible: false,
+      dialogTitle: '',
+      deptList: [],
+      form: {},
       rules: {
         name: [
           { required: true, message: '请输入名称', trigger: 'blur' }
@@ -145,8 +175,6 @@ export default {
           { required: true, message: '请输入序号', trigger: 'blur', type: 'number' }
         ]
       },
-      dept_status: [{ label: '正常', value: true }, { label: '禁用', value: false }],
-      form: {},
       buttonLoading: false
     }
   },
@@ -154,82 +182,189 @@ export default {
     form: {
       deep: true,
       handler(value) {
-        if (value.isTop && this.$store.state.operation === 'post') {
-          if (value.isTop === '0') {
-            this.getRootDeptList()
-          }
+        if (!value.id && value.isTop && value.isTop === '0') {
+          this.getRootDeptList()
         }
       }
     }
   },
   created() {
-    this.$store.dispatch('GetUserInfo').then(() => {
-      this.crud.optShow = {
-        add: true,
-        edit: true,
-        delete: true,
-        download: true
-      }
-    })
+    this.queryPage()
   },
   methods: {
-    getDepts(tree, treeNode, resolve) {
-      setTimeout(() => {
-        getDeptList({ pid: tree.id }).then(res => {
-          resolve(res.records)
-        })
-      }, 100)
+    queryPage() {
+      this.loading = true
+      page(this.queryParams).then(res => {
+        this.tableData = res.records
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
     },
-    [CRUD.HOOK.setOperation](crud, operation) {
-      // 清空缓存
+    resetQuery() {
+      this.queryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined,
+        enabled: undefined
+      }
+      // if (this.lazyTreeNodeData) {
+      //   Object.values(this.lazyTreeNodeData).forEach(item => {
+      //     if (item.treeNode.level !== 0) {
+      //       this.$refs.table.store.states.lazyTreeNodeMap[item.tree.id] = []
+      //     }
+      //   })
+      // }
+      this.queryPage()
+    },
+    resetForm() {
+      this.queryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined,
+        enabled: undefined
+      }
       this.form = {
         id: null,
-        name: null,
-        isTop: '1',
+        pid: undefined,
         subCount: 0,
-        pid: null,
+        name: null,
+        enabled: true,
         sort: 999,
-        enabled: 'true'
+        isTop: '0'
       }
-
-      if (operation === 'post') {
-        this.dialogTitle = '新增部门'
-        this.$store.commit('SET_OPERATION', operation)
-      } else if (operation === 'put') {
-        this.dialogTitle = '编辑部门'
-        this.$store.commit('SET_OPERATION', operation)
-        const selectData = { ...this.crud.selectData[0] }
-        if (selectData.pid) {
+      this.deptList = []
+    },
+    handleSelectChange(selection, row) {
+      if (selection.find(val => { return val.id === row.id })) {
+        if (row.children) {
+          row.children.forEach(val => {
+            this.$refs.table.toggleRowSelection(val, true)
+            selection.push(val)
+            if (val.children) {
+              this.handleSelectChange(selection, val)
+            }
+          })
+        }
+      } else {
+        this.toggleRowSelection(selection, row)
+      }
+    },
+    toggleRowSelection(selection, data) {
+      if (data.children) {
+        data.children.forEach(val => {
+          selection.splice(selection.findIndex(item => item.id === val.id), 1)
+          this.$refs.table.toggleRowSelection(val, false)
+          if (val.children) {
+            this.toggleRowSelection(selection, val)
+          }
+        })
+      }
+    },
+    handleSelectAllChange(selection) {
+      // 如果选中的数目与请求到的数目相同就选中子节点，否则就清空选中
+      if (selection && selection.length === this.tableData.length) {
+        selection.forEach(val => {
+          this.handleSelectChange(selection, val)
+        })
+      } else {
+        this.$refs.table.clearSelection()
+      }
+    },
+    handleSelectionChange(rows) {
+      this.selectData = rows
+    },
+    handleAdd() {
+      this.resetForm()
+      this.dialogFormVisible = true
+      this.dialogTitle = '新增部门'
+      this.form.isTop = '1'
+    },
+    handleUpdate() {
+      this.resetForm()
+      this.dialogFormVisible = true
+      this.dialogTitle = '修改部门'
+      getDept(this.selectData[0].id).then(res => {
+        if (res.pid) {
           // radio不支持对未创建的对象直接复制，即不能使用 this.form.isTop = '0'的方式
           this.form = {
             isTop: '0',
-            ...selectData
+            ...res
           }
-          this.getSuperiorDeptList(this.form.id)
+          this.getSuperiorDeptList(res.id)
         } else {
           this.form = {
             isTop: '1',
-            ...selectData
+            ...res
           }
           this.getRootDeptList()
         }
-      } else if (operation === 'delete') {
-        const ids = this.crud.selectData.map(item => item.id)
-        del(ids).then(() => {
-          ElementUI.Message.success('删除成功')
-          this.crud.delChangePage()
-          this.crud.refresh()
+      })
+    },
+    loadDept(tree, treeNode, resolve) {
+      this.lazyTreeNodeData[tree.id] = { tree, treeNode, resolve }
+      setTimeout(() => {
+        childList({ pid: tree.id }).then(res => {
+          resolve(res.records)
+          tree.children = res.records
         })
+      }, 100)
+    },
+    submit() {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.buttonLoading = true
+          if (this.form.id) {
+            update(this.form).then(() => {
+              ElementUI.Message.success('修改成功')
+              this.reloadDept(this.form)
+              this.dialogFormVisible = false
+              this.buttonLoading = false
+            }).catch(() => {
+              this.buttonLoading = false
+            })
+          } else {
+            add(this.form).then(res => {
+              ElementUI.Message.success('保存成功')
+              this.reloadDept(res)
+              this.dialogFormVisible = false
+              this.buttonLoading = false
+            }).catch(() => {
+              this.buttonLoading = false
+            })
+          }
+        } else {
+          return false
+        }
+      })
+    },
+    handleDelete() {
+      if (this.selectData.length === 0) {
+        ElementUI.Message.warning('请选择要删除的部门！')
+        return
       }
-      if (operation !== 'delete') {
-        this.dialogFormVisible = true
-      }
+      const ids = this.selectData.map(item => item.id)
+      this.$confirm('是否确认删除？', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return del(ids)
+      }).then(() => {
+        this.$message.success('删除成功！')
+
+        this.selectData.forEach(item => {
+          this.$refs.table.store.states.lazyTreeNodeMap[item.id] = []
+          const { tree, treeNode, resolve } = this.lazyTreeNodeData[item.pid]
+          this.loadDept(tree, treeNode, resolve)
+        })
+        this.$refs.table.clearSelection()
+      })
     },
     // 新增时加载部门树
     getRootDeptList() {
-      getDeptList({ pid: null }).then(res => {
-        this.depts.splice(0)
-        this.depts = res.records.map(function(obj) {
+      childList({}).then(res => {
+        this.deptList = res.records.map(function(obj) {
           if (obj.hasChildren) {
             obj.children = null
           }
@@ -238,9 +373,9 @@ export default {
       })
     },
     // 编辑弹框懒加载部门树
-    loadDepts({ action, parentNode, callback }) {
+    loadDeptList({ action, parentNode, callback }) {
       if (action === 'LOAD_CHILDREN_OPTIONS') {
-        getDeptList({ pid: parentNode.id }).then(res => {
+        childList({ pid: parentNode.id }).then(res => {
           parentNode.children = res.records.map(function(obj) {
             if (obj.hasChildren) {
               obj.children = null
@@ -255,11 +390,10 @@ export default {
     },
     // 根据id查找同级与上级部门树
     getSuperiorDeptList(id) {
-      getDeptSuperiorList(id).then(res => {
-        this.depts.splice(0)
+      superiorList(id).then(res => {
         const data = res.records
         this.dealDeptChildren(data)
-        this.depts = data
+        this.deptList = data
       })
     },
     dealDeptChildren(deptList) {
@@ -272,47 +406,13 @@ export default {
         }
       })
     },
-    updateDept(data) {
-      this.$refs.form.validate(valid => {
-        if (valid) {
-          this.buttonLoading = true
-          const operation = this.$store.state.operation
-          this.$request({
-            url: '/dept',
-            method: operation,
-            data
-          }).then(() => {
-            this.buttonLoading = false
-            this.$message.success('操作成功')
-            this.dialogFormVisible = false
-            this.crud.refresh()
-          }).catch(() => {
-            this.buttonLoading = false
-          })
-        } else {
-          return false
-        }
-      })
-    },
-    // 根节点不可选
-    checkboxT(row, rowIndex) {
-      return row.id !== 1
-    },
-    // 部门状态改变
-    changeEnabled(data, val) {
-      this.$confirm(`此操作将设置该部门及所有其子部门的状态为“${val ? '正常' : '禁用'}”，是否继续？`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        edit(data).then(() => {
-          this.$message.success('修改成功')
-        }).catch(() => {
-          data.enabled = !data.enabled
-        })
-      }).catch(() => {
-        data.enabled = !data.enabled
-      })
+    reloadDept(data) {
+      this.$refs.table.clearSelection()
+      if (data.id) {
+        this.$refs.table.store.states.lazyTreeNodeMap[data.id] = []
+      }
+      const { tree, treeNode, resolve } = this.lazyTreeNodeData[data.pid]
+      this.loadDept(tree, treeNode, resolve)
     }
   }
 }

@@ -1,4 +1,29 @@
 import request from '@/utils/request'
+import qs from 'qs'
+
+export function add(data) {
+  return request({
+    url: '/dept',
+    method: 'post',
+    data
+  })
+}
+
+export function update(data) {
+  return request({
+    url: '/dept',
+    method: 'put',
+    data
+  })
+}
+
+export function del(ids) {
+  return request({
+    url: '/dept',
+    method: 'delete',
+    data: ids
+  })
+}
 
 export function childList(params) {
   return request({
@@ -17,18 +42,16 @@ export function superiorList(ids) {
   })
 }
 
-export function edit(data) {
+export function getDept(id) {
   return request({
-    url: '/dept',
-    method: 'put',
-    data
+    url: `/dept/id/${id}`,
+    method: 'get'
   })
 }
 
-export function del(ids) {
+export function page(params) {
   return request({
-    url: '/dept',
-    method: 'delete',
-    data: ids
+    url: '/dept/page?' + qs.stringify(params, { indices: false }),
+    method: 'get'
   })
 }
