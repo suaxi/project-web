@@ -25,10 +25,12 @@ const asyncRouters = {
   children: []
 }
 
-const router = new VueRouter({
+const createRouter = () => new VueRouter({
   mode: 'history',
   routes
 })
+
+const router = createRouter()
 
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title || 'project'
@@ -37,13 +39,22 @@ router.beforeEach((to, from, next) => {
       // 已登录
       next('/')
     } else {
-      if (store.state.roles.length === 0) {
+      if (store.getters.roles.length === 0) {
         store.dispatch('GetUserInfo').then(() => {
           store.dispatch('GetUserRouter').then(res => {
             buildAsyncRouter(res, asyncRouters.children)
             router.addRoute(asyncRouters)
+            next({ ...to, replace: true })
           })
-          next({ ...to, replace: true })
+        }).catch(() => {
+          store.dispatch('LogOut').then(() => {})
+        })
+      } else if (!localStorage.getItem('loadMenu')) {
+        store.dispatch('GetUserRouter').then(res => {
+          buildAsyncRouter(res, asyncRouters.children)
+          router.addRoute(asyncRouters)
+          localStorage.setItem('loadMenu', 'true')
+          router.replace('/').then(() => {})
         })
       } else {
         next()
@@ -78,6 +89,11 @@ function buildAsyncRouter(userRouter, asyncRouters) {
       })
     }
   })
+}
+
+export function resetRouter() {
+  const newRouter = createRouter()
+  router.matcher = newRouter.matcher
 }
 
 export default router

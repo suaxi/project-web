@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import { getToken, removeToken, setToken } from '@/utils/auth'
 import { getUserInfo, login, logout } from '@/api/system/login'
 import { getUserRouter } from '@/api/system/menu'
+import { resetRouter } from '@/router'
 
 Vue.use(Vuex)
 
@@ -82,13 +83,16 @@ export default new Vuex.Store({
     }
   },
   getters: {
-    userRoles: state => state.roles.filter(role => role && role.indexOf('user') !== -1)
+    roles: state => state.roles
   }
 })
 
 const logOut = (commit) => {
   commit('SET_TOKEN', '')
   commit('SET_ROLES', [])
+  commit('SET_MENUS', [])
+  localStorage.removeItem('loadMenu')
+  resetRouter()
   removeToken()
 }
 
