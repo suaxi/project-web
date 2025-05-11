@@ -25,12 +25,10 @@ const asyncRouters = {
   children: []
 }
 
-const createRouter = () => new VueRouter({
+const router = new VueRouter({
   mode: 'history',
   routes
 })
-
-const router = createRouter()
 
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title || 'project'
@@ -47,14 +45,17 @@ router.beforeEach((to, from, next) => {
             next({ ...to, replace: true })
           })
         }).catch(() => {
-          store.dispatch('LogOut').then(() => {})
+          store.dispatch('LogOut').then(() => {
+            location.reload()
+          })
         })
-      } else if (!localStorage.getItem('loadMenu')) {
+      } else if (store.getters.loadMenu) {
         store.dispatch('GetUserRouter').then(res => {
           buildAsyncRouter(res, asyncRouters.children)
           router.addRoute(asyncRouters)
-          localStorage.setItem('loadMenu', 'true')
-          router.replace('/').then(() => {})
+          store.dispatch('LoadMenu').then(() => {
+            router.push('/')
+          })
         })
       } else {
         next()
@@ -89,11 +90,6 @@ function buildAsyncRouter(userRouter, asyncRouters) {
       })
     }
   })
-}
-
-export function resetRouter() {
-  const newRouter = createRouter()
-  router.matcher = newRouter.matcher
 }
 
 export default router

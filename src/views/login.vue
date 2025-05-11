@@ -147,9 +147,8 @@ export default {
           this.loading = true
 
           this.$store.dispatch('Login', user).then(() => {
-            localStorage.setItem('username', user.username)
             this.loading = false
-            this.$router.replace('/')
+            this.$router.push('/')
           }).catch(() => {
             this.loading = false
             this.getCode()

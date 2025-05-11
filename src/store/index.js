@@ -3,7 +3,6 @@ import Vuex from 'vuex'
 import { getToken, removeToken, setToken } from '@/utils/auth'
 import { getUserInfo, login, logout } from '@/api/system/login'
 import { getUserRouter } from '@/api/system/menu'
-import { resetRouter } from '@/router'
 
 Vue.use(Vuex)
 
@@ -13,7 +12,8 @@ export default new Vuex.Store({
     token: getToken(),
     user: {},
     roles: [],
-    menus: []
+    menus: [],
+    loadMenu: false
   },
   mutations: {
     SET_OPERATION: (state, payload) => {
@@ -30,6 +30,9 @@ export default new Vuex.Store({
     },
     SET_MENUS: (state, menus) => {
       state.menus = menus
+    },
+    SET_LOAD_MENU: (state, loadMenu) => {
+      state.loadMenu = loadMenu
     }
   },
   actions: {
@@ -40,6 +43,7 @@ export default new Vuex.Store({
         login(userInfo.username, userInfo.password, userInfo.code, userInfo.uuid).then(res => {
           setToken(res.token, rememberMe)
           commit('SET_TOKEN', res.token)
+          commit('SET_LOAD_MENU', true)
           setUserInfo(res.user, commit)
           resolve(res)
         }).catch(error => {
@@ -80,10 +84,18 @@ export default new Vuex.Store({
           reject(error)
         })
       })
+    },
+    LoadMenu({ commit }) {
+      return new Promise((resolve, reject) => {
+        commit('SET_LOAD_MENU', false)
+        resolve()
+      })
     }
   },
   getters: {
-    roles: state => state.roles
+    user: state => state.user,
+    roles: state => state.roles,
+    loadMenu: state => state.loadMenu
   }
 })
 
@@ -91,8 +103,6 @@ const logOut = (commit) => {
   commit('SET_TOKEN', '')
   commit('SET_ROLES', [])
   commit('SET_MENUS', [])
-  localStorage.removeItem('loadMenu')
-  resetRouter()
   removeToken()
 }
 

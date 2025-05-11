@@ -4,13 +4,13 @@
       <el-aside width="205px">
         <el-menu :unique-opened="true" text-color="#bfcbd9" class="sidebar-container" style="text-align: left">
           <el-submenu v-for="item in menuList" :key="item.name" :index="item.name">
-            <template slot="title">
-              <svg-icon slot="prefix" :icon-class="item.meta.icon" />
+            <template v-slot:title>
+              <svg-icon #default="prefix" :icon-class="item.meta.icon" />
               {{ item.meta.title }}
             </template>
             <el-menu-item v-for="child in item.children" :key="child.name" :index="child.name" @click="selectMenu(item.path, child.path)">
-              <template slot="title">
-                <svg-icon slot="prefix" :icon-class="child.meta.icon" />
+              <template #default="title">
+                <svg-icon #default="prefix" :icon-class="child.meta.icon" />
                 {{ child.meta.title }}
               </template>
             </el-menu-item>
@@ -23,7 +23,7 @@
             <i class="el-icon-setting" style="margin: 15px">
               {{ username }}
             </i>
-            <el-dropdown-menu slot="dropdown">
+            <el-dropdown-menu #default="dropdown">
               <el-dropdown-item>个人中心</el-dropdown-item>
               <el-dropdown-item @click.native.prevent="logout">退出</el-dropdown-item>
             </el-dropdown-menu>
@@ -43,7 +43,7 @@ export default {
   name: 'ProjectHome',
   data() {
     return {
-      username: localStorage.getItem('username') || '默认用户',
+      username: this.$store.getters.user.username,
       menuList: []
     }
   },
@@ -59,7 +59,7 @@ export default {
     },
     logout() {
       this.$store.dispatch('LogOut').then(() => {
-        this.$router.replace('/login')
+        location.reload()
       })
     }
   }
