@@ -2,15 +2,15 @@
   <div style="height: 100%">
     <el-container style="height: 100%">
       <el-aside width="205px">
-        <el-menu :unique-opened="true" text-color="#bfcbd9" class="sidebar-container" style="text-align: left">
+        <el-menu :default-active="$route.path" :unique-opened="true" text-color="#bfcbd9" class="sidebar-container" style="text-align: left">
           <el-submenu v-for="item in menuList" :key="item.name" :index="item.name">
-            <template v-slot:title>
-              <svg-icon #default="prefix" :icon-class="item.meta.icon" />
+            <template #title>
+              <svg-icon v-slot="prefix" :icon-class="item.meta.icon" />
               {{ item.meta.title }}
             </template>
-            <el-menu-item v-for="child in item.children" :key="child.name" :index="child.name" @click="selectMenu(item.path, child.path)">
-              <template #default="title">
-                <svg-icon #default="prefix" :icon-class="child.meta.icon" />
+            <el-menu-item v-for="child in item.children" :key="child.name" :index="`${item.path}/${child.path}`" @click="selectMenu(item.path, child.path)">
+              <template #title>
+                <svg-icon v-slot="prefix" :icon-class="child.meta.icon" />
                 {{ child.meta.title }}
               </template>
             </el-menu-item>

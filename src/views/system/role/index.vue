@@ -266,7 +266,6 @@ export default {
         name: undefined,
         dataScope: undefined
       }
-      this.total = 0
       this.form = {
         id: undefined,
         name: undefined,
@@ -290,17 +289,17 @@ export default {
       this.dialogTitle = '修改角色'
       getRole(this.selectData[0].id).then(res => {
         this.form = { ...res }
+      }).then(() => {
+        if (this.form.dataScope === '自定义') {
+          // 自定义权限范围部门树回显
+          this.deptDataList = this.form.depts.map(dept => dept.id)
+          getDeptSuperiorList(this.deptDataList).then(res => {
+            const depts = res.records
+            this.buildDepts(depts)
+            this.deptList = depts
+          })
+        }
       })
-
-      if (this.form.dataScope === '自定义') {
-        // 自定义权限范围部门树回显
-        this.deptDataList = this.form.depts.map(dept => dept.id)
-        getDeptSuperiorList(this.deptDataList).then(res => {
-          const depts = res.records
-          this.buildDepts(depts)
-          this.deptList = depts
-        })
-      }
     },
     // 父级部门添加下拉箭头
     buildDepts(depts) {
