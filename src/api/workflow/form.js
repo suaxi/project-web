@@ -19,7 +19,7 @@ export function listAllForm(data) {
 // 查询流程表单详细
 export function getForm(formId) {
   return request({
-    url: `/workflow/form/formId/${formId}`,
+    url: `/workflow/form/form-id/${formId}`,
     method: 'get'
   })
 }
@@ -44,7 +44,7 @@ export function updateForm(data) {
 // 挂载表单
 export function mountFlowForm(data) {
   return request({
-    url: '/workflow/form/mountFlowForm',
+    url: '/workflow/form/mount-flow-form',
     method: 'post',
     data: data
   })
@@ -60,9 +60,9 @@ export function delForm(formIds) {
 }
 
 // 分页查询
-export function queryPage(params) {
+export function page(params) {
   return request({
-    url: '/workflow/form/queryPage',
+    url: '/workflow/form/page',
     method: 'get',
     params
   })

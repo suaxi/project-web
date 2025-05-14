@@ -245,7 +245,7 @@
   </div>
 </template>
 <script>
-import { queryPage as taskListenerList } from '@/api/workflow/listener'
+import { page as taskListenerList } from '@/api/workflow/listener'
 import {
   changeListenerObject,
   createListenerObject,

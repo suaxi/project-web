@@ -154,7 +154,7 @@ import {
   exportDeployment
 } from '@/api/workflow/finished'
 import { stopProcess } from '@/api/workflow/process'
-import { listDefinition } from '@/api/workflow/definition'
+import { list } from '@/api/workflow/definition'
 import RrOperation from '@/components/Crud/RR.operation.vue'
 import Pagination from '@/components/Crud/Pagination.vue'
 
@@ -267,7 +267,7 @@ export default {
       this.listDefinition()
     },
     listDefinition() {
-      listDefinition(this.queryProcessParams).then(response => {
+      list(this.queryProcessParams).then(response => {
         this.definitionList = response.records
         this.processTotal = response.total
         this.processLoading = false

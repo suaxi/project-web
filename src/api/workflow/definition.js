@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 // 查询流程定义列表
-export function listDefinition(query) {
+export function list(query) {
   return request({
     url: '/workflow/definition/list',
     method: 'get',
@@ -29,7 +29,7 @@ export function getProcessVariables(taskId) {
 // 激活/挂起流程
 export function updateState(state, deploymentId) {
   return request({
-    url: `/workflow/definition/updateState/${state}/${deploymentId}`,
+    url: `/workflow/definition/update-state/${state}/${deploymentId}`,
     method: 'put'
   })
 }
@@ -64,7 +64,7 @@ export function expList(query) {
 // 读取xml文件
 export function readXml(deployId) {
   return request({
-    url: `/workflow/definition/readXml?deployId=${deployId}`,
+    url: `/workflow/definition/read-xml?deployId=${deployId}`,
     method: 'get'
   })
 }
@@ -88,7 +88,7 @@ export function getFlowViewer(procInsId, executionId) {
 // 流程节点数据
 export function flowXmlAndNode(procInsId, deployId) {
   return request({
-    url: `/workflow/task/flowXmlAndNode?procInsId=${procInsId}&deployId=${deployId}`,
+    url: `/workflow/task/flow-xml-node?procInsId=${procInsId}&deployId=${deployId}`,
     method: 'get'
   })
 }

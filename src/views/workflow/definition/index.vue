@@ -4,60 +4,52 @@
     <div class="head-container">
       <!-- 搜索 -->
       <el-input
-        v-model="crud.params.name"
+        v-model="queryParams.name"
         clearable
         size="small"
         placeholder="请输入名称"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="crud.toQuery"
+        @keyup.enter.native="queryPage"
       />
-      <RrOperation :permission="{}" />
+      <span>
+        <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
+        <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
+      </span>
     </div>
 
-    <el-row :gutter="10" class="mb8">
-      <!--      <el-col :span="1.5">-->
-      <!--        <el-button-->
-      <!--          type="primary"-->
-      <!--          plain-->
-      <!--          icon="el-icon-upload"-->
-      <!--          size="mini"-->
-      <!--          @click="handleImport"-->
-      <!--        >导入</el-button>-->
-      <!--      </el-col>-->
-      <el-col :span="1.5">
+    <div class="crud-opts">
+      <span class="crud-opts-left">
         <el-button
-          type="success"
-          plain
-          icon="el-icon-plus"
+          class="filter-item"
           size="mini"
+          type="primary"
+          icon="el-icon-plus"
           @click="handleLoadXml"
-        >新增
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
+        >新增</el-button>
         <el-button
+          class="filter-item"
           type="danger"
-          plain
           icon="el-icon-delete"
           size="mini"
-          :disabled="multiple"
           @click="handleDelete"
-        >删除
-        </el-button>
-      </el-col>
-    </el-row>
-    <el-alert title="流程设计说明：" :center="false">
-      <template #default>
-        <div>1、XML文件中的流程定义id属性用作流程定义的key参数。</div>
-        <div>2、XML文件中的流程定义name属性用作流程定义的name参数。如果未给定name属性，会使用id作为name。</div>
-        <div>3、当每个唯一key的流程第一次部署时，指定版本为1。对其后所有使用相同key的流程定义，部署时版本会在该key当前已部署的最高版本号基础上加1。key参数用于区分流程定义。</div>
-        <div>4、id参数设置为{processDefinitionKey}:{processDefinitionVersion}:{generated-id}，其中generated-id是一个唯一数字，用以保证在集群环境下，流程定义缓存中，流程id的唯一性。</div>
-      </template>
-    </el-alert>
+        >删除</el-button>
+      </span>
+    </div>
+
+    <div class="app-container-alert">
+      <el-alert title="流程设计说明：" :center="false">
+        <template #default>
+          <div>1、XML文件中的流程定义id属性用作流程定义的key参数。</div>
+          <div>2、XML文件中的流程定义name属性用作流程定义的name参数。如果未给定name属性，会使用id作为name。</div>
+          <div>3、当每个唯一key的流程第一次部署时，指定版本为1。对其后所有使用相同key的流程定义，部署时版本会在该key当前已部署的最高版本号基础上加1。key参数用于区分流程定义。</div>
+          <div>4、id参数设置为{processDefinitionKey}:{processDefinitionVersion}:{generated-id}，其中generated-id是一个唯一数字，用以保证在集群环境下，流程定义缓存中，流程id的唯一性。</div>
+        </template>
+      </el-alert>
+    </div>
     <el-table
-      v-loading="crud.loading"
-      :data="crud.tableData"
+      v-loading="loading"
+      :data="tableData"
       border
       @selection-change="handleSelectionChange"
     >
@@ -131,7 +123,12 @@
       </el-table-column>
     </el-table>
     <!-- 分页 -->
-    <Pagination />
+    <Pagination
+      :page-num.sync="queryParams.pageNum"
+      :page-size.sync="queryParams.pageSize"
+      :total="total"
+      @page="queryPage"
+    />
 
     <!-- 添加或修改流程定义对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
@@ -206,7 +203,8 @@
         <el-col :span="10" :xs="24">
           <el-table
             ref="singleTable"
-            :data="formList"
+            v-loading="formLoading"
+            :data="formTableData"
             border
             highlight-current-row
             style="width: 100%"
@@ -215,13 +213,18 @@
             <el-table-column label="表单编号" align="center" prop="formId" />
             <el-table-column label="表单名称" align="center" prop="formName" />
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <el-button size="mini" type="text" @click="submitFormDeploy(scope.row)">确定</el-button>
               </template>
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <Pagination />
+          <Pagination
+            :page-num.sync="formQueryParams.pageNum"
+            :page-size.sync="formQueryParams.pageSize"
+            :total="formTotal"
+            @page="queryFormPage"
+          />
         </el-col>
         <el-col :span="14" :xs="24">
           <div class="test-form">
@@ -246,7 +249,6 @@
 </template>
 
 <script>
-import CRUD, { presenter } from '@/components/Crud/crud'
 import {
   updateState,
   delDeployment,
@@ -254,27 +256,35 @@ import {
   updateDeployment,
   exportDeployment,
   definitionStart,
-  flowXmlAndNode
+  flowXmlAndNode,
+  list
 } from '@/api/workflow/definition'
 import { getToken } from '@/utils/auth'
-import { getForm, mountFlowForm, queryPage } from '@/api/workflow/form'
+import { getForm, mountFlowForm, page as formPage } from '@/api/workflow/form'
 import BpmnViewer from '@/components/workflow/Process/viewer'
-import Pagination from '@/components/Crud/Pagination.vue'
-import RrOperation from '@/components/Crud/RR.operation.vue'
+import Pagination from '@/components/Crud/Pagination'
 
 export default {
   name: 'WorkFlowDefinition',
   components: {
-    RrOperation,
     Pagination,
     BpmnViewer
   },
-  cruds() {
-    return CRUD({ title: '流程定义', url: '/workflow/definition/list' })
-  },
-  mixins: [presenter()],
   data() {
     return {
+      loading: false,
+      permission: {
+        add: [],
+        edit: [],
+        del: []
+      },
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined
+      },
+      total: 0,
+      tableData: [],
       // 遮罩层
       dialogVisible: false,
       // 选中数组
@@ -286,20 +296,31 @@ export default {
       // 显示搜索条件
       showSearch: true,
       // 总条数
-      total: 0,
+      // total: 0,
       // 流程定义表格数据
       definitionList: [],
       // 弹出层标题
       title: '',
       // 是否显示弹出层
       open: false,
+      formQueryParams: {
+        pageNum: 1,
+        pageSize: 10
+      },
+      formLoading: false,
       formConfOpen: false,
       formTitle: '',
       formDeployOpen: false,
       formDeployTitle: '',
-      formList: [],
+      formTableData: [],
       formTotal: 0,
-      formData: {}, // 默认表单数据
+      // 默认表单数据
+      formData: {},
+      // 挂载表单到流程实例
+      formDeployParam: {
+        formId: null,
+        deployId: null
+      },
       readImage: {
         open: false,
         src: ''
@@ -319,29 +340,6 @@ export default {
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + '/workflow/definition/import'
       },
-      // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        name: null,
-        category: null,
-        key: null,
-        tenantId: null,
-        deployTime: null,
-        derivedFrom: null,
-        derivedFromRoot: null,
-        parentDeploymentId: null,
-        engineVersion: null
-      },
-      formQueryParams: {
-        pageNum: 1,
-        pageSize: 10
-      },
-      // 挂载表单到流程实例
-      formDeployParam: {
-        formId: null,
-        deployId: null
-      },
       deployId: '',
       currentRow: null,
       // xml
@@ -352,7 +350,28 @@ export default {
       rules: {}
     }
   },
+  created() {
+    this.queryPage()
+  },
   methods: {
+    queryPage() {
+      this.loading = true
+      list(this.queryParams).then(res => {
+        this.tableData = res.records
+        this.total = res.total
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
+    },
+    resetQuery() {
+      this.queryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined
+      }
+      this.queryPage()
+    },
     handleClose(done) {
       this.$confirm('确定要关闭吗？关闭未保存的修改都会丢失？', '提示', {
         confirmButtonText: '确定',
@@ -366,23 +385,22 @@ export default {
     // 取消按钮
     cancel() {
       this.open = false
-      this.reset()
+      this.resetForm()
     },
     // 表单重置
-    reset() {
+    resetForm() {
       this.form = {
-        id: null,
-        name: null,
-        category: null,
-        key: null,
-        tenantId: null,
-        deployTime: null,
-        derivedFrom: null,
-        derivedFromRoot: null,
-        parentDeploymentId: null,
-        engineVersion: null
+        id: undefined,
+        name: undefined,
+        category: undefined,
+        key: undefined,
+        tenantId: undefined,
+        deployTime: undefined,
+        derivedFrom: undefined,
+        derivedFromRoot: undefined,
+        parentDeploymentId: undefined,
+        engineVersion: undefined
       }
-      this.resetForm('form')
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
@@ -392,7 +410,7 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.reset()
+      this.resetForm()
       this.open = true
       this.title = '添加流程定义'
     },
@@ -433,11 +451,18 @@ export default {
     /** 挂载表单弹框 */
     handleAddForm(row) {
       this.formDeployParam.deployId = row.deploymentId
-      queryPage({ pageNum: 1, pageSize: 10 }).then(res => {
-        this.formList = res.records
+      this.queryFormPage()
+    },
+    queryFormPage() {
+      this.formLoading = true
+      formPage({ ...this.formQueryParams }).then(res => {
+        this.formTableData = res.records
         this.formTotal = res.total
         this.formDeployOpen = true
         this.formDeployTitle = '挂载表单'
+        this.formLoading = false
+      }).catch(() => {
+        this.formLoading = false
       })
     },
     // /** 更改挂载表单弹框 */
@@ -459,7 +484,7 @@ export default {
       mountFlowForm(this.formDeployParam).then(() => {
         this.$message.success('挂载成功！')
         this.formDeployOpen = false
-        this.crud.refresh()
+        this.queryPage()
       })
     },
     handleCurrentChange(data) {
@@ -477,7 +502,7 @@ export default {
     /** 挂起/激活流程 */
     handleUpdateSuspensionState(row) {
       updateState(row.suspensionState === 1 ? 2 : 1, row.deploymentId).then(() => {
-        this.crud.refresh()
+        this.queryPage()
       })
     },
     /** 修改按钮操作 */
@@ -492,19 +517,19 @@ export default {
     // },
     /** 提交按钮 */
     submitForm() {
-      this.$refs['form'].validate(valid => {
+      this.$refs.form.validate(valid => {
         if (valid) {
           if (this.form.id != null) {
-            updateDeployment(this.form).then(response => {
-              this.$modal.msgSuccess('修改成功')
+            updateDeployment(this.form).then(() => {
+              this.$message.success('修改成功')
               this.open = false
-              this.crud.refresh()
+              this.queryPage()
             })
           } else {
-            addDeployment(this.form).then(response => {
-              this.$modal.msgSuccess('新增成功')
+            addDeployment(this.form).then(() => {
+              this.$message.success('新增成功')
               this.open = false
-              this.crud.refresh()
+              this.queryPage()
             })
           }
         }
@@ -513,6 +538,11 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const deploymentIds = row.deploymentId || this.ids
+      if (!deploymentIds || deploymentIds.length === 0) {
+        this.$message.warning('请选择要删除的数据！')
+        return
+      }
+
       this.$confirm('是否确认删除流程定义编号为"' + deploymentIds + '"的数据项？', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -521,7 +551,7 @@ export default {
         return delDeployment(deploymentIds)
       }).then(() => {
         this.$message.success('删除成功！')
-        this.crud.refresh()
+        this.queryPage()
       })
     },
     /** 导出按钮操作 */
@@ -561,3 +591,9 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+.app-container-alert {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+</style>

@@ -55,11 +55,19 @@ export default {
       this.$router.replace(path1 + '/' + path2).catch(err => err)
     },
     getMenus() {
-      this.menuList = this.$store.state.menus
+      this.menuList = this.buildMenu(this.$store.getters.menus)
     },
     logout() {
       this.$store.dispatch('LogOut').then(() => {
         location.reload()
+      })
+    },
+    buildMenu(menus) {
+      return menus.filter(menu => {
+        if (menu.hasChildren) {
+          menu.children = this.buildMenu(menu.children)
+        }
+        return !menu.hidden
       })
     }
   }

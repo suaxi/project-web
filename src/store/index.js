@@ -95,6 +95,7 @@ export default new Vuex.Store({
   getters: {
     user: state => state.user,
     roles: state => state.roles,
+    menus: state => state.menus,
     loadMenu: state => state.loadMenu
   }
 })

@@ -45,9 +45,9 @@ export function list(data) {
 }
 
 // 分页查询流程监听
-export function queryPage(params) {
+export function page(params) {
   return request({
-    url: '/workflow/listener/queryPage',
+    url: '/workflow/listener/page',
     method: 'get',
     params
   })
