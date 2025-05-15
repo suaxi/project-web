@@ -194,11 +194,11 @@
 
     <!--表单配置详情-->
     <el-dialog :title="formTitle" :visible.sync="formConfOpen" width="50%" append-to-body>
-        <v-form-render ref="vFormRef" :form-data="formData" />
+      <v-form-render ref="vFormRef" :form-data="formData" />
     </el-dialog>
 
     <!--挂载表单-->
-    <el-dialog :title="formDeployTitle" :visible.sync="formDeployOpen" width="60%" append-to-body>
+    <el-dialog :title="formDeployTitle" :visible.sync="formDeployOpen" width="85%" append-to-body>
       <el-row :gutter="24">
         <el-col :span="10" :xs="24">
           <el-table
