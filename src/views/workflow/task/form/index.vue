@@ -4,45 +4,42 @@
     <div class="head-container">
       <!-- 搜索 -->
       <el-input
-        v-model="crud.params.formName"
+        v-model="queryParams.formName"
         clearable
         size="small"
         placeholder="请输入表单名称"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="crud.toQuery"
+        @keyup.enter.native="queryPage"
       />
-      <RrOperation :permission="{}" />
+      <span>
+        <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
+        <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
+      </span>
     </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+    <div class="crud-opts">
+      <span class="crud-opts-left">
         <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
+          class="filter-item"
           size="mini"
+          type="primary"
+          icon="el-icon-plus"
           @click="handleAdd"
-        >新增
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
+        >新增</el-button>
         <el-button
-          v-hasPermi="['flowable:form:remove']"
+          class="filter-item"
           type="danger"
-          plain
           icon="el-icon-delete"
           size="mini"
-          :disabled="multiple"
           @click="handleDelete"
-        >删除
-        </el-button>
-      </el-col>
-    </el-row>
+        >删除</el-button>
+      </span>
+    </div>
 
     <el-table
-      v-loading="crud.loading"
-      :data="crud.tableData"
+      v-loading="loading"
+      :data="tableData"
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
@@ -76,10 +73,15 @@
       </el-table-column>
     </el-table>
     <!-- 分页 -->
-    <Pagination />
+    <Pagination
+      :page-num.sync="queryParams.pageNum"
+      :page-size.sync="queryParams.pageSize"
+      :total="total"
+      @page="queryPage"
+    />
 
     <!-- 添加或修改流程表单对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="dialogTitle" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="表单名称" prop="formName">
           <el-input v-model="form.formName" placeholder="请输入表单名称" />
@@ -138,28 +140,36 @@
 </template>
 
 <script>
-import CRUD, { presenter } from '@/components/Crud/crud'
-import { delForm, addForm, updateForm } from '@/api/workflow/form'
+import { page, delForm, addForm, updateForm } from '@/api/workflow/form'
 import Editor from '@/components/workflow/Editor'
-import Pagination from '@/components/Crud/Pagination.vue'
-import RrOperation from '@/components/Crud/RR.operation.vue'
+import Pagination from '@/components/Crud/Pagination'
 
 export default {
   name: 'WorkFlowForm',
   components: {
     Pagination,
-    RrOperation,
     Editor
   },
-  cruds() {
-    return CRUD({ title: '表单配置', url: '/workflow/form/queryPage' })
-  },
-  mixins: [presenter()],
   data() {
     return {
-      // 遮罩层
       loading: true,
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        formName: undefined,
+        formContent: undefined
+      },
+      total: 0,
+      tableDat: [],
+      selectData: [],
       dialogVisible: false,
+      dialogTitle: '',
+      form: {
+        formId: undefined,
+        formName: undefined,
+        formContent: undefined,
+        remark: undefined
+      },
       designerConfig: {
         exportCodeButton: false // 是否显示导出代码按钮
       },
@@ -171,35 +181,53 @@ export default {
       multiple: true,
       // 显示搜索条件
       showSearch: true,
-      // 总条数
-      total: 0,
       // 弹出层标题
-      title: '',
       formRenderOpen: false,
       formTitle: '',
       formOpen: false,
       // 是否显示弹出层
       open: false,
-      // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        formName: null,
-        formContent: null
-      },
-      // 表单参数
-      form: {
-        formId: null,
-        formName: null,
-        formContent: null,
-        remark: null
-      },
-      // 表单校验
       rules: {},
       formData: {}
     }
   },
+  created() {
+    this.queryPage()
+  },
   methods: {
+    queryPage() {
+      this.loading = true
+      page(this.queryParams).then(res => {
+        this.tableData = res.records
+        this.total = res.total
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
+    },
+    resetQuery() {
+      this.queryParams = {
+        num: 1,
+        size: 10,
+        formName: undefined,
+        formContent: undefined
+      }
+      this.queryPage()
+    },
+    resetForm() {
+      this.queryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        formName: undefined,
+        formContent: undefined
+      }
+      this.form = {
+        formId: undefined,
+        formName: undefined,
+        formContent: undefined,
+        remark: undefined
+      }
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -238,7 +266,6 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      // this.dialogVisible = true;
       this.$router.push({ path: '/workflow/task/flowForm' })
     },
     // 保存表单数据
@@ -250,7 +277,12 @@ export default {
     // 取消按钮
     cancel() {
       this.formOpen = false
-      this.reset()
+      this.form = {
+        formId: undefined,
+        formName: undefined,
+        formContent: undefined,
+        remark: undefined
+      }
     },
     handleClose(done) {
       this.$confirm('确定要关闭吗？关闭未保存的修改都会丢失？', '提示', {
@@ -274,15 +306,15 @@ export default {
     },
     /** 提交按钮 */
     submitForm() {
-      this.$refs['form'].validate(valid => {
+      this.$refs.form.validate(valid => {
         if (valid) {
           if (this.form.formId != null) {
-            updateForm(this.form).then(response => {
+            updateForm(this.form).then(() => {
               this.$message.success('修改成功')
               this.formOpen = false
             })
           } else {
-            addForm(this.form).then(response => {
+            addForm(this.form).then(() => {
               this.$message.success('新增成功')
               this.formOpen = false
             })
@@ -303,7 +335,12 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const formIds = row.formId.toString().split('') || this.ids
+      const formIds = row.formId?.toString().split('') || this.ids
+      if (formIds.length === 0) {
+        this.$message.warning('请选择要删除的数据！')
+        return
+      }
+
       this.$confirm('是否确认删除表单编号为"' + formIds + '"的数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -312,14 +349,14 @@ export default {
         return delForm(formIds)
       }).then(() => {
         this.$message.success('删除成功！')
-        this.crud.refresh()
+        this.queryPage()
       })
     }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .test-form {
   margin: 15px auto;
   width: 800px;

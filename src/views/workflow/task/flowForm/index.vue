@@ -83,7 +83,7 @@ export default {
     },
     /** 提交按钮 */
     submitForm() {
-      this.$refs['form'].validate(valid => {
+      this.$refs.form.validate(valid => {
         if (valid) {
           if (this.form.formId != null) {
             updateForm(this.form).then(() => {
@@ -97,7 +97,9 @@ export default {
             })
           }
           // 关闭当前标签页并返回上个页面
-          this.$router.push({ path: '/workflow/task/form' })
+          this.$router.push({ path: '/workflow/task/form' }).then(() => {
+            this.queryPage()
+          })
         }
       })
     },
