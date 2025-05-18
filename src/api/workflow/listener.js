@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import qs from 'qs'
 
 // 新增流程监听
 export function add(data) {
@@ -28,7 +29,7 @@ export function del(ids) {
 }
 
 // 根据ID查询流程监听信息
-export function findById(id) {
+export function getListener(id) {
   return request({
     url: `/workflow/listener/id/${id}`,
     method: 'get'
@@ -47,8 +48,7 @@ export function list(data) {
 // 分页查询流程监听
 export function page(params) {
   return request({
-    url: '/workflow/listener/page',
-    method: 'get',
-    params
+    url: '/workflow/listener/page?' + qs.stringify(params, { indices: false }),
+    method: 'get'
   })
 }
