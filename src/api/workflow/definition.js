@@ -1,18 +1,18 @@
 import request from '@/utils/request'
 
 // 查询流程定义列表
-export function list(query) {
+export function page(params) {
   return request({
     url: '/workflow/definition/list',
     method: 'get',
-    params: query
+    params
   })
 }
 
 // 部署流程实例
 export function definitionStart(procDefId, data) {
   return request({
-    url: `/workflow/definition/startProcess/${procDefId}`,
+    url: `/workflow/definition/start-process/${procDefId}`,
     method: 'post',
     data: data
   })
@@ -21,7 +21,7 @@ export function definitionStart(procDefId, data) {
 // 获取流程变量
 export function getProcessVariables(taskId) {
   return request({
-    url: `/workflow/task/processVariables?taskId=${taskId}`,
+    url: `/workflow/task/process-variables?taskId=${taskId}`,
     method: 'get'
   })
 }

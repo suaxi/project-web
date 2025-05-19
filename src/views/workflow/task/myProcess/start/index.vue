@@ -10,9 +10,9 @@
         <el-tab-pane label="表单信息" name="1">
           <!--初始化流程加载表单信息-->
           <el-col :span="16" :offset="4">
-            <v-form-render ref="vFormRef" :form-data="formRenderData" />
+            <v-form-render v-loading="loading" class="v-form" ref="vFormRef" :form-data="formRenderData" />
             <div style="margin-left:15%;margin-bottom: 20px;font-size: 14px;">
-              <el-button type="primary" @click="submitForm">提 交</el-button>
+              <el-button :loading="formButtonLoading" type="primary" @click="submitForm">提 交</el-button>
               <el-button type="primary" @click="resetForm">重 置</el-button>
             </div>
           </el-col>
@@ -28,7 +28,7 @@
         <flow-role v-if="checkSendRole" @handleRoleSelect="handleRoleSelect" />
         <span slot="footer" class="dialog-footer">
           <el-button @click="taskOpen = false">取 消</el-button>
-          <el-button type="primary" @click="submitTask">提 交</el-button>
+          <el-button :loading="taskButtonLoading" type="primary" @click="submitTask">提 交</el-button>
         </span>
       </el-dialog>
     </el-card>
@@ -61,7 +61,7 @@ export default {
         deptId: undefined
       },
       // 遮罩层
-      loading: true,
+      loading: false,
       deployId: '', // 流程定义编号
       procDefId: '', // 流程实例编号
       formRenderData: {},
@@ -74,7 +74,9 @@ export default {
       checkValues: null, // 选中任务接收人员数据
       formData: {}, // 填写的表单数据,
       multiInstanceVars: '', // 会签节点
-      formJson: {} // 表单json
+      formJson: {}, // 表单json
+      formButtonLoading: false,
+      taskButtonLoading: false
     }
   },
   created() {
@@ -94,8 +96,10 @@ export default {
     },
     /** 流程表单数据 */
     getFlowFormData(deployId) {
+      this.loading = true
       const params = { deployId: deployId }
       flowFormData(params).then(res => {
+        this.loading = false
         // 流程过程中不存在初始化表单 直接读取的流程变量中存储的表单值
         this.$nextTick(() => {
           // 回显数据
@@ -103,6 +107,7 @@ export default {
           this.formJson = res
         })
       }).catch(() => {
+        this.loading = false
         this.goBack()
       })
     },
@@ -113,11 +118,11 @@ export default {
     },
     /** 申请流程表单数据提交 */
     submitForm() {
+      this.formButtonLoading = true
       this.$refs.vFormRef.getFormData().then(formData => {
         // 根据当前任务或者流程设计配置的下一步节点 todo 暂时未涉及到考虑网关、表达式和多节点情况
         getNextFlowNodeByStart({ deploymentId: this.deployId, variables: formData }).then(res => {
           if (res) {
-            console.log('res', res)
             this.formData = formData
             if (res.dataType === 'dynamic') {
               if (res.type === 'assignee') { // 指定人员
@@ -145,13 +150,20 @@ export default {
                 Object.assign(param, formData)
                 // 启动流程并将表单数据加入流程变量
                 definitionStart(this.procDefId, param).then(() => {
-                  this.$message.success('操作成功！')
+                  this.$message.success('操作成功')
+                  this.formButtonLoading = false
                   this.goBack()
+                }).catch(() => {
+                  this.formButtonLoading = false
                 })
               }
             }
           }
+        }).catch(() => {
+          this.formButtonLoading = false
         })
+      }).catch(() => {
+        this.formButtonLoading = false
       })
     },
     /** 重置表单 */
@@ -217,7 +229,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.test-form {
+.v-form {
   margin: 15px auto;
   width: 800px;
   padding: 15px;

@@ -1,17 +1,17 @@
 import request from '@/utils/request'
 
-// 我的发起的流程
-export function myProcessList(query) {
+// 分页查询我的发起的流程
+export function queryMyProcessPage(params) {
   return request({
     url: '/workflow/task/myProcess',
     method: 'get',
-    params: query
+    params
   })
 }
 
 export function flowFormData(query) {
   return request({
-    url: '/workflow/task/flowFormData',
+    url: '/workflow/task/flow-form-data',
     method: 'get',
     params: query
   })
@@ -37,7 +37,7 @@ export function complete(data) {
 // 取消申请
 export function stopProcess(data) {
   return request({
-    url: '/workflow/task/stopProcess',
+    url: '/workflow/task/stop-process',
     method: 'put',
     data: data
   })

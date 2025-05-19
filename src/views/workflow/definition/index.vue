@@ -257,7 +257,7 @@ import {
   exportDeployment,
   definitionStart,
   flowXmlAndNode,
-  list
+  page as definitionPage
 } from '@/api/workflow/definition'
 import { getToken } from '@/utils/auth'
 import { getForm, mountFlowForm, page as formPage } from '@/api/workflow/form'
@@ -356,7 +356,7 @@ export default {
   methods: {
     queryPage() {
       this.loading = true
-      list(this.queryParams).then(res => {
+      definitionPage(this.queryParams).then(res => {
         this.tableData = res.records
         this.total = res.total
         this.loading = false

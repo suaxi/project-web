@@ -4,53 +4,53 @@
     <div class="head-container">
       <!-- 搜索 -->
       <el-input
-        v-model="crud.params.name"
+        v-model="queryParams.name"
         clearable
         size="small"
         placeholder="请输入名称"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="crud.toQuery"
+        @keyup.enter.native="queryPage"
       />
       <el-date-picker
-        v-model="crud.params.deployTime"
+        v-model="queryParams.deployTime"
         clearable
         size="small"
         type="date"
         placeholder="选择时间"
         value-format="yyyy-MM-dd"
-        @keyup.enter.native="crud.toQuery"
+        class="filter-item"
+        @keyup.enter.native="queryPage"
       />
-      <RrOperation :permission="{}" />
+      <span>
+        <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
+        <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
+      </span>
     </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+    <div class="crud-opts">
+      <span class="crud-opts-left">
         <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
+          class="filter-item"
           size="mini"
+          type="primary"
+          icon="el-icon-plus"
           @click="handleAdd"
-        >新增流程
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
+        >发起流程</el-button>
         <el-button
+          class="filter-item"
           type="danger"
-          plain
           icon="el-icon-delete"
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-        >删除
-        </el-button>
-      </el-col>
-    </el-row>
+        >删除</el-button>
+      </span>
+    </div>
 
     <el-table
-      v-loading="crud.loading"
-      :data="crud.tableData"
+      v-loading="loading"
+      :data="tableData"
       border
       @selection-change="handleSelectionChange"
     >
@@ -94,26 +94,32 @@
       </el-table-column>
     </el-table>
     <!-- 分页 -->
-    <Pagination />
+    <Pagination
+      :page-num.sync="queryParams.pageNum"
+      :page-size.sync="queryParams.pageSize"
+      :total="total"
+      @page="queryPage"
+    />
 
     <!-- 发起流程 -->
-    <el-dialog :title="title" :visible.sync="open" width="60%" append-to-body>
-      <el-form v-show="showSearch" ref="queryProcessForm" :model="queryProcessParams" :inline="true" label-width="68px">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" width="60%" destroy-on-close append-to-body>
+      <el-form ref="queryProcessForm" :model="processQueryParams" :inline="true" label-width="68px">
         <el-form-item label="名称" prop="name">
           <el-input
-            v-model="queryProcessParams.name"
+            v-model="processQueryParams.name"
+            class="filter-item"
             placeholder="请输入名称"
             clearable
             size="small"
-            @keyup.enter.native="handleQuery"
+            @keyup.enter.native="queryDefinitionPage"
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" size="mini" @click="handleProcessQuery">搜索</el-button>
-          <el-button icon="el-icon-refresh" size="mini" @click="resetProcessQuery">重置</el-button>
+          <el-button class="filter-item" type="primary" icon="el-icon-search" size="mini" @click="queryDefinitionPage">搜索</el-button>
+          <el-button class="filter-item" icon="el-icon-refresh" size="mini" @click="resetQueryDefinitionPage">重置</el-button>
         </el-form-item>
       </el-form>
-      <el-table v-loading="processLoading" fit :data="definitionList" border>
+      <el-table v-loading="processLoading" fit :data="definitionTableData" border>
         <el-table-column label="流程名称" align="center" prop="name" />
         <el-table-column label="流程版本" align="center">
           <template #default="scope">
@@ -133,11 +139,12 @@
           </template>
         </el-table-column>
       </el-table>
-      <pagination
+      <!-- 分页 -->
+      <Pagination
+        :page-num.sync="processQueryParams.pageNum"
+        :page-size.sync="processQueryParams.pageSize"
         :total="processTotal"
-        :page.sync="queryProcessParams.pageNum"
-        :limit.sync="queryProcessParams.pageSize"
-        @pagination="listDefinition"
+        @page="queryDefinitionPage"
       />
     </el-dialog>
 
@@ -145,7 +152,6 @@
 </template>
 
 <script>
-import CRUD, { presenter } from '@/components/Crud/crud'
 import {
   getDeployment,
   delDeployment,
@@ -153,66 +159,41 @@ import {
   updateDeployment,
   exportDeployment
 } from '@/api/workflow/finished'
-import { stopProcess } from '@/api/workflow/process'
-import { list } from '@/api/workflow/definition'
-import RrOperation from '@/components/Crud/RR.operation.vue'
+import { queryMyProcessPage, stopProcess } from '@/api/workflow/process'
+import { page as definitionPage } from '@/api/workflow/definition'
 import Pagination from '@/components/Crud/Pagination.vue'
 
 export default {
   name: 'WorkFlowMyProcessDeploy',
-  components: { Pagination, RrOperation },
-  cruds() {
-    return CRUD({ title: '我发起的任务', url: '/workflow/task/myProcess' })
-  },
-  mixins: [presenter()],
+  components: { Pagination },
   data() {
     return {
-      // 遮罩层
-      processLoading: true,
+      loading: false,
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined,
+        deployTime: null
+      },
+      total: 0,
+      tableData: [],
+      selectData: [],
       // 选中数组
       ids: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
       multiple: true,
-      // 显示搜索条件
-      showSearch: true,
-      // 总条数
-      total: 0,
+      dialogFormVisible: false,
+      dialogTitle: '',
       processTotal: 0,
-      // 弹出层标题
-      title: '',
-      // 是否显示弹出层
-      open: false,
       src: '',
-      definitionList: [],
-      // 查询参数
-      queryParams: {
+      definitionTableData: [],
+      processLoading: true,
+      processQueryParams: {
         pageNum: 1,
         pageSize: 10,
-        name: null,
-        category: null,
-        key: null,
-        tenantId: null,
-        deployTime: null,
-        derivedFrom: null,
-        derivedFromRoot: null,
-        parentDeploymentId: null,
-        engineVersion: null
-      },
-      // 查询参数
-      queryProcessParams: {
-        pageNum: 1,
-        pageSize: 10,
-        name: null,
-        category: null,
-        key: null,
-        tenantId: null,
-        deployTime: null,
-        derivedFrom: null,
-        derivedFromRoot: null,
-        parentDeploymentId: null,
-        engineVersion: null
+        name: undefined
       },
       // 表单参数
       form: {},
@@ -220,60 +201,68 @@ export default {
       rules: {}
     }
   },
+  created() {
+    this.queryPage()
+  },
   methods: {
-    // 取消按钮
-    cancel() {
-      this.open = false
-      this.reset()
+    queryPage() {
+      this.loading = true
+      queryMyProcessPage(this.queryParams).then(res => {
+        this.tableData = res.records
+        this.total = res.total
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
     },
-    // 表单重置
-    reset() {
-      this.form = {
-        id: null,
-        name: null,
-        category: null,
-        key: null,
-        tenantId: null,
-        deployTime: null,
-        derivedFrom: null,
-        derivedFromRoot: null,
-        parentDeploymentId: null,
-        engineVersion: null
+    resetQuery() {
+      this.queryParams = {
+        num: 1,
+        size: 10,
+        name: undefined,
+        deployTime: null
       }
-      this.resetForm('form')
+      this.queryPage()
     },
-    /** 搜索按钮操作 */
-    handleProcessQuery() {
-      this.listDefinition()
-    },
-    /** 重置按钮操作 */
-    resetProcessQuery() {
-      this.queryProcessParams = {
+    resetForm() {
+      this.queryParams = {
         pageNum: 1,
-        pageSize: 10
+        pageSize: 10,
+        name: undefined,
+        deployTime: null
       }
-      this.handleProcessQuery()
+      this.form = {}
     },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.procInsId)
-      this.single = selection.length !== 1
-      this.multiple = !selection.length
+    handleSelectionChange(rows) {
+      this.selectData = rows
+      this.ids = rows.map(item => item.procInsId)
+      this.single = rows.length !== 1
+      this.multiple = !rows.length
     },
-    /** 新增按钮操作 */
     handleAdd() {
-      this.open = true
-      this.title = '发起流程'
-      this.listDefinition()
+      this.resetForm()
+      this.dialogFormVisible = true
+      this.dialogTitle = '发起流程'
+      this.queryDefinitionPage()
     },
-    listDefinition() {
-      list(this.queryProcessParams).then(response => {
-        this.definitionList = response.records
-        this.processTotal = response.total
+    queryDefinitionPage() {
+      this.processLoading = true
+      definitionPage(this.processQueryParams).then(res => {
+        this.definitionTableData = res.records
+        this.processTotal = res.total
+        this.processLoading = false
+      }).catch(() => {
         this.processLoading = false
       })
     },
-    /**  发起流程申请 */
+    resetQueryDefinitionPage() {
+      this.processQueryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined
+      }
+      this.queryDefinitionPage(this.processQueryParams)
+    },
     handleStartProcess(row) {
       this.$router.push({
         path: '/workflow/task/myProcess/start',
@@ -283,17 +272,20 @@ export default {
         }
       })
     },
-    /**  取消流程申请 */
     handleStop(row) {
       const params = {
         instanceId: row.procInsId
       }
+
+      this.loading = true
       stopProcess(params).then(() => {
-        this.$message.success('取消成功！')
-        this.crud.refresh()
+        this.$message.success('取消成功')
+        this.loading = false
+        this.queryPage()
+      }).catch(() => {
+        this.loading = false
       })
     },
-    /** 流程流转记录 */
     handleFlowRecord(row) {
       this.$router.push({
         path: '/workflow/task/myProcess/detail',
@@ -306,7 +298,7 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset()
+      this.resetForm()
       const id = row.id || this.ids
       getDeployment(id).then(response => {
         this.form = response.data
@@ -336,16 +328,25 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const ids = row.procInsId.toString().split('') || this.ids// 暂不支持删除多个流程
+      const ids = row.procInsId ? row.procInsId : this.ids // 暂不支持删除多个流程
+      if (ids.length === 0) {
+        this.$message.warning('请选择要删除的数据！')
+        return
+      }
+
       this.$confirm('是否确认删除流程定义编号为"' + ids + '"的数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        return delDeployment(ids)
-      }).then(() => {
-        this.crud.refresh()
-        this.$message.success('删除成功！')
+        this.loading = true
+        delDeployment(ids).then(() => {
+          this.$message.success('删除成功')
+          this.loading = false
+          this.queryPage()
+        }).catch(() => {
+          this.loading = false
+        })
       })
     },
     /** 导出按钮操作 */
@@ -364,4 +365,4 @@ export default {
   }
 }
 </script>
-
+<style lang="scss" scoped></style>

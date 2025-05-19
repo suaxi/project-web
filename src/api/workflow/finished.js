@@ -12,7 +12,7 @@ export function finishedList(query) {
 // 任务流转记录
 export function flowRecord(procInsId, deployId) {
   return request({
-    url: `/workflow/task/flowRecord?procInsId=${procInsId}&deployId=${deployId}`,
+    url: `/workflow/task/flow-record?procInsId=${procInsId}&deployId=${deployId}`,
     method: 'get'
   })
 }
@@ -21,7 +21,7 @@ export function flowRecord(procInsId, deployId) {
 export function deployStart(deployId) {
   return request({
     url: '/workflow/process/startFlow/' + deployId,
-    method: 'get',
+    method: 'get'
   })
 }
 

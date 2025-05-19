@@ -66,7 +66,7 @@ export function getNextFlowNode(data) {
 // 下一节点
 export function getNextFlowNodeByStart(data) {
   return request({
-    url: '/workflow/task/nextFlowNodeByStart',
+    url: '/workflow/task/next-flow-node-by-start',
     method: 'post',
     data: data
   })
@@ -76,7 +76,7 @@ export function getNextFlowNodeByStart(data) {
 export function deployStart(deployId) {
   return request({
     url: '/workflow/process/startFlow/' + deployId,
-    method: 'get',
+    method: 'get'
   })
 }
 

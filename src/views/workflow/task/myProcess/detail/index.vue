@@ -9,7 +9,7 @@
         <!--表单信息-->
         <el-tab-pane label="表单信息" name="1">
           <el-col :span="16" :offset="4">
-            <v-form-render ref="vFormRef" />
+            <v-form-render v-loading="loading" class="v-form" ref="vFormRef" />
           </el-col>
         </el-tab-pane>
         <!--流程流转记录-->
@@ -87,7 +87,7 @@ export default {
       // 查询参数
       queryParams: {},
       // 遮罩层
-      loading: true,
+      loading: false,
       flowRecordList: [], // 流程流转数据
       taskForm: {
         multiple: false,
@@ -132,9 +132,8 @@ export default {
     },
     /** 流程流转记录 */
     getFlowRecordList(procInsId, deployId) {
-      const that = this
       flowRecord(procInsId, deployId).then(res => {
-        that.flowRecordList = res.flowList
+        this.flowRecordList = res.flowList
       }).catch(() => {
         this.goBack()
       })
@@ -142,8 +141,10 @@ export default {
     /** 获取流程变量内容 */
     processVariables(taskId) {
       if (taskId) {
+        this.loading = true
         // 提交流程申请时填写的表单存入了流程变量中后续任务处理时需要展示
         getProcessVariables(taskId).then(res => {
+          this.loading = false
           this.$nextTick(() => {
             // 回显表单
             this.$refs.vFormRef.setFormJson(res.formJson)
@@ -156,6 +157,8 @@ export default {
               })
             })
           })
+        }).catch(() => {
+          this.loading = false
         })
       }
     },
@@ -168,7 +171,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.test-form {
+.v-form {
   margin: 15px auto;
   width: 800px;
   padding: 15px;
