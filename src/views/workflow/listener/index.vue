@@ -298,9 +298,9 @@ export default {
       this.resetForm()
       getListener(row.id ? row.id : this.selectData[0].id).then(res => {
         this.form = {
-          ...res
+          ...res,
+          valueTypeLabel: this.listenerValueType.filter(item => item.value === res.valueType)[0].label
         }
-        this.form.valueTypeLabel = this.listenerValueType.filter(item => item.value === res.valueType)[0].label
         this.dialogFormVisible = true
         this.dialogTitle = '修改流程监听'
       })
