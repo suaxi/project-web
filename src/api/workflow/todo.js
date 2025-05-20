@@ -1,11 +1,11 @@
 import request from '@/utils/request'
 
 // 查询待办任务列表
-export function todoList(query) {
+export function todoList(params) {
   return request({
-    url: '/workflow/task/todoList',
+    url: '/workflow/task/todo-list',
     method: 'get',
-    params: query
+    params
   })
 }
 
@@ -48,7 +48,7 @@ export function rejectTask(data) {
 // 可退回任务列表
 export function returnList(data) {
   return request({
-    url: '/workflow/task/returnList',
+    url: '/workflow/task/return',
     method: 'post',
     data: data
   })
@@ -57,7 +57,7 @@ export function returnList(data) {
 // 下一节点
 export function getNextFlowNode(data) {
   return request({
-    url: '/workflow/task/nextFlowNode',
+    url: '/workflow/task/next-flow-node',
     method: 'post',
     data: data
   })
@@ -122,10 +122,11 @@ export function exportDeployment(query) {
     params: query
   })
 }
+
 // 流程节点表单
 export function flowTaskForm(query) {
   return request({
-    url: '/workflow/task/flowTaskForm',
+    url: '/workflow/task/flow-task-form',
     method: 'get',
     params: query
   })

@@ -4,31 +4,36 @@
     <div class="head-container">
       <!-- 搜索 -->
       <el-input
-          v-model="crud.params.name"
-          clearable
-          size="small"
-          placeholder="请输入名称"
-          style="width: 200px;"
-          class="filter-item"
-          @keyup.enter.native="crud.toQuery"
+        v-model="queryParams.name"
+        clearable
+        size="small"
+        placeholder="请输入名称"
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="queryPage"
       />
       <el-date-picker
-          v-model="crud.params.deployTime"
-          clearable
-          size="small"
-          type="date"
-          placeholder="选择时间"
-          value-format="yyyy-MM-dd"
-          @keyup.enter.native="crud.toQuery"
+        v-model="queryParams.deployTime"
+        clearable
+        size="small"
+        type="date"
+        placeholder="选择时间"
+        value-format="yyyy-MM-dd"
+        class="filter-item"
+        @keyup.enter.native="queryPage"
       />
-      <RrOperation :permission="{}" />
+      <span>
+        <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
+        <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
+      </span>
     </div>
 
     <el-table
-        v-loading="crud.loading"
-        :data="crud.tableData"
-        border
-        @selection-change="handleSelectionChange">
+      v-loading="loading"
+      :data="tableData"
+      border
+      @selection-change="handleSelectionChange"
+    >
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="任务编号" align="center" prop="taskId" :show-overflow-tooltip="true" />
       <el-table-column label="流程名称" align="center" prop="procDefName" />
@@ -57,45 +62,65 @@
       </el-table-column>
     </el-table>
     <!-- 分页 -->
-    <Pagination />
+    <Pagination
+      :page-num.sync="queryParams.pageNum"
+      :page-size.sync="queryParams.pageSize"
+      :total="total"
+      @page="queryPage"
+    />
   </div>
 </template>
 
 <script>
-import CRUD, { presenter } from '@/components/Crud/crud'
-import RrOperation from '@/components/Crud/RR.operation.vue'
 import Pagination from '@/components/Crud/Pagination.vue'
+import { todoList } from '@/api/workflow/todo'
 
 export default {
   name: 'WorkFlowToDo',
-  components: { Pagination, RrOperation },
-  cruds() {
-    return CRUD({ title: '待办任务', url: '/workflow/task/todoList' })
-  },
-  mixins: [presenter()],
+  components: { Pagination },
   data() {
     return {
+      loading: false,
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined,
+        deployTime: null
+      },
+      total: 0,
+      tableData: [],
+      selectData: [],
       // 选中数组
       ids: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
-      multiple: true,
-      // 显示搜索条件
-      showSearch: true,
-      // 总条数
-      total: 0,
-      // 弹出层标题
-      title: '',
-      // 是否显示弹出层
-      open: false,
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {}
+      multiple: true
     }
   },
+  created() {
+    this.queryPage()
+  },
   methods: {
+    queryPage() {
+      this.loading = true
+      todoList(this.queryParams).then(res => {
+        this.tableData = res.records
+        this.total = res.total
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
+    },
+    resetQuery() {
+      this.queryParams = {
+        num: 1,
+        size: 10,
+        name: undefined,
+        deployTime: null
+      }
+      this.queryPage()
+    },
     // 跳转到处理页面
     handleProcess(row) {
       this.$router.push({ path: '/workflow/task/todo/detail',
@@ -110,14 +135,15 @@ export default {
     },
     // 取消按钮
     cancel() {
-      this.open = false
+      this.dialogFormVisible = false
       this.reset()
     },
     // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.taskId)
-      this.single = selection.length !== 1
-      this.multiple = !selection.length
+    handleSelectionChange(rows) {
+      this.selectData = rows
+      this.ids = rows.map(item => item.taskId)
+      this.single = rows.length !== 1
+      this.multiple = !rows.length
     }
   }
 }

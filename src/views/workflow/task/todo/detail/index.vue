@@ -11,16 +11,17 @@
         <!--表单信息-->
         <el-tab-pane label="表单信息" name="1">
           <el-col :span="16" :offset="4">
-            <v-form-render ref="vFormRef" />
-            <div style="margin-left:10%;margin-bottom: 20px;font-size: 14px;">
-              <el-button type="primary" @click="handleComplete">审 批</el-button>
+            <v-form-render v-loading="loading" class="v-form" ref="vFormRef" />
+            <div style="text-align: center; font-size: 14px;">
+              <el-button type="primary" @click="handleComplete">审批</el-button>
+              <el-button type="warning" @click="handleReturn">退回</el-button>
+              <el-button type="danger" @click="handleReject">驳回</el-button>
             </div>
           </el-col>
         </el-tab-pane>
 
         <!--流程流转记录-->
         <el-tab-pane label="流转记录" name="2">
-          <!--flowRecordList-->
           <el-col :span="16" :offset="4">
             <div class="block">
               <el-timeline>
@@ -164,12 +165,11 @@ export default {
   props: {},
   data() {
     return {
+      loading: true,
       eventName: 'click',
       // 流程数据
       flowData: {},
       activeName: '1',
-      // 遮罩层
-      loading: true,
       flowRecordList: [], // 流程流转数据
       rules: {}, // 表单校验
       taskForm: {
@@ -277,11 +277,13 @@ export default {
     /** 流程节点表单 */
     getFlowTaskForm(taskId) {
       if (taskId) {
+        this.loading = true
         // 提交流程申请时填写的表单存入了流程变量中后续任务处理时需要展示
         flowTaskForm({ taskId: taskId }).then(res => {
           // 回显表单
           this.$refs.vFormRef.setFormJson(res.formJson)
           this.formJson = res.formJson
+          this.loading = false
           this.$nextTick(() => {
             // 加载表单填写的数据
             this.$refs.vFormRef.setFormData(res)
@@ -290,6 +292,8 @@ export default {
             //   this.$refs.vFormRef.disableForm();
             // })
           })
+        }).catch(() => {
+          this.loading = false
         })
       }
     },
@@ -314,7 +318,7 @@ export default {
     },
     /** 驳回任务 */
     taskReject() {
-      this.$refs['taskForm'].validate(valid => {
+      this.$refs.taskForm.validate(valid => {
         if (valid) {
           rejectTask(this.taskForm).then(() => {
             this.$message.success('驳回成功！')
@@ -405,7 +409,6 @@ export default {
         this.$refs.vFormRef.getFormData().then(formData => {
           Object.assign(this.taskForm.variables, formData)
           this.taskForm.variables.formJson = this.formJson
-          console.log(this.taskForm, '流程审批提交表单数据1')
         }).catch(() => {
           // this.$modal.msgError(error)
         })
@@ -438,7 +441,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.test-form {
+.v-form {
   margin: 15px auto;
   width: 800px;
   padding: 15px;

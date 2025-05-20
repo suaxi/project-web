@@ -55,7 +55,7 @@ export function rejectTask(data) {
 // 可退回任务列表
 export function returnList(data) {
   return request({
-    url: '/workflow/task/returnList',
+    url: '/workflow/task/return',
     method: 'post',
     data: data
   })
