@@ -5,22 +5,26 @@
       <div class="head-container">
         <!-- 搜索 -->
         <el-input
-          v-model="crud.params.name"
+          v-model="queryParams.name"
           clearable
           size="small"
-          placeholder="请输入角色名称"
+          placeholder="请输入名称"
           style="width: 200px;"
           class="filter-item"
-          @keyup.enter.native="crud.toQuery"
+          @keyup.enter.native="queryPage"
         />
-        <RrOperation />
+        <span>
+          <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
+          <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
+        </span>
       </div>
+
       <el-col :span="18" :xs="24">
         <el-table
           v-show="checkType === 'multiple'"
           ref="dataTable"
-          v-loading="crud.loading"
-          :data="crud.tableData"
+          v-loading="loading"
+          :data="tableData"
           :row-key="getRowKey"
           @selection-change="handleMultipleRoleSelect"
         >
@@ -31,8 +35,8 @@
         </el-table>
         <el-table
           v-show="checkType === 'single'"
-          v-loading="crud.loading"
-          :data="crud.tableData"
+          v-loading="loading"
+          :data="tableData"
           @current-change="handleSingleRoleSelect"
         >
           <el-table-column width="55" align="center">
@@ -47,25 +51,25 @@
           <el-table-column label="数据权限" prop="dataScope" :show-overflow-tooltip="true" width="150" />
         </el-table>
         <!-- 分页 -->
-        <Pagination />
+        <Pagination
+          :page-num.sync="queryParams.pageNum"
+          :page-size.sync="queryParams.pageSize"
+          :total="total"
+          @page="queryPage"
+        />
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script>
-import CRUD, { presenter } from '@/components/Crud/crud'
 import { StrUtil } from '@/utils/StrUtil'
-import RrOperation from '@/components/Crud/RR.operation'
 import Pagination from '@/components/Crud/Pagination'
+import { page } from '@/api/system/role'
 
 export default {
   name: 'WorkFlowFlowRole',
-  components: { Pagination, RrOperation },
-  cruds() {
-    return CRUD({ title: '角色列表', url: '/role/queryPage' })
-  },
-  mixins: [presenter()],
+  components: { Pagination },
   props: {
     // 回显数据传值
     selectValues: {
@@ -81,18 +85,20 @@ export default {
   },
   data() {
     return {
+      loading: false,
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined
+      },
+      total: 0,
+      tableData: [],
       // 选中数组
       ids: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
       multiple: true,
-      // 弹出层标题
-      title: '',
-      // 是否显示弹出层
-      open: false,
-      // 表单参数
-      form: {},
       roleList: [],
       radioSelected: 0, // 单选框传值
       selectRoleList: [] // 回显数据传值
@@ -126,11 +132,30 @@ export default {
       }
     }
   },
-  mounted() {
+  created() {
     this.roleList = []
     this.roleList = this.modelerStore.roleList
+    this.queryPage()
   },
   methods: {
+    queryPage() {
+      this.loading = true
+      page(this.queryParams).then(res => {
+        this.tableData = res.records
+        this.total = res.total
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
+    },
+    resetQuery() {
+      this.queryParams = {
+        num: 1,
+        size: 10,
+        name: undefined
+      }
+      this.queryPage()
+    },
     getRowKey(row) {
       return row.id
     },

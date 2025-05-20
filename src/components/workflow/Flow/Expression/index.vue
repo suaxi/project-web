@@ -4,20 +4,23 @@
     <div class="head-container">
       <!-- 搜索 -->
       <el-input
-        v-model="crud.params.name"
+        v-model="queryParams.name"
         clearable
         size="small"
         placeholder="请输入名称"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="crud.toQuery"
+        @keyup.enter.native="queryPage"
       />
-      <RrOperation />
+      <span>
+        <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
+        <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
+      </span>
     </div>
 
     <el-table
-      v-loading="crud.loading"
-      :data="crud.tableData.filter(item => item.status === 1)"
+      v-loading="loading"
+      :data="tableData"
       @current-change="handleSingleExpSelect"
     >
       <el-table-column width="55" align="center">
@@ -36,26 +39,25 @@
       <el-table-column label="表达式内容" align="center" prop="expression" />
     </el-table>
     <!-- 分页 -->
-    <Pagination />
+    <Pagination
+      :page-num.sync="queryParams.pageNum"
+      :page-size.sync="queryParams.pageSize"
+      :total="total"
+      @page="queryPage"
+    />
   </div>
 </template>
 
 <script>
-import CRUD, { presenter } from '@/components/Crud/crud'
 import { StrUtil } from '@/utils/StrUtil'
-import RrOperation from '@/components/Crud/RR.operation.vue'
 import Pagination from '@/components/Crud/Pagination'
+import { page } from '@/api/workflow/expression'
 
 export default {
   name: 'WorkFlowExpression',
   components: {
-    RrOperation,
     Pagination
   },
-  cruds() {
-    return CRUD({ title: '流程表达式', url: '/workflow/expression/queryPage' })
-  },
-  mixins: [presenter()],
   props: {
     // 回显数据传值
     selectValues: {
@@ -66,20 +68,20 @@ export default {
   },
   data() {
     return {
+      loading: false,
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        name: undefined
+      },
+      total: 0,
+      tableData: [],
       // 选中数组
       ids: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
       multiple: true,
-      // 显示搜索条件
-      showSearch: true,
-      // 总条数
-      total: 0,
-      // 流程达式表格数据
-      expressionList: [],
-      // 是否显示弹出层
-      open: false,
       radioSelected: null // 单选框传值
     }
   },
@@ -93,7 +95,28 @@ export default {
       immediate: true
     }
   },
+  created() {
+    this.queryPage()
+  },
   methods: {
+    queryPage() {
+      this.loading = true
+      page(this.queryParams).then(res => {
+        this.tableData = res.records?.filter(item => item.status === 1)
+        this.total = this.tableData.length
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
+    },
+    resetQuery() {
+      this.queryParams = {
+        num: 1,
+        size: 10,
+        name: undefined
+      }
+      this.queryPage()
+    },
     // 单选框选中数据
     handleSingleExpSelect(selection) {
       if (selection.status === 0) {
