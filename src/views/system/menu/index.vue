@@ -344,12 +344,16 @@ export default {
               this.reloadMenu(this.form)
               this.dialogFormVisible = false
               this.buttonLoading = false
+            }).catch(() => {
+              this.buttonLoading = false
             })
           } else {
             add(this.form).then(res => {
               ElementUI.Message.success('保存成功')
               this.reloadMenu(res)
               this.dialogFormVisible = false
+              this.buttonLoading = false
+            }).catch(() => {
               this.buttonLoading = false
             })
           }
