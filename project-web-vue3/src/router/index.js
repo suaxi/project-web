@@ -1,15 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/index.vue'
+import Layout from '@/layout/index.vue'
+
+const routes = [
+  {
+    path: '/',
+    name: 'layout',
+    component: Layout,
+    redirect: '/index',
+    children: [
+      {
+        path: 'index',
+        name: 'Index',
+        component: () => import('@/views/index.vue'),
+        meta: { title: '首页', icon: 'dashboard', affix: true },
+      },
+    ],
+  },
+]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: Home,
-    },
-  ],
+  history: createWebHistory(),
+  routes,
 })
 
 export default router
