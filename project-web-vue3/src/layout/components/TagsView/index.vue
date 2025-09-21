@@ -24,28 +24,20 @@
     </scroll-pane>
     <ul v-show="visible" :style="{ left: left + 'px', top: top + 'px' }" class="contextmenu">
       <li @click="refreshSelectedTag(selectedTag)">
-        <refresh-right style="width: 1em; height: 1em" />
-        刷新页面
+        <refresh-right style="width: 1em; height: 1em" /> 刷新页面
       </li>
       <li v-if="!isAffix(selectedTag)" @click="closeSelectedTag(selectedTag)">
-        <close style="width: 1em; height: 1em" />
-        关闭当前
+        <close style="width: 1em; height: 1em" /> 关闭当前
       </li>
-      <li @click="closeOthersTags">
-        <circle-close style="width: 1em; height: 1em" />
-        关闭其他
-      </li>
+      <li @click="closeOthersTags"><circle-close style="width: 1em; height: 1em" /> 关闭其他</li>
       <li v-if="!isFirstView()" @click="closeLeftTags">
-        <back style="width: 1em; height: 1em" />
-        关闭左侧
+        <back style="width: 1em; height: 1em" /> 关闭左侧
       </li>
       <li v-if="!isLastView()" @click="closeRightTags">
-        <right style="width: 1em; height: 1em" />
-        关闭右侧
+        <right style="width: 1em; height: 1em" /> 关闭右侧
       </li>
       <li @click="closeAllTags(selectedTag)">
-        <circle-close style="width: 1em; height: 1em" />
-        全部关闭
+        <circle-close style="width: 1em; height: 1em" /> 全部关闭
       </li>
     </ul>
   </div>
@@ -54,11 +46,10 @@
 <script setup>
 import ScrollPane from './ScrollPane.vue'
 import useTagsViewStore from '@/store/modules/tagsView'
-import { useSettingsStore } from '@/store/modules/settings'
+import useSettingsStore from '@/store/modules/settings'
 // import usePermissionStore from '@/store/modules/permission'
 import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Back, CircleClose, Close, RefreshRight, Right } from '@element-plus/icons-vue'
 
 const visible = ref(false)
 const top = ref(0)
@@ -72,6 +63,7 @@ const route = useRoute()
 const router = useRouter()
 
 const visitedViews = computed(() => useTagsViewStore().visitedViews)
+// const routes = computed(() => usePermissionStore().routes)
 const routes = computed(() => [])
 const theme = computed(() => useSettingsStore().theme)
 const tagsIcon = computed(() => useSettingsStore().tagsIcon)

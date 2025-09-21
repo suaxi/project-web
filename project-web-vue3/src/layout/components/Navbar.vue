@@ -2,34 +2,54 @@
   <div class="navbar">
     <hamburger
       id="hamburger-container"
-      :is-active="sidebar.opened"
+      :is-active="appStore.sidebar.opened"
       class="hamburger-container"
-      @toggleClick="toggleSidebar"
+      @toggleClick="toggleSideBar"
     />
-    <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
+    <breadcrumb
+      v-if="!settingsStore.topNav"
+      id="breadcrumb-container"
+      class="breadcrumb-container"
+    />
+    <top-nav v-if="settingsStore.topNav" id="topmenu-container" class="topmenu-container" />
 
     <div class="right-menu">
-      <template v-if="device !== 'mobile'">
-        <Screenfull id="screenfull" class="right-menu-item hover-effect" />
+      <template v-if="appStore.device !== 'mobile'">
+        <!--        <header-search id="header-search" class="right-menu-item" />-->
+
+        <screenfull id="screenfull" class="right-menu-item hover-effect" />
+
+        <el-tooltip content="主题模式" effect="dark" placement="bottom">
+          <div class="right-menu-item hover-effect theme-switch-wrapper" @click="toggleTheme">
+            <svg-icon v-if="settingsStore.isDark" icon-class="sunny" />
+            <svg-icon v-if="!settingsStore.isDark" icon-class="moon" />
+          </div>
+        </el-tooltip>
+
         <el-tooltip content="布局大小" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip>
       </template>
 
-      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
+      <el-dropdown
+        @command="handleCommand"
+        class="avatar-container right-menu-item hover-effect"
+        trigger="hover"
+      >
         <div class="avatar-wrapper">
-          <img :src="avatar" class="user-avatar" alt="" />
-          <el-icon class="el-icon-caret-bottom">
-            <caret-bottom />
-          </el-icon>
+          <img src="@/assets/images/profile.jpg" class="user-avatar" />
+          <span class="user-nickname"> {{ userStore.nickName }} </span>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <router-link to="/profile">
+            <router-link to="/user/profile">
               <el-dropdown-item>个人中心</el-dropdown-item>
             </router-link>
-            <el-dropdown-item divided @click="logout">
-              <span style="display: block">退出登录</span>
+            <el-dropdown-item command="setLayout" v-if="settingsStore.showSettings">
+              <span>布局设置</span>
+            </el-dropdown-item>
+            <el-dropdown-item divided command="logout">
+              <span>退出登录</span>
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -39,30 +59,60 @@
 </template>
 
 <script setup>
-import avatar from '@/assets/logo.svg'
-import { computed } from 'vue'
-import { CaretBottom } from '@element-plus/icons-vue'
-import Hamburger from '@/components/Hamburger/index.vue'
+import { ElMessageBox } from 'element-plus'
 import Breadcrumb from '@/components/Breadcrumb/index.vue'
+import TopNav from '@/components/TopNav/index.vue'
+import Hamburger from '@/components/Hamburger/index.vue'
 import Screenfull from '@/components/Screenfull/index.vue'
 import SizeSelect from '@/components/SizeSelect/index.vue'
-import { useAppStore } from '@/store/modules/app'
+// import HeaderSearch from '@/components/HeaderSearch'
+import useAppStore from '@/store/modules/app'
+import useUserStore from '@/store/modules/user'
+import useSettingsStore from '@/store/modules/settings'
 
 const appStore = useAppStore()
+const userStore = useUserStore()
+const settingsStore = useSettingsStore()
 
-const sidebar = computed(() => appStore.sidebar)
-const device = computed(() => appStore.device)
-
-const toggleSidebar = () => {
-  appStore.toggleSidebar()
+function toggleSideBar() {
+  appStore.toggleSideBar()
 }
 
-const logout = () => {
-  // 退出登录逻辑
-  alert('已退出')
+function handleCommand(command) {
+  switch (command) {
+    case 'setLayout':
+      setLayout()
+      break
+    case 'logout':
+      logout()
+      break
+    default:
+      break
+  }
 }
 
-const emit = defineEmits(['setLayout'])
+function logout() {
+  ElMessageBox.confirm('确定退出吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      userStore.logOut().then(() => {
+        location.href = '/index'
+      })
+    })
+    .catch(() => {})
+}
+
+const emits = defineEmits(['setLayout'])
+function setLayout() {
+  emits('setLayout')
+}
+
+function toggleTheme() {
+  settingsStore.toggleTheme()
+}
 </script>
 
 <style lang="scss" scoped>
@@ -70,7 +120,7 @@ const emit = defineEmits(['setLayout'])
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: #fff;
+  background: var(--navbar-bg);
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
   .hamburger-container {
@@ -90,10 +140,21 @@ const emit = defineEmits(['setLayout'])
     float: left;
   }
 
+  .topmenu-container {
+    position: absolute;
+    left: 50px;
+  }
+
+  .errLog-container {
+    display: inline-block;
+    vertical-align: top;
+  }
+
   .right-menu {
     float: right;
     height: 100%;
     line-height: 50px;
+    display: flex;
 
     &:focus {
       outline: none;
@@ -115,23 +176,47 @@ const emit = defineEmits(['setLayout'])
           background: rgba(0, 0, 0, 0.025);
         }
       }
+
+      &.theme-switch-wrapper {
+        display: flex;
+        align-items: center;
+
+        svg {
+          transition: transform 0.3s;
+
+          &:hover {
+            transform: scale(1.15);
+          }
+        }
+      }
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 0px;
+      padding-right: 0px;
 
       .avatar-wrapper {
-        margin-top: 5px;
+        margin-top: 10px;
+        right: 8px;
         position: relative;
 
         .user-avatar {
           cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
+          width: 30px;
+          height: 30px;
+          margin-right: 8px;
+          border-radius: 50%;
         }
 
-        .el-icon-caret-bottom {
+        .user-nickname {
+          position: relative;
+          left: 0px;
+          bottom: 10px;
+          font-size: 14px;
+          font-weight: bold;
+        }
+
+        i {
           cursor: pointer;
           position: absolute;
           right: -20px;

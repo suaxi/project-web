@@ -12,6 +12,7 @@
         <tags-view v-if="needTagsView" />
       </div>
       <app-main />
+      <settings ref="settingRef" />
     </div>
   </div>
 </template>
@@ -20,10 +21,11 @@
 import { useWindowSize } from '@vueuse/core'
 import Sidebar from './components/Sidebar/index.vue'
 import AppMain from './components/AppMain.vue'
-import Navbar from './components/Navbar.vue'
+import Navbar from '@/layout/components/Navbar.vue'
+import Settings from './components/Settings/index.vue'
 import TagsView from './components/TagsView/index.vue'
-import { useAppStore } from '@/store/modules/app'
-import { useSettingsStore } from '@/store/modules/settings'
+import useAppStore from '@/store/modules/app'
+import useSettingsStore from '@/store/modules/settings'
 import { computed, ref, watch, watchEffect } from 'vue'
 
 const settingsStore = useSettingsStore()
@@ -66,6 +68,7 @@ function handleClickOutside() {
 }
 
 const settingRef = ref(null)
+
 function setLayout() {
   settingRef.value.openSetting()
 }

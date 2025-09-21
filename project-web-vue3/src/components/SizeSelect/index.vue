@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { useAppStore } from '@/store/modules/app'
+import useAppStore from '@/store/modules/app'
 import { computed, getCurrentInstance, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 

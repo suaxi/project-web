@@ -7,10 +7,12 @@
         </keep-alive>
       </transition>
     </router-view>
+    <copyright />
   </section>
 </template>
 
 <script setup>
+import Copyright from './Copyright/index.vue'
 import useTagsViewStore from '@/store/modules/tagsView'
 
 const tagsViewStore = useTagsViewStore()

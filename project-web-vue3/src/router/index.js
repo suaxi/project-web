@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/layout/index.vue'
 
-const routes = [
+export const constantRoutes = [
   {
     path: '/',
     name: 'layout',
@@ -20,7 +20,7 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: constantRoutes,
 })
 
 export default router

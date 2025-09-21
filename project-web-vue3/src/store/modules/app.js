@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-export const useAppStore = defineStore('app', {
+const useAppStore = defineStore('app', {
   state: () => ({
     sidebar: {
       opened: true,
@@ -10,24 +10,28 @@ export const useAppStore = defineStore('app', {
     device: 'desktop',
     size: 'medium',
   }),
-
   actions: {
-    toggleSidebar() {
+    toggleSideBar(withoutAnimation) {
+      if (this.sidebar.hide) {
+        return false
+      }
       this.sidebar.opened = !this.sidebar.opened
-      this.sidebar.withoutAnimation = false
+      this.sidebar.withoutAnimation = withoutAnimation
     },
-
-    closeSideBar(withoutAnimation) {
+    closeSideBar({ withoutAnimation }) {
       this.sidebar.opened = false
-      this.sidebar.withoutAnimation = withoutAnimation.withoutAnimation
+      this.sidebar.withoutAnimation = withoutAnimation
     },
-
     toggleDevice(device) {
       this.device = device
     },
-
     setSize(size) {
       this.size = size
     },
+    toggleSideBarHide(status) {
+      this.sidebar.hide = status
+    },
   },
 })
+
+export default useAppStore
