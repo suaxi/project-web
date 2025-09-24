@@ -9,7 +9,6 @@ export default defineConfig(({ mode, command }) => {
     plugins: createVitePlugins(env, command === 'build'),
     resolve: {
       alias: {
-        // '@': fileURLToPath(new URL('./src', import.meta.url)),
         '@': path.resolve(__dirname, './src'),
       },
     },

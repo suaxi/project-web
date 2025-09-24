@@ -23,7 +23,7 @@ const router = useRouter()
 // const permissionStore = usePermissionStore()
 const levelList = ref([])
 
-function getBreadcrumb() {
+const getBreadcrumb = () => {
   // only show routes with meta.title
   let matched = []
   const pathNum = findPathNum(route.path)
@@ -44,11 +44,11 @@ function getBreadcrumb() {
     matched = [{ path: '/index', meta: { title: '首页' } }].concat(matched)
   }
   levelList.value = matched.filter(
-    (item) => item.meta && item.meta.title && item.meta.breadcrumb !== false,
+    (item) => item.meta && item.meta.title && item.meta.breadcrumb !== false
   )
 }
 
-function findPathNum(str, char = '/') {
+const findPathNum = (str, char = '/') => {
   let index = str.indexOf(char)
   let num = 0
   while (index !== -1) {
@@ -58,9 +58,9 @@ function findPathNum(str, char = '/') {
   return num
 }
 
-function getMatched(pathList, routeList, matched) {
+const getMatched = (pathList, routeList, matched) => {
   let data = routeList.find(
-    (item) => item.path == pathList[0] || (item.name += '').toLowerCase() == pathList[0],
+    (item) => item.path == pathList[0] || (item.name += '').toLowerCase() == pathList[0]
   )
   if (data) {
     matched.push(data)
@@ -71,7 +71,7 @@ function getMatched(pathList, routeList, matched) {
   }
 }
 
-function isDashboard(route) {
+const isDashboard = (route) => {
   const name = route && route.name
   if (!name) {
     return false
@@ -79,7 +79,7 @@ function isDashboard(route) {
   return name.trim() === 'Index'
 }
 
-function handleLink(item) {
+const handleLink = (item) => {
   const { redirect, path } = item
   if (redirect) {
     router.push(redirect)

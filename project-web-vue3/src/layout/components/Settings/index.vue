@@ -159,11 +159,11 @@ const predefineColors = ref([
   '#90ee90',
   '#00ced1',
   '#1e90ff',
-  '#c71585',
+  '#c71585'
 ])
 
 /** 是否需要topnav */
-function topNavChange(val) {
+const topNavChange = (val) => {
   if (!val) {
     appStore.toggleSideBarHide(false)
     // permissionStore.setSidebarRouters(permissionStore.defaultRoutes)
@@ -171,21 +171,21 @@ function topNavChange(val) {
 }
 
 /** 是否需要dynamicTitle */
-function dynamicTitleChange() {
+const dynamicTitleChange = () => {
   useSettingsStore().setTitle(useSettingsStore().title)
 }
 
-function themeChange(val) {
+const themeChange = (val) => {
   settingsStore.theme = val
   handleThemeStyle(val)
 }
 
-function handleTheme(val) {
+const handleTheme = (val) => {
   settingsStore.sideTheme = val
   sideTheme.value = val
 }
 
-function saveSetting() {
+const saveSetting = () => {
   proxy.$modal.loading('正在保存到本地，请稍候...')
   let layoutSetting = {
     topNav: storeSettings.value.topNav,
@@ -196,24 +196,24 @@ function saveSetting() {
     dynamicTitle: storeSettings.value.dynamicTitle,
     footerVisible: storeSettings.value.footerVisible,
     sideTheme: storeSettings.value.sideTheme,
-    theme: storeSettings.value.theme,
+    theme: storeSettings.value.theme
   }
   localStorage.setItem('layout-setting', JSON.stringify(layoutSetting))
   setTimeout(proxy.$modal.closeLoading(), 1000)
 }
 
-function resetSetting() {
+const resetSetting = () => {
   proxy.$modal.loading('正在清除设置缓存并刷新，请稍候...')
   localStorage.removeItem('layout-setting')
   setTimeout('window.location.reload()', 1000)
 }
 
-function openSetting() {
+const openSetting = () => {
   showSettings.value = true
 }
 
 defineExpose({
-  openSetting,
+  openSetting
 })
 </script>
 

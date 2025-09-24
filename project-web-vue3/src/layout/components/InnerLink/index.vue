@@ -20,11 +20,11 @@ import { onMounted, ref } from 'vue'
 const props = defineProps({
   src: {
     type: String,
-    default: '/',
+    default: '/'
   },
   iframeId: {
-    type: String,
-  },
+    type: String
+  }
 })
 
 const loading = ref(true)

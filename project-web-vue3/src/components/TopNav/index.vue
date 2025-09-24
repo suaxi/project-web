@@ -113,12 +113,12 @@ const activeMenu = computed(() => {
   return activePath
 })
 
-function setVisibleNumber() {
+const setVisibleNumber = () => {
   const width = document.body.getBoundingClientRect().width / 3
   visibleNumber.value = parseInt(width / 85)
 }
 
-function handleSelect(key, keyPath) {
+const handleSelect = (key, keyPath) => {
   currentIndex.value = key
   const route = routers.value.find((item) => item.path === key)
   if (!route || !route.children) {
@@ -138,7 +138,7 @@ function handleSelect(key, keyPath) {
   }
 }
 
-function activeRoutes(key) {
+const activeRoutes = (key) => {
   let routes = []
   if (childrenMenus.value && childrenMenus.value.length > 0) {
     childrenMenus.value.map((item) => {

@@ -11,8 +11,8 @@ import { computed } from 'vue'
 const props = defineProps({
   to: {
     type: [String, Object],
-    required: true,
-  },
+    required: true
+  }
 })
 
 const isExt = computed(() => {
@@ -26,16 +26,16 @@ const type = computed(() => {
   return 'router-link'
 })
 
-function linkProps() {
+const linkProps = () => {
   if (isExt.value) {
     return {
       href: props.to,
       target: '_blank',
-      rel: 'noopener',
+      rel: 'noopener'
     }
   }
   return {
-    to: props.to,
+    to: props.to
   }
 }
 </script>

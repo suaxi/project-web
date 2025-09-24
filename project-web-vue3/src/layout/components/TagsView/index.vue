@@ -86,23 +86,23 @@ onMounted(() => {
   addTags()
 })
 
-function isActive(r) {
+const isActive = (r) => {
   return r.path === route.path
 }
 
-function activeStyle(tag) {
+const activeStyle = (tag) => {
   if (!isActive(tag)) return {}
   return {
     'background-color': theme.value,
-    'border-color': theme.value,
+    'border-color': theme.value
   }
 }
 
-function isAffix(tag) {
+const isAffix = (tag) => {
   return tag.meta && tag.meta.affix
 }
 
-function isFirstView() {
+const isFirstView = () => {
   try {
     return (
       selectedTag.value.fullPath === '/index' ||
@@ -113,7 +113,7 @@ function isFirstView() {
   }
 }
 
-function isLastView() {
+const isLastView = () => {
   try {
     return selectedTag.value.fullPath === visitedViews.value[visitedViews.value.length - 1].fullPath
   } catch (err) {
@@ -121,7 +121,7 @@ function isLastView() {
   }
 }
 
-function filterAffixTags(routes, basePath = '') {
+const filterAffixTags = (routes, basePath = '') => {
   let tags = []
   routes.forEach((route) => {
     if (route.meta && route.meta.affix) {
@@ -130,7 +130,7 @@ function filterAffixTags(routes, basePath = '') {
         fullPath: tagPath,
         path: tagPath,
         name: route.name,
-        meta: { ...route.meta },
+        meta: { ...route.meta }
       })
     }
     if (route.children) {
@@ -143,7 +143,7 @@ function filterAffixTags(routes, basePath = '') {
   return tags
 }
 
-function initTags() {
+const initTags = () => {
   const res = filterAffixTags(routes.value)
   affixTags.value = res
   for (const tag of res) {
@@ -154,14 +154,14 @@ function initTags() {
   }
 }
 
-function addTags() {
+const addTags = () => {
   const { name } = route
   if (name) {
     useTagsViewStore().addView(route)
   }
 }
 
-function moveToCurrentTag() {
+const moveToCurrentTag = () => {
   nextTick(() => {
     for (const r of visitedViews.value) {
       if (r.path === route.path) {
@@ -175,14 +175,14 @@ function moveToCurrentTag() {
   })
 }
 
-function refreshSelectedTag(view) {
+const refreshSelectedTag = (view) => {
   proxy.$tab.refreshPage(view)
   if (route.meta.link) {
     useTagsViewStore().delIframeView(route)
   }
 }
 
-function closeSelectedTag(view) {
+const closeSelectedTag = (view) => {
   proxy.$tab.closePage(view).then(({ visitedViews }) => {
     if (isActive(view)) {
       toLastView(visitedViews, view)
@@ -190,7 +190,7 @@ function closeSelectedTag(view) {
   })
 }
 
-function closeRightTags() {
+const closeRightTags = () => {
   proxy.$tab.closeRightPage(selectedTag.value).then((visitedViews) => {
     if (!visitedViews.find((i) => i.fullPath === route.fullPath)) {
       toLastView(visitedViews)
@@ -198,7 +198,7 @@ function closeRightTags() {
   })
 }
 
-function closeLeftTags() {
+const closeLeftTags = () => {
   proxy.$tab.closeLeftPage(selectedTag.value).then((visitedViews) => {
     if (!visitedViews.find((i) => i.fullPath === route.fullPath)) {
       toLastView(visitedViews)
@@ -206,14 +206,14 @@ function closeLeftTags() {
   })
 }
 
-function closeOthersTags() {
+const closeOthersTags = () => {
   router.push(selectedTag.value).catch(() => {})
   proxy.$tab.closeOtherPage(selectedTag.value).then(() => {
     moveToCurrentTag()
   })
 }
 
-function closeAllTags(view) {
+const closeAllTags = (view) => {
   proxy.$tab.closeAllPage().then(({ visitedViews }) => {
     if (affixTags.value.some((tag) => tag.path === route.path)) {
       return
@@ -222,7 +222,7 @@ function closeAllTags(view) {
   })
 }
 
-function toLastView(visitedViews, view) {
+const toLastView = (visitedViews, view) => {
   const latestView = visitedViews.slice(-1)[0]
   if (latestView) {
     router.push(latestView.fullPath)
@@ -238,7 +238,7 @@ function toLastView(visitedViews, view) {
   }
 }
 
-function openMenu(tag, e) {
+const openMenu = (tag, e) => {
   const menuMinWidth = 105
   const offsetLeft = proxy.$el.getBoundingClientRect().left // container margin left
   const offsetWidth = proxy.$el.offsetWidth // container width
@@ -256,11 +256,11 @@ function openMenu(tag, e) {
   selectedTag.value = tag
 }
 
-function closeMenu() {
+const closeMenu = () => {
   visible.value = false
 }
 
-function handleScroll() {
+const handleScroll = () => {
   closeMenu()
 }
 </script>

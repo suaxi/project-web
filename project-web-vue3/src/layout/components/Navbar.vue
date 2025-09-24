@@ -74,11 +74,11 @@ const appStore = useAppStore()
 const userStore = useUserStore()
 const settingsStore = useSettingsStore()
 
-function toggleSideBar() {
+const toggleSideBar = () => {
   appStore.toggleSideBar()
 }
 
-function handleCommand(command) {
+const handleCommand = (command) => {
   switch (command) {
     case 'setLayout':
       setLayout()
@@ -91,11 +91,11 @@ function handleCommand(command) {
   }
 }
 
-function logout() {
+const logout = () => {
   ElMessageBox.confirm('确定退出吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
-    type: 'warning',
+    type: 'warning'
   })
     .then(() => {
       userStore.logOut().then(() => {
@@ -106,11 +106,11 @@ function logout() {
 }
 
 const emits = defineEmits(['setLayout'])
-function setLayout() {
+const setLayout = () => {
   emits('setLayout')
 }
 
-function toggleTheme() {
+const toggleTheme = () => {
   settingsStore.toggleTheme()
 }
 </script>

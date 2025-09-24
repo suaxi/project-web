@@ -22,8 +22,8 @@ import { computed } from 'vue'
 defineProps({
   collapse: {
     type: Boolean,
-    required: true,
-  },
+    required: true
+  }
 })
 
 const title = import.meta.env.VITE_APP_TITLE

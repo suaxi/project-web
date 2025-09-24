@@ -16,7 +16,7 @@ const {
   sidebarLogo,
   dynamicTitle,
   footerVisible,
-  footerContent,
+  footerContent
 } = defaultSettings
 
 const storageSetting = JSON.parse(localStorage.getItem('layout-setting')) || ''
@@ -39,13 +39,13 @@ const useSettingsStore = defineStore('settings', {
     footerVisible:
       storageSetting.footerVisible === undefined ? footerVisible : storageSetting.footerVisible,
     footerContent: footerContent,
-    isDark: isDark.value,
+    isDark: isDark.value
   }),
   actions: {
     // 修改布局设置
     changeSetting(data) {
       const { key, value } = data
-      if (this.hasOwnProperty(key)) {
+      if (this.hasOwnProperty.call(data, key)) {
         this[key] = value
       }
     },
@@ -58,8 +58,8 @@ const useSettingsStore = defineStore('settings', {
     toggleTheme() {
       this.isDark = !this.isDark
       toggleDark()
-    },
-  },
+    }
+  }
 })
 
 export default useSettingsStore

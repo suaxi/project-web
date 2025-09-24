@@ -39,7 +39,7 @@ const classObj = computed(() => ({
   hideSidebar: !sidebar.value.opened,
   openSidebar: sidebar.value.opened,
   withoutAnimation: sidebar.value.withoutAnimation,
-  mobile: device.value === 'mobile',
+  mobile: device.value === 'mobile'
 }))
 
 const { width, height } = useWindowSize()
@@ -51,7 +51,7 @@ watch(
     if (device.value === 'mobile' && sidebar.value.opened) {
       useAppStore().closeSideBar({ withoutAnimation: false })
     }
-  },
+  }
 )
 
 watchEffect(() => {
@@ -63,13 +63,13 @@ watchEffect(() => {
   }
 })
 
-function handleClickOutside() {
+const handleClickOutside = () => {
   useAppStore().closeSideBar({ withoutAnimation: false })
 }
 
 const settingRef = ref(null)
 
-function setLayout() {
+const setLayout = () => {
   settingRef.value.openSetting()
 }
 </script>

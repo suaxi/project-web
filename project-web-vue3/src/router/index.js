@@ -12,15 +12,15 @@ export const constantRoutes = [
         path: 'index',
         name: 'Index',
         component: () => import('@/views/index.vue'),
-        meta: { title: '首页', icon: 'dashboard', affix: true },
-      },
-    ],
-  },
+        meta: { title: '首页', icon: 'dashboard', affix: true }
+      }
+    ]
+  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: constantRoutes,
+  routes: constantRoutes
 })
 
 export default router

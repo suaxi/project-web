@@ -5,10 +5,10 @@ const useAppStore = defineStore('app', {
     sidebar: {
       opened: true,
       withoutAnimation: false,
-      hide: false,
+      hide: false
     },
     device: 'desktop',
-    size: 'medium',
+    size: 'medium'
   }),
   actions: {
     toggleSideBar(withoutAnimation) {
@@ -30,8 +30,8 @@ const useAppStore = defineStore('app', {
     },
     toggleSideBarHide(status) {
       this.sidebar.hide = status
-    },
-  },
+    }
+  }
 })
 
 export default useAppStore

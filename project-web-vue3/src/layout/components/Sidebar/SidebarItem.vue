@@ -49,21 +49,21 @@ const props = defineProps({
   // route object
   item: {
     type: Object,
-    required: true,
+    required: true
   },
   isNest: {
     type: Boolean,
-    default: false,
+    default: false
   },
   basePath: {
     type: String,
-    default: '',
-  },
+    default: ''
+  }
 })
 
 const onlyOneChild = ref({})
 
-function hasOneShowingChild(children = [], parent) {
+const hasOneShowingChild = (children = [], parent) => {
   if (!children) {
     children = []
   }
@@ -89,7 +89,7 @@ function hasOneShowingChild(children = [], parent) {
   return false
 }
 
-function resolvePath(routePath, routeQuery) {
+const resolvePath = (routePath, routeQuery) => {
   if (isExternal(routePath)) {
     return routePath
   }
@@ -103,7 +103,7 @@ function resolvePath(routePath, routeQuery) {
   return props.basePath + '/' + routePath
 }
 
-function hasTitle(title) {
+const hasTitle = (title) => {
   if (title.length > 5) {
     return title
   } else {

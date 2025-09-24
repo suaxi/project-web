@@ -26,13 +26,13 @@ onBeforeUnmount(() => {
   scrollWrapper.value.removeEventListener('scroll', emitScroll)
 })
 
-function handleScroll(e) {
+const handleScroll = (e) => {
   const eventDelta = e.wheelDelta || -e.deltaY * 40
   const $scrollWrapper = scrollWrapper.value
   $scrollWrapper.scrollLeft = $scrollWrapper.scrollLeft + eventDelta / 4
 }
 
-const emits = defineEmits()
+const emits = defineEmits(['scroll'])
 const emitScroll = () => {
   emits('scroll')
 }
@@ -40,7 +40,7 @@ const emitScroll = () => {
 const tagsViewStore = useTagsViewStore()
 const visitedViews = computed(() => tagsViewStore.visitedViews)
 
-function moveToTarget(currentTag) {
+const moveToTarget = (currentTag) => {
   const $container = proxy.$refs.scrollContainer.$el
   const $containerWidth = $container.offsetWidth
   const $scrollWrapper = scrollWrapper.value
@@ -88,7 +88,7 @@ function moveToTarget(currentTag) {
 }
 
 defineExpose({
-  moveToTarget,
+  moveToTarget
 })
 </script>
 

@@ -52,5 +52,5 @@ export default {
   /**
    * 底部版权文本内容
    */
-  footerContent: 'Copyright © Project Web Vue3',
+  footerContent: 'Copyright © Project Web Vue3'
 }

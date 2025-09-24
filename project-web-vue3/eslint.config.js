@@ -22,13 +22,16 @@ export default defineConfig([
 
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
-    skipFormatting,
+  skipFormatting,
   {
     rules: {
-      '@javascript-eslint/no-unused-vars': 0,
       'vue/multi-word-component-names': 'off',
+      'no-unused-vars': 'off',
+      'vue/no-unused-vars': 'off',
+      'no-undef': 'off',
       semi: ['error', 'never'],
-      quotes: ['error', 'single']
+      quotes: ['error', 'single'],
+      'comma-dangle': ['error', 'never']
     }
   }
 ])
