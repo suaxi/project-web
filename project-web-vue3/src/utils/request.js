@@ -1,0 +1,43 @@
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
+import { getToken, removeToken } from '@/utils/auth'
+import router from '@/router'
+import Config from '@/settings'
+
+const request = axios.create({
+  baseURL: import.meta.env.VITE_APP_BASE_API,
+  timeout: Config.timeout
+})
+
+// 响应拦截器
+request.interceptors.response.use(
+  (response) => {
+    return response.data
+  },
+  (error) => {
+    ElMessage.error(error.response.data.message)
+    const code = error.response.data.status
+    if (code === 401) {
+      // 后台认证信息过期，浏览器cookie还存有token时，清除cookie，重定向回登录页
+      removeToken()
+      router.replace('/').then(() => {})
+    }
+    return Promise.reject(error)
+  }
+)
+
+// 请求拦截器
+request.interceptors.request.use(
+  (config) => {
+    if (getToken()) {
+      config.headers['Authorization'] = getToken()
+    }
+    return config
+  },
+  (error) => {
+    ElMessage.error(error.response.data.message)
+    return Promise.reject(error)
+  }
+)
+
+export default request

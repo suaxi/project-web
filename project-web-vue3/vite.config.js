@@ -9,19 +9,19 @@ export default defineConfig(({ mode, command }) => {
     plugins: createVitePlugins(env, command === 'build'),
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
-      },
+        '@': path.resolve(__dirname, './src')
+      }
     },
     server: {
       port: 5173,
       host: true,
       proxy: {
-        '/dev-api': {
+        '/api': {
           target: 'http://127.0.0.1:8088',
           changeOrigin: true,
-          rewrite: (p) => p.replace(/^\/dev-api/, ''),
-        },
-      },
+          rewrite: (p) => p.replace(/^\/api/, '')
+        }
+      }
     },
     css: {
       postcss: {
@@ -33,11 +33,11 @@ export default defineConfig(({ mode, command }) => {
                 if (atRule.name === 'charset') {
                   atRule.remove()
                 }
-              },
-            },
-          },
-        ],
-      },
-    },
+              }
+            }
+          }
+        ]
+      }
+    }
   }
 })

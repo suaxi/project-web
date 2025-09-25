@@ -1,8 +1,8 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-text">
-      <h1>Project-Web Vue3</h1>
-      <p>首页</p>
+      <h1>Project Web Vue3</h1>
+      <p>开发中</p>
     </div>
   </div>
 </template>
@@ -17,7 +17,7 @@
 }
 
 .dashboard-text {
-  text-align: center;
+  text-align: left;
   margin-bottom: 30px;
 
   h1 {

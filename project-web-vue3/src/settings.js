@@ -52,5 +52,20 @@ export default {
   /**
    * 底部版权文本内容
    */
-  footerContent: 'Copyright © Project Web Vue3'
+  footerContent: 'Copyright © Project Web Vue3',
+
+  /**
+   * token key
+   */
+  tokenKey: 'token',
+
+  /**
+   * 记住密码状态下的 token 在 Cookie 中存储的天数，默认1天
+   */
+  tokenExpires: 1,
+
+  /**
+   * 记住密码状态下的密码在 Cookie 中存储的天数，默认1天
+   */
+  passwordExpires: 1
 }
