@@ -19,6 +19,7 @@
           type="password"
           auto-complete="off"
           placeholder="密码"
+          show-password
           @keyup.enter="handleLogin"
         >
         </el-input>
@@ -62,6 +63,7 @@ import { captcha } from '@/api/login'
 import { onMounted, reactive, ref } from 'vue'
 import useUserStore from '@/store/modules/user'
 import { useRouter } from 'vue-router'
+import { Base64 } from 'js-base64'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -69,7 +71,7 @@ const loginFormRef = ref(null)
 
 const loginForm = reactive({
   username: 'admin',
-  password: '123456',
+  password: Base64.encode('123456'),
   code: '',
   rememberMe: false,
   uuid: ''
@@ -95,7 +97,7 @@ const getCookie = () => {
   cookiePass.value = password === undefined ? '' : password
   password = password === undefined ? loginForm.password : password
   loginForm.username = username === undefined ? loginForm.username : username
-  loginForm.password = password
+  loginForm.password = Base64.decode(password)
   loginForm.rememberMe = rememberMe === undefined ? false : Boolean(rememberMe)
   loginForm.code = ''
 }
@@ -119,12 +121,12 @@ const handleLogin = () => {
         uuid: loginForm.uuid
       }
       if (user.password !== Cookies.get()) {
-        user.password = encrypt(loginForm.password)
+        user.password = loginForm.password
       }
 
       if (loginForm.rememberMe) {
         Cookies.set('username', user.username, { expires: Config.passwordExpires })
-        Cookies.set('password', user.password, { expires: Config.passwordExpires })
+        Cookies.set('password', Base64.encode(user.password), { expires: Config.passwordExpires })
         Cookies.set('rememberMe', user.rememberMe, { expires: Config.passwordExpires })
       } else {
         Cookies.remove('username')
@@ -133,7 +135,10 @@ const handleLogin = () => {
       }
       loading.value = true
       userStore
-        .login(user)
+        .login({
+          ...user,
+          password: encrypt(user.password)
+        })
         .then(() => {
           loading.value = false
           router.push('/')
