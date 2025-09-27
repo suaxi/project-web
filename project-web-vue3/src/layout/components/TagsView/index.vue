@@ -47,7 +47,7 @@
 import ScrollPane from './ScrollPane.vue'
 import useTagsViewStore from '@/store/modules/tagsView'
 import useSettingsStore from '@/store/modules/settings'
-// import usePermissionStore from '@/store/modules/permission'
+import usePermissionStore from '@/store/modules/permission'
 import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -63,8 +63,7 @@ const route = useRoute()
 const router = useRouter()
 
 const visitedViews = computed(() => useTagsViewStore().visitedViews)
-// const routes = computed(() => usePermissionStore().routes)
-const routes = computed(() => [])
+const routes = computed(() => usePermissionStore().routes)
 const theme = computed(() => useSettingsStore().theme)
 const tagsIcon = computed(() => useSettingsStore().tagsIcon)
 

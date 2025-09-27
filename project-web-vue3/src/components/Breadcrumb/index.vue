@@ -14,13 +14,13 @@
 </template>
 
 <script setup>
-// import usePermissionStore from '@/store/modules/permission'
+import usePermissionStore from '@/store/modules/permission'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, watchEffect } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
-// const permissionStore = usePermissionStore()
+const permissionStore = usePermissionStore()
 const levelList = ref([])
 
 const getBreadcrumb = () => {
@@ -34,8 +34,7 @@ const getBreadcrumb = () => {
       if (index !== 0) item = item.slice(1)
       return item
     })
-    // getMatched(pathList, permissionStore.defaultRoutes, matched)
-    getMatched(pathList, [], matched)
+    getMatched(pathList, permissionStore.defaultRoutes, matched)
   } else {
     matched = route.matched.filter((item) => item.meta && item.meta.title)
   }

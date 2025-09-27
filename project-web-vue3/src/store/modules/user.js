@@ -34,6 +34,11 @@ const useUserStore = defineStore('user', {
       return new Promise((resolve, reject) => {
         getUserInfo()
           .then((res) => {
+            if (res.permissions.length === 0) {
+              this.roles = ['ROLE_SYSTEM_DEFAULT']
+            } else {
+              this.roles = res.permissions
+            }
             this.user = res
             resolve(res)
           })

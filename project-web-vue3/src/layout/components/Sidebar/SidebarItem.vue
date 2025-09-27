@@ -85,7 +85,6 @@ const hasOneShowingChild = (children = [], parent) => {
     onlyOneChild.value = { ...parent, path: '', noShowingChildren: true }
     return true
   }
-
   return false
 }
 

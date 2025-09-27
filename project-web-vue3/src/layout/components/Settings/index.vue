@@ -138,7 +138,7 @@
 <script setup>
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
-// import usePermissionStore from '@/store/modules/permission'
+import usePermissionStore from '@/store/modules/permission'
 import { handleThemeStyle } from '@/utils/theme'
 import { computed, getCurrentInstance, ref } from 'vue'
 import { DocumentAdd, Refresh } from '@element-plus/icons-vue'
@@ -146,7 +146,7 @@ import { DocumentAdd, Refresh } from '@element-plus/icons-vue'
 const { proxy } = getCurrentInstance()
 const appStore = useAppStore()
 const settingsStore = useSettingsStore()
-// const permissionStore = usePermissionStore()
+const permissionStore = usePermissionStore()
 const showSettings = ref(false)
 const theme = ref(settingsStore.theme)
 const sideTheme = ref(settingsStore.sideTheme)
@@ -166,7 +166,7 @@ const predefineColors = ref([
 const topNavChange = (val) => {
   if (!val) {
     appStore.toggleSideBarHide(false)
-    // permissionStore.setSidebarRouters(permissionStore.defaultRoutes)
+    permissionStore.setSidebarRouters(permissionStore.defaultRoutes)
   }
 }
 

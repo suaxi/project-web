@@ -35,7 +35,7 @@
 import { constantRoutes } from '@/router'
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
-// import usePermissionStore from '@/store/modules/permission'
+import usePermissionStore from '@/store/modules/permission'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -48,15 +48,14 @@ const hideList = ['/index', '/user/profile']
 
 const appStore = useAppStore()
 const settingsStore = useSettingsStore()
-// const permissionStore = usePermissionStore()
+const permissionStore = usePermissionStore()
 const route = useRoute()
 const router = useRouter()
 
 // 主题颜色
 const theme = computed(() => settingsStore.theme)
 // 所有的路由信息
-// const routers = computed(() => permissionStore.topbarRouters)
-const routers = computed(() => [])
+const routers = computed(() => permissionStore.topbarRouters)
 
 // 顶部显示菜单
 const topMenus = computed(() => {
