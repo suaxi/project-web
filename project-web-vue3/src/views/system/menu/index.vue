@@ -164,40 +164,14 @@
               </el-popover>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="菜单名称" prop="title">
-              <el-input v-model="form.title" placeholder="请输入菜单名称" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12" v-if="form.type === 1">
-            <el-form-item prop="routeName">
-              <template #label>
-                <span>
-                  <el-tooltip
-                    content="默认不填则和路由地址相同：如地址为：`user`，则名称为`User`（注意：因为router会删除名称相同路由，为避免名字的冲突，特殊情况下请自定义，保证唯一性）"
-                    placement="top"
-                  >
-                    <el-icon><question-filled /></el-icon>
-                  </el-tooltip>
-                  路由地址
-                </span>
-              </template>
-              <el-input v-model="form.path" placeholder="请输入路由" />
-            </el-form-item>
-          </el-col>
           <el-col :span="12" v-if="form.type !== 2">
-            <el-form-item>
-              <template #label>
-                <span>
-                  <el-tooltip content="选择是外链则路由地址需要以`http(s)://`开头" placement="top">
-                    <el-icon><question-filled /></el-icon> </el-tooltip
-                  >是否外链
-                </span>
-              </template>
-              <el-radio-group v-model="form.iFrame">
-                <el-radio :value="true">是</el-radio>
-                <el-radio :value="false">否</el-radio>
-              </el-radio-group>
+            <el-form-item label="菜单标题" prop="title">
+              <el-input v-model="form.title" placeholder="请输入菜单标题" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12" v-if="form.type === 2">
+            <el-form-item label="按钮名称" prop="title">
+              <el-input v-model="form.title" placeholder="请输入菜单标题" />
             </el-form-item>
           </el-col>
           <el-col :span="12" v-if="form.type !== 2">
@@ -216,6 +190,35 @@
               <el-input v-model="form.path" placeholder="请输入路由地址" />
             </el-form-item>
           </el-col>
+          <el-col :span="12" v-if="form.type !== 0">
+            <el-form-item>
+              <el-input v-model="form.permission" placeholder="请输入权限标识" maxlength="100" />
+              <template #label>
+                <span>
+                  <el-tooltip
+                    content="控制器中定义的权限标识，如：@PreAuthorize(`@pre.check('user:list')`)"
+                    placement="top"
+                  >
+                    <el-icon><question-filled /></el-icon>
+                  </el-tooltip>
+                  权限标识
+                </span>
+              </template>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12" v-if="form.type === 1">
+            <el-form-item prop="name">
+              <template #label>
+                <span>
+                  <el-tooltip content="组件名称，如：`User`组件对应的名称为`User`" placement="top">
+                    <el-icon><question-filled /></el-icon>
+                  </el-tooltip>
+                  组件名称
+                </span>
+              </template>
+              <el-input v-model="form.name" placeholder="请输入组件名称" />
+            </el-form-item>
+          </el-col>
           <el-col :span="12" v-if="form.type === 1">
             <el-form-item prop="component">
               <template #label>
@@ -232,20 +235,24 @@
               <el-input v-model="form.component" placeholder="请输入组件路径" />
             </el-form-item>
           </el-col>
-          <el-col :span="12" v-if="form.type !== 0">
+          <el-col :span="12">
+            <el-form-item label="排序" prop="sort">
+              <el-input-number v-model="form.sort" controls-position="right" :min="0" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12" v-if="form.type !== 2">
             <el-form-item>
-              <el-input v-model="form.permission" placeholder="请输入权限标识" maxlength="100" />
               <template #label>
                 <span>
-                  <el-tooltip
-                    content="控制器中定义的权限字符，如：@PreAuthorize(`@ss.hasPermi('system:user:list')`)"
-                    placement="top"
-                  >
-                    <el-icon><question-filled /></el-icon>
-                  </el-tooltip>
-                  权限字符
+                  <el-tooltip content="选择是外链则路由地址需要以`http(s)://`开头" placement="top">
+                    <el-icon><question-filled /></el-icon> </el-tooltip
+                  >是否外链
                 </span>
               </template>
+              <el-radio-group v-model="form.iFrame">
+                <el-radio :value="true">是</el-radio>
+                <el-radio :value="false">否</el-radio>
+              </el-radio-group>
             </el-form-item>
           </el-col>
           <el-col :span="12" v-if="form.type === 1">
@@ -284,11 +291,6 @@
                 <el-radio :value="false">显示</el-radio>
                 <el-radio :value="true">隐藏</el-radio>
               </el-radio-group>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="排序" prop="sort">
-              <el-input-number v-model="form.sort" controls-position="right" :min="0" />
             </el-form-item>
           </el-col>
         </el-row>
