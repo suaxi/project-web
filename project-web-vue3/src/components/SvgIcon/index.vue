@@ -24,7 +24,7 @@ export default defineComponent({
   },
   setup(props) {
     return {
-      iconName: computed(() => `#icon-${props.iconClass}`),
+      iconName: computed(() => `#icon-${props.iconClass ? props.iconClass : null}`),
       svgClass: computed(() => {
         if (props.className) {
           return `svg-icon ${props.className}`
