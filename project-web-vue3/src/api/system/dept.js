@@ -25,11 +25,10 @@ export function del(ids) {
   })
 }
 
-export function childList(params) {
+export function childList(pid) {
   return request({
-    url: '/dept/child-list',
-    method: 'get',
-    params
+    url: `/dept/child-list?pid=${pid}`,
+    method: 'get'
   })
 }
 
