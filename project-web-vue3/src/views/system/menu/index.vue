@@ -43,17 +43,12 @@
       :default-expand-all="expanded"
     >
       <el-table-column :show-overflow-tooltip="true" label="菜单标题" width="auto" prop="title" />
-      <el-table-column prop="icon" label="图标" align="center" width="100">
-        <template #default="scope">
-          <svg-icon :icon-class="scope.row.icon" />
-        </template>
-      </el-table-column>
       <el-table-column prop="icon" label="图标" align="center" width="60px">
         <template #default="scope">
           <svg-icon :icon-class="scope.row.icon ? scope.row.icon : ''" />
         </template>
       </el-table-column>
-      <el-table-column prop="menuSort" align="center" label="排序">
+      <el-table-column prop="sort" align="center" label="排序">
         <template #default="scope">
           {{ scope.row.sort }}
         </template>
@@ -370,10 +365,10 @@ const loadMenu = (row, treeNode, resolve) => {
   maps.set(row.id, { row, treeNode, resolve })
   setTimeout(() => {
     childList(row.id).then((res) => {
-      resolve(res.records)
       if (!res.records.length) {
         tableRef.value.store.states.lazyTreeNodeMap.value[row.id] = []
       }
+      resolve(res.records)
     })
   }, 100)
 }
@@ -474,6 +469,19 @@ const handleUpdate = (row) => {
   })
 }
 
+const updateTableData = (val) => {
+  const treeData = maps.get(val.pid)
+  if (treeData) {
+    loadMenu(treeData.row, treeData.treeNode, treeData.resolve)
+  } else if (val.pid === 0) {
+    getMenuList()
+  } else {
+    loadMenu({ id: val.pid }, null, (nodes) => {
+      tableRef.value.store.states.lazyTreeNodeMap[val.pid] = nodes
+    })
+  }
+}
+
 const submit = () => {
   formRef.value.validate((valid) => {
     if (valid) {
@@ -485,22 +493,14 @@ const submit = () => {
       if (submitForm.id) {
         update(submitForm).then(() => {
           ElMessage.success('修改成功')
+          updateTableData(submitForm)
           dialogFormVisible.value = false
-          const treeData = maps.get(submitForm.pid)
-          if (treeData) {
-            loadMenu(treeData.row, treeData.treeNode, treeData.resolve)
-          }
         })
       } else {
         add(submitForm).then(() => {
           ElMessage.success('保存成功')
+          updateTableData(submitForm)
           dialogFormVisible.value = false
-          const treeData = maps.get(submitForm.pid)
-          if (treeData) {
-            loadMenu(treeData.row, treeData.treeNode, treeData.resolve)
-          } else {
-            loadMenu({ id: submitForm.pid })
-          }
         })
       }
     } else {
@@ -520,10 +520,7 @@ function handleDelete(row) {
     })
     .then(() => {
       ElMessage.success('删除成功！')
-      const treeData = maps.get(row.pid)
-      if (treeData) {
-        loadMenu(treeData.row, treeData.treeNode, treeData.resolve)
-      }
+      updateTableData(row)
     })
 }
 
