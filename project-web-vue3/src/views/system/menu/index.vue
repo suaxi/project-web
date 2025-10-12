@@ -374,8 +374,8 @@ const loadMenu = (row, treeNode, resolve) => {
 }
 
 const resetQuery = () => {
-  queryParams.num = 1
-  queryParams.size = 10
+  queryParams.pageNum = 1
+  queryParams.pageSize = 10
   queryParams.title = undefined
 
   refreshTable.value = false
