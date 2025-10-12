@@ -77,7 +77,7 @@
             <el-table-column fixed prop="name" label="名称" width="150" />
             <el-table-column prop="dataScope" label="数据权限" width="120" />
             <el-table-column prop="level" label="角色级别" width="120" />
-            <el-table-column prop="description" label="描述" width="200" />
+            <el-table-column :show-overflow-tooltip="true" prop="description" label="描述" />
             <el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建时间" />
           </el-table>
           <!-- 分页 -->
@@ -359,7 +359,7 @@ const handleDelete = () => {
     return
   }
   const ids = selectData.value.map((item) => item.id)
-  ElMessageBox.confirm(`是否确认删除角色 ${selectData.value[0].name}？`, '警告', {
+  ElMessageBox.confirm('是否确认删除？', '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'

@@ -269,7 +269,7 @@ const handleDelete = () => {
     return
   }
   const ids = selectData.value.map((item) => item.id)
-  ElMessageBox.confirm(`是否确认删除？`, '警告', {
+  ElMessageBox.confirm('是否确认删除？', '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'

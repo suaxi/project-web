@@ -67,9 +67,9 @@
       <el-table-column fixed prop="username" label="用户名" width="150" />
       <el-table-column prop="nickName" label="昵称" width="120" />
       <el-table-column prop="sex" label="性别" width="120" />
-      <el-table-column prop="phone" label="电话" width="200" />
-      <el-table-column prop="email" label="邮箱" width="200" />
-      <el-table-column prop="deptName" label="部门" width="120" />
+      <el-table-column prop="phone" label="电话" />
+      <el-table-column prop="email" label="邮箱" />
+      <el-table-column prop="deptName" label="部门" />
       <el-table-column prop="enabled" label="状态" width="120">
         <template #default="scope">
           <el-switch ref="enabled" v-model="scope.row.enabled" @click.stop />
@@ -351,8 +351,8 @@ const handleUpdate = () => {
 }
 
 const loadDeptTree = (node, resolve) => {
-  const pid = node.level === 0 ? null : node.data.id
-  getDeptList({ pid }).then((res) => {
+  const pid = node.level === 0 ? 0 : node.data.id
+  getDeptList(pid).then((res) => {
     deptList.value = res.records
     resolve(deptList.value)
   })
@@ -398,7 +398,7 @@ const handleDelete = () => {
     return
   }
   const ids = selectData.value.map((item) => item.id)
-  ElMessageBox.confirm(`是否确认删除用户 ${selectData.value[0].username}？`, '警告', {
+  ElMessageBox.confirm('是否确认删除？', '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
