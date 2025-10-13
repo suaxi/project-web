@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 import { getToken, removeToken } from '@/utils/auth'
 import router from '@/router'
 import Config from '@/settings'
@@ -15,12 +15,19 @@ request.interceptors.response.use(
     return response.data
   },
   (error) => {
-    ElMessage.error(error.response.data.message)
     const code = error.response.data.status
     if (code === 401) {
       // 后台认证信息过期，浏览器cookie还存有token时，清除cookie，重定向回登录页
       removeToken()
-      router.replace('/').then(() => {})
+      router.replace('/')
+
+      ElNotification({
+        title: '提示',
+        message: '当前登录状态已过期，请重新登录！',
+        type: 'warning'
+      })
+    } else {
+      ElMessage.error(error.response.data.message)
     }
     return Promise.reject(error)
   }
