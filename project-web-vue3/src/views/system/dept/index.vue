@@ -138,7 +138,9 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="submit">确 定</el-button>
+          <el-button :loading="confirmButtonLoading" type="primary" @click="submit"
+            >确 定</el-button
+          >
         </div>
       </template>
     </el-dialog>
@@ -151,7 +153,8 @@ import { add, del, getDept, update, childList } from '@/api/system/dept'
 import { ref, reactive, nextTick, onMounted } from 'vue'
 
 const tableRef = ref(null)
-const loading = ref(true)
+const loading = ref(false)
+const confirmButtonLoading = ref(false)
 const permission = {
   add: ['dept:add'],
   edit: ['dept:edit'],
@@ -310,23 +313,34 @@ const updateTableData = (val) => {
 const submit = () => {
   formRef.value.validate((valid) => {
     if (valid) {
+      confirmButtonLoading.value = true
       const submitForm = { ...form }
       if (submitForm.pid === 0 || submitForm.pid === null) {
         submitForm.pid = 0
       }
 
       if (submitForm.id) {
-        update(submitForm).then(() => {
-          ElMessage.success('修改成功')
-          updateTableData(submitForm)
-          dialogFormVisible.value = false
-        })
+        update(submitForm)
+          .then(() => {
+            ElMessage.success('修改成功')
+            updateTableData(submitForm)
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
       } else {
-        add(submitForm).then(() => {
-          ElMessage.success('保存成功')
-          updateTableData(submitForm)
-          dialogFormVisible.value = false
-        })
+        add(submitForm)
+          .then(() => {
+            ElMessage.success('保存成功')
+            updateTableData(submitForm)
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
       }
     } else {
       return false

@@ -3,10 +3,10 @@
     <!-- 工具栏 -->
     <div class="head-container">
       <el-form :model="queryParams" :inline="true" label-width="68px">
-        <el-form-item label="名称" prop="name">
+        <el-form-item label="角色名称" prop="name">
           <el-input
             v-model="queryParams.name"
-            placeholder="请输入名称"
+            placeholder="请输入角色名称"
             clearable
             style="width: 200px"
             @keyup.enter="queryPage"
@@ -185,14 +185,16 @@
       <template v-slot:footer>
         <div class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="submit">确 定</el-button>
+          <el-button :loading="confirmButtonLoading" type="primary" @click="submit"
+            >确 定</el-button
+          >
         </div>
       </template>
     </el-dialog>
   </div>
 </template>
 
-<script setup>
+<script setup name="Role">
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '@/components/Pagination/index.vue'
 import { tree as deptTree } from '@/api/system/dept'
@@ -201,6 +203,7 @@ import { getRole, page, add, update, del, updateRoleMenu } from '@/api/system/ro
 import { onMounted, reactive, ref, watch } from 'vue'
 
 const loading = ref(false)
+const confirmButtonLoading = ref(false)
 const permission = {
   add: ['roles:add'],
   edit: ['roles:edit'],
@@ -330,20 +333,32 @@ const submit = () => {
       return { id: item }
     })
   }
+
   formRef.value.validate((valid) => {
     if (valid) {
+      confirmButtonLoading.value = true
       if (form.id) {
-        update(form).then(() => {
-          ElMessage.success('修改成功')
-          dialogFormVisible.value = false
-          queryPage()
-        })
+        update(form)
+          .then(() => {
+            ElMessage.success('修改成功')
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+            queryPage()
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
       } else {
-        add(form).then(() => {
-          ElMessage.success('保存成功')
-          dialogFormVisible.value = false
-          queryPage()
-        })
+        add(form)
+          .then(() => {
+            ElMessage.success('保存成功')
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+            queryPage()
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
       }
       menuIds.value = []
       menuTreeRef.value.setCheckedKeys(menuIds.value)
@@ -368,7 +383,7 @@ const handleDelete = () => {
       return del(ids)
     })
     .then(() => {
-      ElMessage.success('删除成功！')
+      ElMessage.success('删除成功')
       queryPage()
       menuIds.value = []
       menuTreeRef.value.setCheckedKeys(menuIds.value)

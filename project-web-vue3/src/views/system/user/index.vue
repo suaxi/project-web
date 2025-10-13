@@ -192,14 +192,16 @@
       <template v-slot:footer>
         <div class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="submit">确 定</el-button>
+          <el-button :loading="confirmButtonLoading" type="primary" @click="submit"
+            >确 定</el-button
+          >
         </div>
       </template>
     </el-dialog>
   </div>
 </template>
 
-<script setup>
+<script setup name="User">
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '@/components/Pagination/index.vue'
 import { getUser, page, add, update, del } from '@/api/system/user'
@@ -209,6 +211,7 @@ import { list as getJobList } from '@/api/system/job'
 import { onMounted, reactive, ref } from 'vue'
 
 const loading = ref(false)
+const confirmButtonLoading = ref(false)
 const permission = {
   add: ['user:add'],
   edit: ['user:edit'],
@@ -367,6 +370,7 @@ const handleDeptSelected = (val) => {
 const submit = () => {
   formRef.value.validate((valid) => {
     if (valid) {
+      confirmButtonLoading.value = true
       form = {
         ...form,
         jobIds: form.jobIds.join(','),
@@ -374,17 +378,27 @@ const submit = () => {
       }
 
       if (form.id) {
-        update(form).then(() => {
-          ElMessage.success('修改成功')
-          dialogFormVisible.value = false
-          queryPage()
-        })
+        update(form)
+          .then(() => {
+            ElMessage.success('修改成功')
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+            queryPage()
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
       } else {
-        add(form).then(() => {
-          ElMessage.success('保存成功')
-          dialogFormVisible.value = false
-          queryPage()
-        })
+        add(form)
+          .then(() => {
+            ElMessage.success('保存成功')
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+            queryPage()
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
       }
     } else {
       return false
@@ -407,7 +421,7 @@ const handleDelete = () => {
       return del(ids)
     })
     .then(() => {
-      ElMessage.success('删除成功！')
+      ElMessage.success('删除成功')
       queryPage()
     })
 }
