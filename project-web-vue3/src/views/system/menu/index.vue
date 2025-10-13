@@ -9,11 +9,11 @@
             placeholder="请输入菜单名称"
             clearable
             style="width: 200px"
-            @keyup.enter="queryPage"
+            @keyup.enter="fuzzyQuery"
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="Search" @click="queryPage">搜索</el-button>
+          <el-button type="primary" icon="Search" @click="fuzzyQuery">搜索</el-button>
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
@@ -304,7 +304,7 @@
 
 <script setup name="Menu">
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { add, del, getMenu, update, childList } from '@/api/system/menu'
+import { add, del, getMenu, update, childList, tree } from '@/api/system/menu'
 import SvgIcon from '@/components/SvgIcon/index.vue'
 import IconSelect from '@/components/IconSelect/index.vue'
 import { ref, reactive, nextTick, onMounted } from 'vue'
@@ -318,8 +318,6 @@ const permission = {
   del: ['menu:del']
 }
 const queryParams = reactive({
-  pageNum: 1,
-  pageSize: 10,
   title: undefined
 })
 const menuList = ref([])
@@ -352,8 +350,16 @@ const rules = {
   path: [{ required: true, message: '请输入地址', trigger: 'blur' }]
 }
 
-const queryPage = () => {
-  getMenuList()
+const fuzzyQuery = () => {
+  menuList.value = []
+
+  loading.value = true
+  tree(queryParams).then((res) => {
+    menuList.value = res
+    refreshTable.value = true
+    expanded.value = true
+    loading.value = false
+  })
 }
 
 const getMenuList = () => {

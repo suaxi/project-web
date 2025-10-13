@@ -66,3 +66,11 @@ export function page(params) {
     method: 'get'
   })
 }
+
+export function tree(data) {
+  return request({
+    url: '/menu/menu-tree',
+    method: 'post',
+    data
+  })
+}

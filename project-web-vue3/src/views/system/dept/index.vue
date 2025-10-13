@@ -6,10 +6,10 @@
         <el-form-item label="部门名称" prop="name">
           <el-input
             v-model="queryParams.name"
-            placeholder="请输入名称"
+            placeholder="请输入部门名称"
             clearable
             style="width: 200px"
-            @keyup.enter="queryPage"
+            @keyup.enter="fuzzyQuery"
           />
         </el-form-item>
         <el-form-item label="状态" prop="enabled">
@@ -28,7 +28,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="Search" @click="queryPage">搜索</el-button>
+          <el-button type="primary" icon="Search" @click="fuzzyQuery">搜索</el-button>
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
@@ -149,7 +149,7 @@
 
 <script setup name="Dept">
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { add, del, getDept, update, childList } from '@/api/system/dept'
+import { add, del, getDept, update, childList, tree } from '@/api/system/dept'
 import { ref, reactive, nextTick, onMounted } from 'vue'
 
 const tableRef = ref(null)
@@ -161,8 +161,6 @@ const permission = {
   del: ['dept:del']
 }
 const queryParams = reactive({
-  pageNum: 1,
-  pageSize: 10,
   name: undefined,
   enabled: undefined
 })
@@ -190,8 +188,16 @@ const rules = {
   name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }]
 }
 
-const queryPage = () => {
-  getDeptList()
+const fuzzyQuery = () => {
+  deptList.value = []
+
+  loading.value = true
+  tree(queryParams).then((res) => {
+    deptList.value = res
+    refreshTable.value = true
+    expanded.value = true
+    loading.value = false
+  })
 }
 
 const getDeptList = () => {

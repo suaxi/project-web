@@ -55,9 +55,10 @@ export function page(params) {
   })
 }
 
-export function tree(id) {
+export function tree(data) {
   return request({
     url: '/dept/dept-tree',
-    method: 'get'
+    method: 'post',
+    data
   })
 }
