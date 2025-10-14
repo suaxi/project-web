@@ -38,3 +38,11 @@ export function page(params) {
     method: 'get'
   })
 }
+
+export function detailList(data) {
+  return request({
+    url: '/dict/detail-list',
+    method: 'post',
+    data
+  })
+}

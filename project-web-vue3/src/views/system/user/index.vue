@@ -20,7 +20,7 @@
             style="width: 200px"
           >
             <el-option
-              v-for="(item, index) in userStatus"
+              v-for="(item, index) in user_status"
               :key="index"
               :label="item.label"
               :value="item.value"
@@ -166,7 +166,7 @@
           <el-col :span="12">
             <el-form-item label="状态">
               <el-radio-group v-model="form.enabled">
-                <el-radio v-for="item in userStatus" :key="item.value" :label="item.value">
+                <el-radio v-for="item in user_status" :key="item.value" :label="item.value">
                   {{ item.label }}
                 </el-radio>
               </el-radio-group>
@@ -208,7 +208,10 @@ import { getUser, page, add, update, del } from '@/api/system/user'
 import { childList as getDeptList } from '@/api/system/dept'
 import { list as getRoleList } from '@/api/system/role'
 import { list as getJobList } from '@/api/system/job'
-import { onMounted, reactive, ref } from 'vue'
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
+
+const { proxy } = getCurrentInstance()
+const { user_status } = proxy.useDict('user_status')
 
 const loading = ref(false)
 const confirmButtonLoading = ref(false)
@@ -224,10 +227,6 @@ const queryParams = reactive({
   enabled: undefined
 })
 const total = ref(0)
-const userStatus = [
-  { label: '激活', value: true },
-  { label: '禁用', value: false }
-]
 const tableData = ref([])
 const selectData = ref([])
 const dialogFormVisible = ref(false)

@@ -11,6 +11,7 @@ import locale from 'element-plus/es/locale/lang/zh-cn'
 import '@/assets/styles/index.scss'
 
 import tab from '@/utils/tab'
+import { useDict } from '@/utils/dict'
 
 // svg
 import 'virtual:svg-icons-register'
@@ -29,5 +30,6 @@ app.component('svg-icon', SvgIcon)
 
 // tab
 app.config.globalProperties.$tab = tab
+app.config.globalProperties.useDict = useDict
 
 app.mount('#app')
