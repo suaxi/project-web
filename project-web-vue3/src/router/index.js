@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/layout/index.vue'
 import { getToken } from '../utils/auth.js'
 import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 import useUserStore from '@/store/modules/user'
 import usePermissionStore from '@/store/modules/permission'
 import { ElMessage } from 'element-plus'
@@ -14,7 +15,15 @@ export const constantRoutes = [
   {
     path: '/login',
     name: 'login',
-    component: () => import('@/views/login.vue')
+    component: () => import('@/views/login.vue'),
+    meta: { title: '登录' }
+  },
+  {
+    path: '/404',
+    name: '404',
+    component: () => import('@/views/error/404.vue'),
+    meta: { title: '404' },
+    hidden: true
   },
   {
     path: '',
@@ -41,8 +50,8 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   NProgress.start()
+  document.title = to.meta.title || 'Project Web'
   if (getToken()) {
-    document.title = to.meta.title || 'Project Web'
     if (to.name === 'login') {
       // 已登录
       next('/')
