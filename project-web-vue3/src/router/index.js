@@ -16,7 +16,8 @@ export const constantRoutes = [
     path: '/login',
     name: 'login',
     component: () => import('@/views/login.vue'),
-    meta: { title: '登录' }
+    meta: { title: '登录' },
+    hidden: true
   },
   {
     path: '/404',

@@ -12,7 +12,7 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup name="404"></script>
 
 <style lang="scss" scoped>
 .wscn-http404-container {

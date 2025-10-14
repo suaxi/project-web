@@ -15,7 +15,7 @@ request.interceptors.response.use(
     return response.data
   },
   (error) => {
-    const code = error.response.data.status
+    const code = error.status
     if (code === 401) {
       // 后台认证信息过期，浏览器cookie还存有token时，清除cookie，重定向回登录页
       removeToken()
@@ -26,6 +26,8 @@ request.interceptors.response.use(
         message: '当前登录状态已过期，请重新登录！',
         type: 'warning'
       })
+    } else if (code === 403) {
+      ElMessage.warning('访问权限不足，请联系管理员！')
     } else {
       ElMessage.error(error.response.data.message)
     }
