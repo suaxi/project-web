@@ -1,12 +1,13 @@
 <template>
-  <svg :class="svgClass" aria-hidden="true" v-on="$listeners">
-    <use :href="iconName" />
+  <svg :class="svgClass" aria-hidden="true">
+    <use :xlink:href="iconName" :fill="color" />
   </svg>
 </template>
 
 <script>
-export default {
-  name: 'SvgIcon',
+import { computed, defineComponent } from 'vue'
+
+export default defineComponent({
   props: {
     iconClass: {
       type: String,
@@ -15,35 +16,40 @@ export default {
     className: {
       type: String,
       default: ''
+    },
+    color: {
+      type: String,
+      default: ''
     }
   },
-  computed: {
-    iconName() {
-      return `#icon-${this.iconClass}`
-    },
-    svgClass() {
-      if (this.className) {
-        return 'svg-icon ' + this.className
-      } else {
+  setup(props) {
+    return {
+      iconName: computed(() => `#icon-${props.iconClass ? props.iconClass : null}`),
+      svgClass: computed(() => {
+        if (props.className) {
+          return `svg-icon ${props.className}`
+        }
         return 'svg-icon'
-      }
-    },
-    styleExternalIcon() {
-      return {
-        mask: `url(${this.iconClass}) no-repeat 50% 50%`,
-        '-webkit-mask': `url(${this.iconClass}) no-repeat 50% 50%`
-      }
+      })
     }
   }
-}
+})
 </script>
 
-<style scoped>
+<style scope lang="scss">
+.sub-el-icon,
+.nav-icon {
+  display: inline-block;
+  font-size: 15px;
+  margin-right: 12px;
+  position: relative;
+}
+
 .svg-icon {
   width: 1em;
   height: 1em;
-  vertical-align: -0.15em;
+  position: relative;
   fill: currentColor;
-  overflow: hidden;
+  vertical-align: -2px;
 }
 </style>

@@ -1,19 +1,16 @@
 <template>
-  <div class="login" :style="'background-image:url('+ Background +');'">
+  <div class="login" :style="'background-image:url(' + Background + ');'">
     <el-form
-      ref="loginForm"
+      ref="loginFormRef"
       :model="loginForm"
       :rules="loginRules"
       label-position="left"
       label-width="0px"
       class="login-form"
     >
-      <h3 class="title">
-        Project
-      </h3>
+      <h3 class="title">Project Web Vue3</h3>
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
-          <!--          <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon"/>-->
         </el-input>
       </el-form-item>
       <el-form-item prop="password">
@@ -22,9 +19,9 @@
           type="password"
           auto-complete="off"
           placeholder="密码"
-          @keyup.enter.native="handleLogin"
+          show-password
+          @keyup.enter="handleLogin"
         >
-          <!--          <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon"/>-->
         </el-input>
       </el-form-item>
       <el-form-item prop="code">
@@ -33,136 +30,136 @@
           auto-complete="off"
           placeholder="验证码"
           style="width: 63%"
-          @keyup.enter.native="handleLogin"
+          @keyup.enter="handleLogin"
         >
-          <!--          <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon"/>-->
         </el-input>
         <div class="login-code">
-          <img :src="codeUrl" @click="getCode">
+          <img :src="codeUrl" @click="getCode" />
         </div>
       </el-form-item>
-      <el-checkbox v-model="loginForm.rememberMe" style="margin:0 0 25px 0;">
-        记住我
-      </el-checkbox>
-      <el-form-item style="width:100%;">
+      <el-checkbox v-model="loginForm.rememberMe" style="margin: 0 0 25px 0"> 记住我 </el-checkbox>
+      <el-form-item style="width: 100%">
         <el-button
           :loading="loading"
-          size="medium"
+          size="default"
           type="primary"
-          style="width:100%;"
-          @click.native.prevent="handleLogin"
+          style="width: 100%"
+          @click.prevent="handleLogin"
         >
           <span v-if="!loading">登 录</span>
           <span v-else>登 录 中...</span>
         </el-button>
       </el-form-item>
     </el-form>
-    <!--  底部  -->
-    <!--    <div v-if="$store.state.settings.showFooter" id="el-login-footer">-->
-    <!--      <span v-html="$store.state.settings.footerTxt"/>-->
-    <!--      <span v-if="$store.state.settings.caseNumber"> ⋅ </span>-->
-    <!--      <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">{{ $store.state.settings.caseNumber }}</a>-->
-    <!--    </div>-->
   </div>
 </template>
 
-<script>
+<script setup>
 import Background from '@/assets/images/background.jpg'
 import { encrypt } from '@/utils/rsaEncrypt'
 import Cookies from 'js-cookie'
 import Config from '@/settings'
-import { getCode } from '@/api/system/login'
+import { captcha } from '@/api/login'
+import { onMounted, reactive, ref } from 'vue'
+import useUserStore from '@/store/modules/user'
+import { useRouter } from 'vue-router'
+import { Base64 } from 'js-base64'
 
-export default {
-  name: 'ProjectLogin',
-  data() {
-    return {
-      loginForm: {
-        username: 'admin',
-        password: '123456',
-        code: '',
-        rememberMe: false,
-        uuid: ''
-      },
-      loginRules: {
-        username: [{ required: true, trigger: 'blur', message: '用户名不能为空' }],
-        password: [{ required: true, trigger: 'blur', message: '密码不能为空' }],
-        code: [{ required: true, trigger: 'blur', message: '验证码不能为空' }]
-      },
-      Background,
-      codeUrl: '',
-      loading: false,
-      cookiePass: ''
-    }
-  },
-  created() {
-    this.getCode()
-    this.getCookie()
-  },
-  methods: {
-    getCookie() {
-      const username = Cookies.get('username')
-      let password = Cookies.get('password')
-      const rememberMe = Cookies.get('rememberMe')
-      // 保存cookie里面的加密后的密码
-      this.cookiePass = password === undefined ? '' : password
-      password = password === undefined ? this.loginForm.password : password
-      this.loginForm = {
-        username: username === undefined ? this.loginForm.username : username,
-        password: password,
-        rememberMe: rememberMe === undefined ? false : Boolean(rememberMe),
-        code: ''
-      }
-    },
-    getCode() {
-      getCode().then(res => {
-        this.codeUrl = res.img
-        this.loginForm.uuid = res.uuid
-      })
-    },
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          // 校验通过执行登录
-          const user = {
-            username: this.loginForm.username,
-            password: this.loginForm.password,
-            rememberMe: this.loginForm.rememberMe,
-            code: this.loginForm.code,
-            uuid: this.loginForm.uuid
-          }
-          if (user.password !== Cookies.get()) {
-            user.password = encrypt(this.loginForm.password)
-          }
+const userStore = useUserStore()
+const router = useRouter()
+const loginFormRef = ref(null)
 
-          if (this.loginForm.rememberMe) {
-            Cookies.set('username', user.username, { expires: Config.passwordExpires })
-            Cookies.set('password', user.password, { expires: Config.passwordExpires })
-            Cookies.set('rememberMe', user.rememberMe, { expires: Config.passwordExpires })
-          } else {
-            Cookies.remove('username')
-            Cookies.remove('password')
-            Cookies.remove('rememberMe')
-          }
-          this.loading = true
+const loginForm = reactive({
+  username: 'admin',
+  password: Base64.encode('123456'),
+  code: '',
+  rememberMe: false,
+  uuid: ''
+})
 
-          this.$store.dispatch('Login', user).then(() => {
-            this.loading = false
-            this.$router.push('/')
-          }).catch(() => {
-            this.loading = false
-            this.getCode()
-          })
-        } else {
-          return false
-        }
-      })
-    }
-  }
+const loginRules = reactive({
+  username: [{ required: true, trigger: 'blur', message: '用户名不能为空' }],
+  password: [{ required: true, trigger: 'blur', message: '密码不能为空' }],
+  code: [{ required: true, trigger: 'blur', message: '验证码不能为空' }]
+})
+
+const codeUrl = ref('')
+
+const loading = ref(false)
+
+const cookiePass = ref('')
+
+const getCookie = () => {
+  const username = Cookies.get('username')
+  let password = Cookies.get('password')
+  const rememberMe = Cookies.get('rememberMe')
+  // 保存cookie里面的加密后的密码
+  cookiePass.value = password === undefined ? '' : password
+  password = password === undefined ? loginForm.password : password
+  loginForm.username = username === undefined ? loginForm.username : username
+  loginForm.password = Base64.decode(password)
+  loginForm.rememberMe = rememberMe === undefined ? false : Boolean(rememberMe)
+  loginForm.code = ''
 }
+
+const getCode = () => {
+  captcha().then((res) => {
+    codeUrl.value = res.img
+    loginForm.uuid = res.uuid
+  })
+}
+
+const handleLogin = () => {
+  loginFormRef.value.validate((valid) => {
+    if (valid) {
+      // 校验通过执行登录
+      const user = {
+        username: loginForm.username,
+        password: loginForm.password,
+        rememberMe: loginForm.rememberMe,
+        code: loginForm.code,
+        uuid: loginForm.uuid
+      }
+      if (user.password !== Cookies.get()) {
+        user.password = loginForm.password
+      }
+
+      if (loginForm.rememberMe) {
+        Cookies.set('username', user.username, { expires: Config.passwordExpires })
+        Cookies.set('password', Base64.encode(user.password), { expires: Config.passwordExpires })
+        Cookies.set('rememberMe', user.rememberMe, { expires: Config.passwordExpires })
+      } else {
+        Cookies.remove('username')
+        Cookies.remove('password')
+        Cookies.remove('rememberMe')
+      }
+      loading.value = true
+      userStore
+        .login({
+          ...user,
+          password: encrypt(user.password)
+        })
+        .then(() => {
+          loading.value = false
+          router.push('/')
+        })
+        .catch(() => {
+          loading.value = false
+          getCode()
+        })
+    } else {
+      return false
+    }
+  })
+}
+
+onMounted(() => {
+  getCode()
+  getCookie()
+})
 </script>
 
-<style rel="stylesheet/scss" lang="scss">
+<style lang="scss" scoped>
 .login {
   display: flex;
   justify-content: center;
@@ -174,7 +171,6 @@ export default {
 .title {
   margin: 0 auto 30px auto;
   text-align: center;
-  color: #707070;
 }
 
 .login-form {
@@ -212,7 +208,7 @@ export default {
 
   img {
     cursor: pointer;
-    vertical-align: middle
+    vertical-align: middle;
   }
 }
 </style>

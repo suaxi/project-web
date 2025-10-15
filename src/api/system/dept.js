@@ -25,11 +25,10 @@ export function del(ids) {
   })
 }
 
-export function childList(params) {
+export function childList(pid) {
   return request({
-    url: `/dept/child-list`,
-    method: 'get',
-    params
+    url: `/dept/child-list?pid=${pid}`,
+    method: 'get'
   })
 }
 
@@ -53,5 +52,13 @@ export function page(params) {
   return request({
     url: '/dept/page?' + qs.stringify(params, { indices: false }),
     method: 'get'
+  })
+}
+
+export function tree(data) {
+  return request({
+    url: '/dept/dept-tree',
+    method: 'post',
+    data
   })
 }

@@ -1,32 +1,39 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 
 import App from './App.vue'
-import router from '@/router'
+import router from './router'
 import store from './store'
 
-import ElementUI from 'element-ui'
-import request from '@/utils/request'
-import permission from '@/components/Permission'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import locale from 'element-plus/es/locale/lang/zh-cn'
 
-import 'element-ui/lib/theme-chalk/index.css'
-// global css
-import './assets/styles/index.scss'
-// global svg
-import './assets/icons/index'
-// vform
-import vform from '@/components/workflow/vform/VFormDesigner.umd.min'
-import '@/components/workflow/vform/VFormDesigner.css'
-import modelerStore from '@/components/workflow/Process/common/global'
+import '@/assets/styles/index.scss'
 
-Vue.config.productionTip = false
-Vue.use(ElementUI)
-Vue.use(vform)
-Vue.use(permission)
-Vue.prototype.$request = request
-Vue.prototype.modelerStore = modelerStore
+import tab from '@/utils/tab'
+import { useDict } from '@/utils/dict'
+import vPermission from '@/directive/index'
 
-new Vue({
-  router,
-  store,
-  render: h => h(App)
-}).$mount('#app')
+// svg
+import 'virtual:svg-icons-register'
+import SvgIcon from '@/components/SvgIcon/index.vue'
+import elementIcons from '@/components/SvgIcon/svgicon'
+
+const app = createApp(App)
+
+app.use(router)
+app.use(store)
+app.use(ElementPlus, {
+  locale: locale
+})
+app.use(elementIcons)
+app.component('svg-icon', SvgIcon)
+
+// tab
+app.config.globalProperties.$tab = tab
+app.config.globalProperties.useDict = useDict
+
+// v-permission
+app.directive('permission', vPermission)
+
+app.mount('#app')

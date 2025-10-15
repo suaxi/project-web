@@ -1,25 +1,25 @@
 # project-web
 
-参考[eladmin](https://github.com/elunez/eladmin)、[RuoYi-flowable](https://github.com/tony2y/RuoYi-flowable)项目
+参考[eladmin](https://github.com/elunez/eladmin)、[RuoYi-Vue3](https://github.com/yangzongzhuan/RuoYi-Vue3)项目
 
 ## Project setup
 ```
-npm install
+yarn install
 ```
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+yarn dev
 ```
 
 ### Compiles and minifies for production
 ```
-npm run build
+yarn build
 ```
 
 ### Lints and fixes files
 ```
-npm run lint
+yarn lint
 ```
 
 ### Customize configuration

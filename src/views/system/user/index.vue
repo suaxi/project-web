@@ -2,73 +2,69 @@
   <div class="app-container">
     <!-- 工具栏 -->
     <div class="head-container">
-      <!-- 搜索 -->
-      <el-input
-        v-model="queryParams.username"
-        clearable
-        size="small"
-        placeholder="请输入名称"
-        style="width: 200px;"
-        class="filter-item"
-        @keyup.enter.native="queryPage"
-      />
-      <el-select
-        v-model="queryParams.enabled"
-        clearable
-        size="small"
-        placeholder="状态"
-        class="filter-item"
-        style="width: 90px"
-        @change="queryPage"
-      >
-        <el-option
-          v-for="(item, index) in userStatus"
-          :key="index"
-          :label="item.label"
-          :value="item.value"
-        />
-      </el-select>
-      <span>
-        <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
-        <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
-      </span>
+      <el-form :model="queryParams" :inline="true" label-width="68px">
+        <el-form-item label="用户名称" prop="username">
+          <el-input
+            v-model="queryParams.username"
+            placeholder="请输入用户名称"
+            clearable
+            style="width: 200px"
+            @keyup.enter="queryPage"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="enabled">
+          <el-select
+            v-model="queryParams.enabled"
+            placeholder="用户状态"
+            clearable
+            style="width: 200px"
+          >
+            <el-option
+              v-for="(item, index) in user_status"
+              :key="index"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="Search" @click="queryPage">搜索</el-button>
+          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        </el-form-item>
+      </el-form>
     </div>
 
-    <div class="crud-opts">
-      <span class="crud-opts-left">
-        <el-button
-          v-permission="permission.add"
-          class="filter-item"
-          size="mini"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleAdd"
-        >新增</el-button>
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button v-permission="permission.add" type="primary" plain icon="Plus" @click="handleAdd"
+          >新增</el-button
+        >
+      </el-col>
+      <el-col :span="1.5">
         <el-button
           v-permission="permission.edit"
-          class="filter-item"
-          size="mini"
           type="success"
-          icon="el-icon-edit"
+          plain
+          icon="Edit"
           :disabled="selectData.length !== 1"
           @click="handleUpdate"
-        >修改</el-button>
+          >修改
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button
           v-permission="permission.del"
-          class="filter-item"
           type="danger"
-          icon="el-icon-delete"
-          size="mini"
+          plain
+          icon="Delete"
           @click="handleDelete"
-        >删除</el-button>
-        <el-button
-          class="filter-item"
-          size="mini"
-          type="warning"
-          icon="el-icon-download"
-        >导出</el-button>
-      </span>
-    </div>
+          >删除</el-button
+        >
+      </el-col>
+      <!--      <el-col :span="1.5">-->
+      <!--        <el-button type="warning" plain icon="Download">导出</el-button>-->
+      <!--      </el-col>-->
+    </el-row>
 
     <el-table
       v-loading="loading"
@@ -81,9 +77,9 @@
       <el-table-column fixed prop="username" label="用户名" width="150" />
       <el-table-column prop="nickName" label="昵称" width="120" />
       <el-table-column prop="sex" label="性别" width="120" />
-      <el-table-column prop="phone" label="电话" width="200" />
-      <el-table-column prop="email" label="邮箱" width="200" />
-      <el-table-column prop="deptName" label="部门" width="120" />
+      <el-table-column prop="phone" label="电话" />
+      <el-table-column prop="email" label="邮箱" />
+      <el-table-column prop="deptName" label="部门" />
       <el-table-column prop="enabled" label="状态" width="120">
         <template #default="scope">
           <el-switch ref="enabled" v-model="scope.row.enabled" @click.stop />
@@ -98,270 +94,354 @@
     </el-table>
     <!-- 分页 -->
     <Pagination
-      :page-num.sync="queryParams.pageNum"
-      :page-size.sync="queryParams.pageSize"
+      v-model:page-num="queryParams.pageNum"
+      v-model:page-size="queryParams.pageSize"
       :total="total"
-      @page="queryPage"
+      @pagination="queryPage"
     />
 
     <!-- 用户信息编辑弹框 -->
-    <el-dialog append-to-body :title="dialogTitle" :visible.sync="dialogFormVisible" destroy-on-close width="680px">
-      <el-form ref="form" :model="form" :rules="rules" :inline="true" size="small" label-width="66px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="电话">
-          <el-input v-model="form.phone" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="昵称" prop="nickName">
-          <el-input v-model="form.nickName" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="部门" prop="deptName">
-          <el-select ref="deptSelect" v-model="form.deptName" placeholder="请选择部门">
-            <el-option v-model="form.deptName" style="height: max-content;width: 100%;padding: 0">
-              <el-tree
-                :props="props"
-                :load="loadDept"
+    <el-dialog
+      :title="dialogTitle"
+      v-model="dialogFormVisible"
+      append-to-body
+      destroy-on-close
+      width="600px"
+    >
+      <el-form ref="formRef" :model="form" :rules="rules" size="small" label-width="66px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="form.username" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="昵称" prop="nickName">
+              <el-input v-model="form.nickName" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="电话">
+              <el-input v-model="form.phone" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="form.email" autocomplete="off" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="部门" prop="deptName">
+              <el-tree-select
+                ref="deptTreeSelectRef"
+                v-model="form.deptName"
                 lazy
-                style="width: 100%"
-                @node-click="setDept"
+                :load="loadDeptTree"
+                :props="deptTreeProps"
+                expand-on-click-node
+                highlight-current
+                placeholder="请选择部门"
+                value-key="id"
+                @node-click="handleDeptSelected"
+                clearable
               />
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="岗位">
-          <el-select v-model="form.jobIds" multiple placeholder="请选择岗位">
-            <el-option v-for="item in jobList" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="性别">
-          <el-radio-group v-model="form.sex" style="width: 178px">
-            <el-radio label="男">男</el-radio>
-            <el-radio label="女">女</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.enabled">
-            <el-radio v-for="item in userStatus" :key="item.value" :label="item.value">
-              {{ item.label }}
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="角色" prop="roleIds">
-          <el-select v-model="form.roleIds" multiple placeholder="请选择角色">
-            <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="岗位" prop="jobIds">
+              <el-select v-model="form.jobIds" multiple placeholder="请选择岗位">
+                <el-option
+                  v-for="item in jobList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="性别">
+              <el-radio-group v-model="form.sex">
+                <el-radio label="男">男</el-radio>
+                <el-radio label="女">女</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态">
+              <el-radio-group v-model="form.enabled">
+                <el-radio
+                  v-for="item in user_status"
+                  :key="item.value"
+                  :label="item.value === 'true'"
+                >
+                  {{ item.label }}
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="角色" prop="roleIds">
+              <el-select v-model="form.roleIds" multiple placeholder="请选择角色">
+                <el-option
+                  v-for="item in roleList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12" />
+        </el-row>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
-      </div>
+      <template v-slot:footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">取 消</el-button>
+          <el-button :loading="confirmButtonLoading" type="primary" @click="submit"
+            >确 定</el-button
+          >
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import ElementUI from 'element-ui'
-import Pagination from '@/components/Crud/Pagination'
+<script setup name="User">
+import { ElMessage, ElMessageBox } from 'element-plus'
+import Pagination from '@/components/Pagination/index.vue'
 import { getUser, page, add, update, del } from '@/api/system/user'
 import { childList as getDeptList } from '@/api/system/dept'
 import { list as getRoleList } from '@/api/system/role'
 import { list as getJobList } from '@/api/system/job'
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
 
-export default {
-  name: 'ProjectUser',
-  components: {
-    Pagination
-  },
-  data() {
-    return {
-      loading: false,
-      permission: {
-        add: ['user:add'],
-        edit: ['user:edit'],
-        del: ['user:del']
-      },
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        username: undefined,
-        enabled: undefined
-      },
-      total: 0,
-      userStatus: [{ label: '激活', value: true }, { label: '禁用', value: false }],
-      tableData: [],
-      selectData: [],
-      dialogFormVisible: false,
-      dialogTitle: '',
-      deptList: [],
-      props: { children: 'children', label: 'label', isLeaf: 'leaf' },
-      jobList: [],
-      roleList: [],
-      form: {},
-      rules: {
-        username: [
-          { required: true, message: '请输入用户名', trigger: 'blur' },
-          { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
-        ],
-        nickName: [
-          { required: true, message: '请输入昵称', trigger: 'blur' },
-          { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
-        ],
-        email: [
-          { required: true, message: '请输入邮箱', trigger: 'blur' }
-        ],
-        deptName: [
-          { required: true, message: '请选择部门', trigger: 'blur' }
-        ],
-        roleIds: [
-          { required: true, message: '请选择角色', trigger: 'blur' }
-        ]
-      }
-    }
-  },
-  created() {
-    this.queryPage()
-  },
-  methods: {
-    queryPage() {
-      this.loading = true
-      page(this.queryParams).then(res => {
-        this.tableData = res.records
-        this.total = res.total
-        this.loading = false
-      }).catch(() => {
-        this.loading = false
-      })
-    },
-    resetQuery() {
-      this.queryParams = {
-        num: 1,
-        size: 10,
-        username: undefined,
-        enabled: undefined
-      }
-      this.queryPage()
-    },
-    resetForm() {
-      this.queryParams = {
-        pageNum: 1,
-        pageSize: 10,
-        username: undefined,
-        enabled: undefined
-      }
-      this.total = 0
-      this.form = {
-        id: undefined,
-        deptId: undefined,
-        username: undefined,
-        nickName: undefined,
-        sex: '男',
-        phone: undefined,
-        email: undefined,
-        enabled: true,
-        deptName: undefined,
-        jobIds: [],
-        roleIds: []
-      }
-    },
-    // 选中某一行时
-    handleSelectionChange(rows) {
-      this.selectData = rows
-    },
-    handleAdd() {
-      this.resetForm()
-      this.dialogFormVisible = true
-      this.dialogTitle = '新增用户'
+const { proxy } = getCurrentInstance()
+const { user_status } = proxy.useDict('user_status')
 
-      getRoleList({}).then(res => {
-        this.roleList = res
-      })
-      getJobList().then(res => {
-        this.jobList = res
-      })
-    },
-    handleUpdate() {
-      this.resetForm()
-      this.dialogFormVisible = true
-      this.dialogTitle = '修改用户'
-      getUser(this.selectData[0].id).then(res => {
-        this.form = { ...res }
-        this.form.jobIds = res.jobIds.split(',').map(item => Number(item))
-        this.form.roleIds = res.roleIds.split(',').map(item => Number(item))
-        this.form.password = undefined
-      })
-      getRoleList({}).then(res => {
-        this.roleList = res
-      })
-      getJobList().then(res => {
-        this.jobList = res
-      })
-    },
-    // 部门列表（懒加载）
-    loadDept(node, resolve) {
-      const pid = node.level === 0 ? null : node.data.id
-      getDeptList({ pid }).then(res => {
-        this.deptList = res.records
-        resolve(this.deptList)
-      })
-    },
-    setDept(node) {
-      this.form.deptId = node.id
-      this.form.deptName = node.name
-      this.$refs.deptSelect.visible = false
-    },
-    submit() {
-      this.$refs.form.validate(valid => {
-        if (valid) {
-          this.form.jobIds = this.form.jobIds.join(',')
-          this.form.roleIds = this.form.roleIds.join(',')
-
-          if (this.form.id) {
-            update(this.form).then(() => {
-              ElementUI.Message.success('修改成功')
-              this.dialogFormVisible = false
-              this.queryPage()
-            })
-          } else {
-            add(this.form).then(() => {
-              ElementUI.Message.success('保存成功')
-              this.dialogFormVisible = false
-              this.queryPage()
-            })
-          }
-        } else {
-          return false
-        }
-      })
-    },
-    handleDelete() {
-      if (this.selectData.length === 0) {
-        ElementUI.Message.warning('请选择要删除的用户！')
-        return
-      }
-      const ids = this.selectData.map(item => item.id)
-      this.$confirm('是否确认删除？', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(function() {
-        return del(ids)
-      }).then(() => {
-        this.$message.success('删除成功！')
-        this.queryPage()
-      })
-    }
-  }
+const loading = ref(false)
+const confirmButtonLoading = ref(false)
+const permission = {
+  add: ['user:add'],
+  edit: ['user:edit'],
+  del: ['user:del']
 }
+const queryParams = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  username: undefined,
+  enabled: undefined
+})
+const total = ref(0)
+const tableData = ref([])
+const selectData = ref([])
+const dialogFormVisible = ref(false)
+const dialogTitle = ref('')
+const deptList = ref([])
+const deptTreeProps = { children: 'children', label: 'label', isLeaf: 'leaf' }
+const jobList = ref([])
+const roleList = ref([])
+const formRef = ref(null)
+let form = reactive({
+  id: undefined,
+  deptId: undefined,
+  username: undefined,
+  nickName: undefined,
+  sex: '男',
+  phone: undefined,
+  email: undefined,
+  enabled: true,
+  deptName: undefined,
+  jobIds: [],
+  roleIds: []
+})
+const deptTreeSelectRef = ref(null)
+
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+  ],
+  nickName: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+  ],
+  email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
+  deptName: [{ required: true, message: '请选择部门', trigger: 'blur' }],
+  jobIds: [{ required: true, message: '请选择岗位', trigger: 'blur' }],
+  roleIds: [{ required: true, message: '请选择角色', trigger: 'blur' }]
+}
+
+const queryPage = () => {
+  loading.value = true
+  page(queryParams)
+    .then((res) => {
+      tableData.value = res.records
+      total.value = res.total
+      loading.value = false
+    })
+    .catch(() => {
+      loading.value = false
+    })
+}
+
+const resetQuery = () => {
+  queryParams.pageNum = 1
+  queryParams.pageSize = 10
+  queryParams.username = undefined
+  queryParams.enabled = undefined
+  queryPage()
+}
+
+const resetForm = () => {
+  queryParams.num = 1
+  queryParams.size = 10
+  queryParams.username = undefined
+  queryParams.enabled = undefined
+
+  total.value = 0
+
+  form.id = undefined
+  form.deptId = undefined
+  form.username = undefined
+  form.nickName = undefined
+  form.sex = '男'
+  form.phone = undefined
+  form.email = undefined
+  form.enabled = true
+  form.deptName = undefined
+  form.jobIds = []
+  form.roleIds = []
+}
+
+// 选中某一行时
+const handleSelectionChange = (rows) => {
+  selectData.value = rows
+}
+
+const handleAdd = () => {
+  resetForm()
+  dialogFormVisible.value = true
+  dialogTitle.value = '新增用户'
+
+  getRoleList({}).then((res) => {
+    roleList.value = res
+  })
+  getJobList().then((res) => {
+    jobList.value = res
+  })
+}
+
+const handleUpdate = () => {
+  resetForm()
+  dialogFormVisible.value = true
+  dialogTitle.value = '修改用户'
+  getUser(selectData.value[0].id).then((res) => {
+    form.id = res.id
+    form.deptId = res.deptId
+    form.username = res.username
+    form.nickName = res.nickName
+    form.sex = res.sex
+    form.phone = res.phone
+    form.email = res.email
+    form.enabled = res.enabled
+    form.deptName = res.deptName
+    form.jobIds = res.jobIds.split(',').map((item) => Number(item))
+    form.roleIds = res.roleIds.split(',').map((item) => Number(item))
+    form.password = undefined
+  })
+  getRoleList({}).then((res) => {
+    roleList.value = res
+  })
+  getJobList().then((res) => {
+    jobList.value = res
+  })
+}
+
+const loadDeptTree = (node, resolve) => {
+  const pid = node.level === 0 ? 0 : node.data.id
+  getDeptList(pid).then((res) => {
+    deptList.value = res.records
+    resolve(deptList.value)
+  })
+}
+
+const handleDeptSelected = (val) => {
+  form.deptId = val.id
+  form.deptName = val.name
+  deptTreeSelectRef.value.blur()
+}
+
+const submit = () => {
+  formRef.value.validate((valid) => {
+    if (valid) {
+      confirmButtonLoading.value = true
+      form = {
+        ...form,
+        jobIds: form.jobIds.join(','),
+        roleIds: form.roleIds.join(',')
+      }
+
+      if (form.id) {
+        update(form)
+          .then(() => {
+            ElMessage.success('修改成功')
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+            queryPage()
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
+      } else {
+        add(form)
+          .then(() => {
+            ElMessage.success('保存成功')
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+            queryPage()
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
+      }
+    } else {
+      return false
+    }
+  })
+}
+
+const handleDelete = () => {
+  if (selectData.value.length === 0) {
+    ElMessage.warning('请选择要删除的用户！')
+    return
+  }
+  const ids = selectData.value.map((item) => item.id)
+  ElMessageBox.confirm('是否确认删除？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(function () {
+      return del(ids)
+    })
+    .then(() => {
+      ElMessage.success('删除成功')
+      queryPage()
+    })
+}
+
+onMounted(() => {
+  queryPage()
+})
 </script>
 
-<style rel="stylesheet/scss" lang="scss" scoped>
-::v-deep .vue-treeselect__control, ::v-deep .vue-treeselect__placeholder, ::v-deep .vue-treeselect__single-value {
-  height: 30px;
-  line-height: 30px;
-}
-</style>
+<style lang="scss" scoped></style>

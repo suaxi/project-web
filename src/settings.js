@@ -1,46 +1,71 @@
-module.exports = {
+export default {
   /**
-     * @description 网站标题
-     */
-  title: 'Project',
+   * 网页标题
+   */
+  title: import.meta.env.VITE_APP_TITLE,
+
   /**
-     * @description 是否显示 tagsView
-     */
+   * 侧边栏主题 深色主题theme-dark，浅色主题theme-light
+   */
+  sideTheme: 'theme-dark',
+
+  /**
+   * 是否系统布局配置
+   */
+  showSettings: true,
+
+  /**
+   * 是否显示顶部导航
+   */
+  topNav: false,
+
+  /**
+   * 是否显示 tagsView
+   */
   tagsView: true,
+
   /**
-     * @description 固定头部
-     */
-  fixedHeader: true,
+   * 显示页签图标
+   */
+  tagsIcon: false,
+
   /**
-     * @description 记住密码状态下的token在Cookie中存储的天数，默认1天
-     */
-  tokenExpires: 1,
+   * 是否固定头部
+   */
+  fixedHeader: false,
+
   /**
-     * @description 记住密码状态下的密码在Cookie中存储的天数，默认1天
-     */
-  passwordExpires: 1,
-  /**
-     * @description token key
-     */
-  TokenKey: 'token',
-  /**
-     * @description 请求超时时间，毫秒（默认2分钟）
-     */
-  timeout: 1200000,
-  /**
-     * @description 是否显示logo
-     */
+   * 是否显示logo
+   */
   sidebarLogo: true,
+
   /**
-     * 是否显示设置的底部信息
-     */
-  showFooter: true,
+   * 是否显示动态标题
+   */
+  dynamicTitle: false,
+
   /**
-     * 底部文字，支持html语法
-     */
-  footerTxt: '© 2022 Suaxi <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License 2.0</a>',
+   * 是否显示底部版权
+   */
+  footerVisible: false,
+
   /**
-     * 备案号
-     */
-  caseNumber: ''
+   * 底部版权文本内容
+   */
+  footerContent: 'Copyright © Project Web Vue3',
+
+  /**
+   * token key
+   */
+  tokenKey: 'token',
+
+  /**
+   * 记住密码状态下的 token 在 Cookie 中存储的天数，默认1天
+   */
+  tokenExpires: 1,
+
+  /**
+   * 记住密码状态下的密码在 Cookie 中存储的天数，默认1天
+   */
+  passwordExpires: 1
 }

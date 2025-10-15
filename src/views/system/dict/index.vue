@@ -1,64 +1,69 @@
 <template>
   <div class="app-container">
-    <!-- 字典列表 -->
     <el-row :gutter="10">
+      <!-- 字典列表 -->
       <el-col :xs="24" :sm="24" :md="10" :lg="11" :xl="11" style="margin-bottom: 10px">
         <el-card class="box-card">
-          <!--工具栏-->
           <div class="head-container">
-            <!-- 搜索 -->
-            <el-input
-              v-model="queryParams.name"
-              clearable
-              size="small"
-              placeholder="请输入名称"
-              style="width: 200px;"
-              class="filter-item"
-              @keyup.enter.native="queryPage"
-            />
-            <span>
-              <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="queryPage">搜索</el-button>
-              <el-button class="filter-item" size="mini" icon="el-icon-refresh-left" @click="resetQuery">重置</el-button>
-            </span>
+            <el-form :model="queryParams" :inline="true" label-width="68px">
+              <el-form-item label="字典名称" prop="name">
+                <el-input
+                  v-model="queryParams.name"
+                  placeholder="请输入字典名称"
+                  clearable
+                  style="width: 120px"
+                  @keyup.enter="queryPage"
+                />
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" icon="Search" @click="queryPage">搜索</el-button>
+                <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+              </el-form-item>
+            </el-form>
           </div>
 
-          <div class="crud-opts">
-            <span class="crud-opts-left">
+          <el-row :gutter="10" class="mb8">
+            <el-col :span="1.5">
               <el-button
                 v-permission="permission.add"
-                class="filter-item"
-                size="mini"
                 type="primary"
-                icon="el-icon-plus"
+                plain
+                icon="Plus"
                 @click="handleAdd"
-              >新增</el-button>
+                >新增</el-button
+              >
+            </el-col>
+            <el-col :span="1.5">
               <el-button
                 v-permission="permission.edit"
-                class="filter-item"
-                size="mini"
                 type="success"
-                icon="el-icon-edit"
+                plain
+                icon="Edit"
                 :disabled="selectData.length !== 1"
                 @click="handleUpdate"
-              >修改</el-button>
+                >修改
+              </el-button>
+            </el-col>
+            <el-col :span="1.5">
               <el-button
                 v-permission="permission.del"
-                class="filter-item"
                 type="danger"
-                icon="el-icon-delete"
-                size="mini"
+                plain
+                icon="Delete"
                 @click="handleDelete"
-              >删除</el-button>
-            </span>
-          </div>
+                >删除</el-button
+              >
+            </el-col>
+            <!--            <el-col :span="1.5">-->
+            <!--              <el-button type="warning" plain icon="Download">导出</el-button>-->
+            <!--            </el-col>-->
+          </el-row>
 
-          <!-- 表格渲染 -->
           <el-table
-            ref="table"
             v-loading="loading"
             :data="tableData"
             highlight-current-row
-            style="width: 100%;"
+            style="width: 100%"
             @selection-change="handleSelectionChange"
             @current-change="handleCurrentChange"
           >
@@ -68,195 +73,220 @@
           </el-table>
           <!-- 分页 -->
           <Pagination
-            :page-num.sync="queryParams.pageNum"
-            :page-size.sync="queryParams.pageSize"
+            v-model:page-num="queryParams.pageNum"
+            v-model:page-size="queryParams.pageSize"
             :total="total"
-            @page="queryPage"
+            @pagination="queryPage"
           />
         </el-card>
       </el-col>
+
       <!-- 字典详情列表 -->
       <el-col :xs="24" :sm="24" :md="14" :lg="13" :xl="13">
         <el-card class="box-card">
-          <dictDetail ref="dictDetail" :permission="permission" />
+          <dictDetail ref="dictDetailRef" :permission="permission" />
         </el-card>
       </el-col>
     </el-row>
 
-    <!-- 数据字典信息编辑框 -->
-    <el-dialog append-to-body :close-on-click-modal="false" :visible="dialogFormVisible" :title="dialogTitle" width="500px">
-      <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-        <el-form-item label="字典名称" prop="name">
-          <el-input v-model="form.name" style="width: 370px;" />
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="form.description" style="width: 370px;" />
-        </el-form-item>
+    <!-- 数据字典信息编辑弹框 -->
+    <el-dialog
+      :title="dialogTitle"
+      v-model="dialogFormVisible"
+      append-to-body
+      destroy-on-close
+      width="500px"
+    >
+      <el-form ref="formRef" :model="form" :rules="rules" size="small" label-width="66px">
+        <el-row>
+          <el-col :span="18">
+            <el-form-item label="名称" prop="name">
+              <el-input v-model="form.name" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="18">
+            <el-form-item label="描述" prop="description">
+              <el-input v-model="form.description" :rows="5" type="textarea" />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="text" @click="dialogFormVisible = false">取消</el-button>
-        <el-button :loading="buttonLoading" type="primary" @click="submit(form)">确认</el-button>
-      </div>
+      <template v-slot:footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">取 消</el-button>
+          <el-button :loading="confirmButtonLoading" type="primary" @click="submit"
+            >确 定</el-button
+          >
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import ElementUI from 'element-ui'
-import Pagination from '@/components/Crud/Pagination'
+<script setup name="Dict">
+import { ElMessage, ElMessageBox } from 'element-plus'
+import Pagination from '@/components/Pagination/index.vue'
 import { getDict, page, add, update, del } from '@/api/system/dict'
-import dictDetail from '@/views/system/dict/dictDetail'
+import dictDetail from '@/views/system/dict/dictDetail.vue'
+import { onMounted, reactive, ref } from 'vue'
 
-export default {
-  name: 'ProjectDict',
-  components: {
-    Pagination,
-    dictDetail
-  },
-  data() {
-    return {
-      loading: false,
-      permission: {
-        add: ['dict:add'],
-        edit: ['dict:edit'],
-        del: ['dict:del']
-      },
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        name: undefined
-      },
-      total: 0,
-      tableData: [],
-      selectData: [],
-      dialogFormVisible: false,
-      dialogTitle: '',
-      form: {},
-      rules: {
-        name: [
-          { required: true, message: '请输入名称', trigger: 'blur' }
-        ]
-      },
-      buttonLoading: false
-    }
-  },
-  created() {
-    this.queryPage()
-    this.selectData = []
-  },
-  methods: {
-    queryPage() {
-      this.loading = true
-      page(this.queryParams).then(res => {
-        if (this.$refs.dictDetail) {
-          this.resetDictDetail()
-        }
+const loading = ref(false)
+const confirmButtonLoading = ref(false)
+const permission = {
+  add: ['dict:add'],
+  edit: ['dict:edit'],
+  del: ['dict:del']
+}
+const queryParams = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  name: undefined
+})
+const total = ref(0)
+const tableData = ref([])
+const selectData = ref([])
+const dialogFormVisible = ref(false)
+const dialogTitle = ref('')
+const dictDetailRef = ref(null)
+const formRef = ref(null)
+let form = reactive({
+  id: undefined,
+  name: undefined,
+  description: undefined
+})
 
-        this.tableData = res.records
-        this.total = res.total
-        this.loading = false
-      }).catch(() => {
-        this.loading = false
-      })
-    },
-    resetQuery() {
-      this.queryParams = {
-        num: 1,
-        size: 10,
-        name: undefined
+const rules = {
+  name: [{ required: true, message: '请输入名称', trigger: 'blur' }]
+}
+
+const queryPage = () => {
+  loading.value = true
+  page(queryParams)
+    .then((res) => {
+      if (dictDetailRef.value) {
+        resetDictDetail()
       }
-      this.queryPage()
-    },
-    resetForm() {
-      this.queryParams = {
-        pageNum: 1,
-        pageSize: 10,
-        name: undefined
+
+      tableData.value = res.records
+      total.value = res.total
+      loading.value = false
+    })
+    .catch(() => {
+      loading.value = false
+    })
+}
+
+const resetQuery = () => {
+  queryParams.pageNum = 1
+  queryParams.pageSize = 10
+  queryParams.name = undefined
+  queryPage()
+}
+
+const resetForm = () => {
+  queryParams.pageNum = 1
+  queryParams.pageSize = 10
+  queryParams.name = undefined
+
+  form.id = undefined
+  form.name = undefined
+  form.description = undefined
+}
+
+const handleSelectionChange = (rows) => {
+  selectData.value = rows
+}
+
+const handleAdd = () => {
+  resetForm()
+  dialogFormVisible.value = true
+  dialogTitle.value = '新增字典'
+}
+
+const handleUpdate = () => {
+  resetForm()
+  dialogFormVisible.value = true
+  dialogTitle.value = '修改字典'
+  getDict(selectData.value[0].id).then((res) => {
+    form.id = res.id
+    form.name = res.name
+    form.description = res.description
+  })
+}
+
+const submit = () => {
+  formRef.value.validate((valid) => {
+    if (valid) {
+      confirmButtonLoading.value = true
+      if (form.id) {
+        update(form)
+          .then(() => {
+            ElMessage.success('修改成功')
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+            queryPage()
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
+      } else {
+        add(form)
+          .then(() => {
+            ElMessage.success('保存成功')
+            dialogFormVisible.value = false
+            confirmButtonLoading.value = false
+            queryPage()
+          })
+          .catch(() => {
+            confirmButtonLoading.value = false
+          })
       }
-      this.form = {
-        id: undefined,
-        name: undefined,
-        description: undefined
-      }
-    },
-    handleSelectionChange(rows) {
-      this.selectData = rows
-    },
-    handleAdd() {
-      this.resetForm()
-      this.dialogFormVisible = true
-      this.dialogTitle = '新增字典'
-    },
-    handleUpdate() {
-      this.resetForm()
-      this.dialogFormVisible = true
-      this.dialogTitle = '修改字典'
-      getDict(this.selectData[0].id).then(res => {
-        this.form = { ...res }
-      })
-    },
-    submit() {
-      this.$refs.form.validate(valid => {
-        if (valid) {
-          this.buttonLoading = true
-          if (this.form.id) {
-            update(this.form).then(() => {
-              ElementUI.Message.success('修改成功')
-              this.dialogFormVisible = false
-              this.buttonLoading = false
-              this.queryPage()
-            }).catch(() => {
-              this.buttonLoading = false
-            })
-          } else {
-            add(this.form).then(() => {
-              ElementUI.Message.success('保存成功')
-              this.dialogFormVisible = false
-              this.buttonLoading = false
-              this.queryPage()
-            }).catch(() => {
-              this.buttonLoading = false
-            })
-          }
-        } else {
-          return false
-        }
-      })
-    },
-    handleDelete() {
-      if (this.selectData.length === 0) {
-        ElementUI.Message.warning('请选择要删除的字典！')
-        return
-      }
-      const ids = this.selectData.map(item => item.id)
-      this.$confirm('是否确认删除？', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(function() {
-        return del(ids)
-      }).then(() => {
-        this.$message.success('删除成功！')
-        this.queryPage()
-      })
-    },
-    // 选中数据字典项时设置字典详情数据
-    handleCurrentChange(val) {
-      if (val) {
-        this.$refs.dictDetail.dictId = val.id
-        this.$refs.dictDetail.dictName = val.name
-        this.$refs.dictDetail.queryPage()
-      }
-    },
-    resetDictDetail() {
-      this.$refs.dictDetail.dictName = undefined
-      this.$refs.dictDetail.resetForm()
-      this.$refs.dictDetail.tableData = []
+    } else {
+      return false
     }
+  })
+}
+
+const handleDelete = () => {
+  if (selectData.value.length === 0) {
+    ElMessage.warning('请选择要删除的字典！')
+    return
+  }
+  const ids = selectData.value.map((item) => item.id)
+  ElMessageBox.confirm('是否确认删除？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(function () {
+      return del(ids)
+    })
+    .then(() => {
+      ElMessage.success('删除成功')
+      queryPage()
+    })
+}
+
+const handleCurrentChange = (val) => {
+  if (val) {
+    dictDetailRef.value.queryParams.dictId = val.id
+    dictDetailRef.value.queryParams.dictName = val.name
+    dictDetailRef.value.queryPage()
   }
 }
+
+const resetDictDetail = () => {
+  dictDetailRef.value.queryParams.dictId = undefined
+  dictDetailRef.value.queryParams.dictName = undefined
+  dictDetailRef.value.resetForm()
+  dictDetailRef.value.tableData = []
+}
+
+onMounted(() => {
+  queryPage()
+})
 </script>
 
-<style scoped>
-
-</style>
+<style lang="scss" scoped></style>

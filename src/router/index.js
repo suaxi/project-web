@@ -1,95 +1,102 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Login from '@/views/login'
-import Home from '@/views/home'
-import { getToken } from '@/utils/auth'
-import store from '@/store'
+import { createRouter, createWebHistory } from 'vue-router'
+import Layout from '@/layout/index.vue'
+import { getToken } from '../utils/auth.js'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+import useUserStore from '@/store/modules/user'
+import usePermissionStore from '@/store/modules/permission'
+import { ElMessage } from 'element-plus'
 
-Vue.use(VueRouter)
+NProgress.configure({ showSpinner: false })
 
-const routes = [
+const whiteList = ['/login']
+
+export const constantRoutes = [
   {
     path: '/login',
-    name: 'Login',
-    component: Login
+    name: 'login',
+    component: () => import('@/views/login.vue'),
+    meta: { title: '登录' },
+    hidden: true
+  },
+  {
+    path: '/404',
+    name: '404',
+    component: () => import('@/views/error/404.vue'),
+    meta: { title: '404' },
+    hidden: true
+  },
+  {
+    path: '',
+    name: 'layout',
+    component: Layout,
+    redirect: '/index',
+    children: [
+      {
+        path: 'index',
+        name: 'Index',
+        component: () => import('@/views/index.vue'),
+        meta: { title: '首页', icon: 'dashboard', affix: true }
+      }
+    ]
   }
 ]
 
-const asyncRouters = {
-  path: '/',
-  name: 'Home',
-  component: Home,
-  meta: {
-    title: '首页'
-  },
-  children: []
-}
+export const dynamicRoutes = []
 
-const router = new VueRouter({
-  mode: 'history',
-  routes
+const router = createRouter({
+  history: createWebHistory(),
+  routes: constantRoutes
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || 'project'
+  NProgress.start()
+  document.title = to.meta.title || 'Project Web'
   if (getToken()) {
-    if (to.name === 'Login') {
+    if (to.name === 'login') {
       // 已登录
       next('/')
+      NProgress.done()
+    } else if (whiteList.includes(to.path)) {
+      next()
     } else {
-      if (store.getters.roles.length === 0) {
-        store.dispatch('GetUserInfo').then(() => {
-          store.dispatch('GetUserRouter').then(res => {
-            buildAsyncRouter(res, asyncRouters.children)
-            router.addRoute(asyncRouters)
-            next({ ...to, replace: true })
+      if (useUserStore().roles.length === 0) {
+        useUserStore()
+          .getUserInfo()
+          .then(() => {
+            usePermissionStore()
+              .generateRoutes()
+              .then((res) => {
+                res.forEach((route) => {
+                  router.addRoute(route)
+                })
+                next({ ...to, replace: true })
+              })
           })
-        }).catch(() => {
-          store.dispatch('LogOut').then(() => {
-            location.reload()
+          .catch((err) => {
+            useUserStore()
+              .logOut()
+              .then(() => {
+                ElMessage.error(err)
+                next('/')
+              })
           })
-        })
-      } else if (store.getters.loadMenu) {
-        store.dispatch('GetUserRouter').then(res => {
-          buildAsyncRouter(res, asyncRouters.children)
-          router.addRoute(asyncRouters)
-          store.dispatch('LoadMenu').then(() => {
-            router.push('/')
-          })
-        })
       } else {
         next()
       }
     }
-  } else if (to.name !== 'Login') {
-    // 未登录
-    next({ name: 'Login' })
   } else {
-    next()
+    if (whiteList.includes(to.path)) {
+      next()
+    } else {
+      next(`/login?redirect=${to.fullPath}`)
+      NProgress.done()
+    }
   }
 })
 
-function buildAsyncRouter(userRouter, asyncRouters) {
-  userRouter.forEach(item => {
-    if (item.hasChildren) {
-      item.children.forEach(child => {
-        if (child.component === 'Layout' || child.component === 'ParentView') {
-          return
-        }
-        const asyncRouter = {
-          path: `${item.path}/${child.path}`,
-          name: child.name,
-          component: (resolve) => require([`@/views/${child.component}`], resolve),
-          meta: { ...child.meta }
-        }
-        asyncRouters.push(asyncRouter)
-
-        if (child.hasChildren) {
-          buildAsyncRouter(child.children, asyncRouters)
-        }
-      })
-    }
-  })
-}
+router.afterEach(() => {
+  NProgress.done()
+})
 
 export default router
