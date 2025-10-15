@@ -4,7 +4,9 @@
     <div v-else>
       <div class="dict-detail-header">
         <span>字典详情</span>
-        <el-button type="primary" icon="Plus" @click="handleAdd">新增</el-button>
+        <el-button v-permission="permission.add" type="primary" icon="Plus" @click="handleAdd"
+          >新增</el-button
+        >
       </div>
 
       <el-table v-loading="loading" :data="tableData" style="width: 100%" highlight-current-row>
@@ -16,7 +18,13 @@
         <el-table-column prop="sort" label="排序" />
         <el-table-column label="操作" width="130px" align="center" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" />
+            <el-button
+              v-permission="permission.edit"
+              link
+              type="primary"
+              icon="Edit"
+              @click="handleUpdate(scope.row)"
+            />
             <el-popover :visible="scope.row.visible" placement="top" :width="180">
               <p>确定删除本条数据吗？</p>
               <div style="text-align: right; margin: 0">
@@ -26,7 +34,13 @@
                 </el-button>
               </div>
               <template #reference>
-                <el-button link type="danger" icon="Delete" @click="scope.row.visible = true" />
+                <el-button
+                  v-permission="permission.del"
+                  link
+                  type="danger"
+                  icon="Delete"
+                  @click="scope.row.visible = true"
+                />
               </template>
             </el-popover>
           </template>
@@ -92,6 +106,11 @@ import { onUnmounted, reactive, ref } from 'vue'
 
 const loading = ref(false)
 const confirmButtonLoading = ref(false)
+const permission = {
+  add: ['dict:add'],
+  edit: ['dict:edit'],
+  del: ['dict:del']
+}
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,

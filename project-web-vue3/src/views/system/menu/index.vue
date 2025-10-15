@@ -21,14 +21,16 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd">新增</el-button>
+        <el-button v-permission="permission.add" type="primary" plain icon="Plus" @click="handleAdd"
+          >新增</el-button
+        >
       </el-col>
       <el-col :span="1.5">
         <el-button type="info" plain icon="Sort" @click="handleExpanded">展开/折叠</el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button type="warning" plain icon="Download">导出</el-button>
-      </el-col>
+      <!--      <el-col :span="1.5">-->
+      <!--        <el-button type="warning" plain icon="Download">导出</el-button>-->
+      <!--      </el-col>-->
     </el-row>
 
     <el-table
@@ -81,13 +83,31 @@
         class-name="small-padding fixed-width"
       >
         <template #default="scope">
-          <el-button link type="success" icon="Edit" size="small" @click="handleUpdate(scope.row)"
+          <el-button
+            v-permission="permission.edit"
+            link
+            type="success"
+            icon="Edit"
+            size="small"
+            @click="handleUpdate(scope.row)"
             >修改
           </el-button>
-          <el-button link type="primary" size="small" icon="Plus" @click="handleAdd(scope.row)"
+          <el-button
+            v-permission="permission.add"
+            link
+            type="primary"
+            size="small"
+            icon="Plus"
+            @click="handleAdd(scope.row)"
             >新增
           </el-button>
-          <el-button link type="danger" size="small" icon="Delete" @click="handleDelete(scope.row)"
+          <el-button
+            v-permission="permission.del"
+            link
+            type="danger"
+            size="small"
+            icon="Delete"
+            @click="handleDelete(scope.row)"
             >删除
           </el-button>
         </template>

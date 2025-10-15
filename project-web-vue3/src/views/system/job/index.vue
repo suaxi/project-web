@@ -36,10 +36,13 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd">新增</el-button>
+        <el-button v-permission="permission.add" type="primary" plain icon="Plus" @click="handleAdd"
+          >新增</el-button
+        >
       </el-col>
       <el-col :span="1.5">
         <el-button
+          v-permission="permission.edit"
           type="success"
           plain
           icon="Edit"
@@ -49,11 +52,18 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" plain icon="Delete" @click="handleDelete">删除</el-button>
+        <el-button
+          v-permission="permission.del"
+          type="danger"
+          plain
+          icon="Delete"
+          @click="handleDelete"
+          >删除</el-button
+        >
       </el-col>
-      <el-col :span="1.5">
-        <el-button type="warning" plain icon="Download">导出</el-button>
-      </el-col>
+      <!--      <el-col :span="1.5">-->
+      <!--        <el-button type="warning" plain icon="Download">导出</el-button>-->
+      <!--      </el-col>-->
     </el-row>
 
     <el-table

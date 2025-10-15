@@ -12,6 +12,7 @@ import '@/assets/styles/index.scss'
 
 import tab from '@/utils/tab'
 import { useDict } from '@/utils/dict'
+import vPermission from '@/directive/index'
 
 // svg
 import 'virtual:svg-icons-register'
@@ -31,5 +32,8 @@ app.component('svg-icon', SvgIcon)
 // tab
 app.config.globalProperties.$tab = tab
 app.config.globalProperties.useDict = useDict
+
+// v-permission
+app.directive('permission', vPermission)
 
 app.mount('#app')
