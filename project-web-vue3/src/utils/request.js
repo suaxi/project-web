@@ -28,6 +28,8 @@ request.interceptors.response.use(
       })
     } else if (code === 403) {
       ElMessage.warning('访问权限不足，请联系管理员！')
+    } else if (code === 500) {
+      ElMessage.warning('服务出现异常，请联系管理员！')
     } else {
       ElMessage.error(error.response.data.message)
     }
