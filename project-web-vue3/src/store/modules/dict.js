@@ -6,17 +6,11 @@ const useDictStore = defineStore('dict', {
   }),
   actions: {
     getDict(key) {
-      if (!key) {
-        return []
-      }
-      return this.dict?.filter((item) => item.key === key)
+      return this.dict[key] || []
     },
     setDict(key, value) {
       if (key) {
-        this.dict.push({
-          key,
-          value
-        })
+        this.dict[key] = value
       }
     }
   }

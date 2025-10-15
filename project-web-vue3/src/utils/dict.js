@@ -7,6 +7,7 @@ export function useDict(...args) {
   return (() => {
     const queryDictName = []
     args?.forEach((dictName) => {
+      dict.value[dictName] = []
       const currentDict = useDictStore().getDict(dictName)
       if (currentDict && currentDict.length > 0) {
         dict.value[dictName] = currentDict

@@ -176,7 +176,11 @@
           <el-col :span="12">
             <el-form-item label="状态">
               <el-radio-group v-model="form.enabled">
-                <el-radio v-for="item in user_status" :key="item.value" :label="item.value">
+                <el-radio
+                  v-for="item in user_status"
+                  :key="item.value"
+                  :label="item.value === 'true'"
+                >
                   {{ item.label }}
                 </el-radio>
               </el-radio-group>
