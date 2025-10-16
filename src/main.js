@@ -31,6 +31,7 @@ app.component('svg-icon', SvgIcon)
 
 // tab
 app.config.globalProperties.$tab = tab
+// dict
 app.config.globalProperties.useDict = useDict
 
 // v-permission

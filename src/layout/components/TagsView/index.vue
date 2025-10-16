@@ -43,7 +43,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="TagsView">
 import ScrollPane from './ScrollPane.vue'
 import useTagsViewStore from '@/store/modules/tagsView'
 import useSettingsStore from '@/store/modules/settings'

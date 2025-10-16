@@ -1,4 +1,4 @@
-import { defineConfig, globalIgnores } from 'eslint/config'
+import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
@@ -6,14 +6,11 @@ import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 
 export default defineConfig([
   {
-    name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,jsx,vue}']
-  },
-
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
-
-  {
+    files: ['**/*.{js,mjs,jsx,vue}'],
+    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
     languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
       globals: {
         ...globals.browser
       }
@@ -29,9 +26,9 @@ export default defineConfig([
       'no-unused-vars': 'off',
       'vue/no-unused-vars': 'off',
       'no-undef': 'off',
+      'comma-dangle': ['error', 'never'],
       semi: ['error', 'never'],
-      quotes: ['error', 'single'],
-      'comma-dangle': ['error', 'never']
+      quotes: ['error', 'single']
     }
   }
 ])

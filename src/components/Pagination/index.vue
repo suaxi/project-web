@@ -12,7 +12,7 @@
   />
 </template>
 
-<script setup>
+<script setup name="Pagination">
 import { computed } from 'vue'
 
 const props = defineProps({

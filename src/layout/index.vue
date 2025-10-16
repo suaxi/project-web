@@ -17,7 +17,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="Layout">
 import { useWindowSize } from '@vueuse/core'
 import Sidebar from './components/Sidebar/index.vue'
 import AppMain from './components/AppMain.vue'

@@ -58,7 +58,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="Navbar">
 import { ElMessageBox } from 'element-plus'
 import Breadcrumb from '@/components/Breadcrumb/index.vue'
 import TopNav from '@/components/TopNav/index.vue'

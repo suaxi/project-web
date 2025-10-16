@@ -4,7 +4,7 @@
   </svg>
 </template>
 
-<script>
+<script name="SvgIcon">
 import { computed, defineComponent } from 'vue'
 
 export default defineComponent({

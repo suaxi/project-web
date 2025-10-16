@@ -16,7 +16,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="Hamburger">
 defineProps({
   isActive: {
     type: Boolean,

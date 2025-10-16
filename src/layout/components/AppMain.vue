@@ -11,7 +11,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup name="AppMain">
 import Copyright from './Copyright/index.vue'
 import useTagsViewStore from '@/store/modules/tagsView'
 

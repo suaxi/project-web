@@ -31,7 +31,7 @@
   </el-menu>
 </template>
 
-<script setup>
+<script setup name="TopNav">
 import { constantRoutes } from '@/router'
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'

@@ -13,7 +13,7 @@
   </el-breadcrumb>
 </template>
 
-<script setup>
+<script setup name="Breadcrumb">
 import usePermissionStore from '@/store/modules/permission'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, watchEffect } from 'vue'

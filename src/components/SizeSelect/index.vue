@@ -20,7 +20,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="SizeSelect">
 import useAppStore from '@/store/modules/app'
 import { computed, getCurrentInstance, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

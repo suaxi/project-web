@@ -28,7 +28,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="IconSelect">
 import icons from './requireIcons'
 import { ref } from 'vue'
 

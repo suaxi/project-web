@@ -4,7 +4,7 @@
   </footer>
 </template>
 
-<script setup>
+<script setup name="Copyright">
 import useSettingsStore from '@/store/modules/settings'
 import { computed } from 'vue'
 

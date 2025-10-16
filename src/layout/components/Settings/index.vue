@@ -135,7 +135,7 @@
   </el-drawer>
 </template>
 
-<script setup>
+<script setup name="Settings">
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'

@@ -24,7 +24,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="Sidebar">
 import Logo from './Logo.vue'
 import SidebarItem from './SidebarItem.vue'
 import variables from '@/assets/styles/variables.module.scss'

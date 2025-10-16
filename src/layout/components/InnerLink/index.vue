@@ -14,7 +14,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup name="InnerLink">
 import { onMounted, ref } from 'vue'
 
 const props = defineProps({
