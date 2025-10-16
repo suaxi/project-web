@@ -122,7 +122,7 @@ const tableData = ref([])
 const dialogFormVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref(null)
-let form = reactive({
+const form = reactive({
   id: undefined,
   dictId: undefined,
   label: undefined,
@@ -170,14 +170,15 @@ const handleAdd = () => {
 
 const handleUpdate = (row) => {
   resetForm()
-  dialogFormVisible.value = true
-  dialogTitle.value = '修改数据字典详情'
   getDictDetail(row.id).then((res) => {
     form.id = res.id
     form.dictId = res.dictId
     form.label = res.label
     form.value = res.value
     form.sort = res.sort
+
+    dialogFormVisible.value = true
+    dialogTitle.value = '修改数据字典详情'
   })
 }
 

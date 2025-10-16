@@ -235,7 +235,7 @@ const treeProps = { children: 'children', label: 'label', isLeaf: 'leaf' }
 const deptDataList = ref([])
 const checkedDeptList = ref([])
 const formRef = ref(null)
-let form = reactive({
+const form = reactive({
   id: undefined,
   name: undefined,
   level: undefined,
@@ -315,9 +315,7 @@ const handleAdd = () => {
 
 const handleUpdate = () => {
   resetForm()
-  dialogFormVisible.value = true
-  dialogTitle.value = '修改角色'
-  getRole(selectData.value[0].id).then(async (res) => {
+  getRole(selectData.value[0].id).then((res) => {
     form.id = res.id
     form.name = res.name
     form.level = res.level
@@ -331,6 +329,9 @@ const handleUpdate = () => {
       deptDataList.value = depts
       checkedDeptList.value = depts
     }
+
+    dialogTitle.value = '修改角色'
+    dialogFormVisible.value = true
   })
 }
 
@@ -467,7 +468,7 @@ const saveRoleMenu = () => {
 
 watch(dialogFormVisible, async (val) => {
   if (val) {
-    const datas = await deptTree()
+    const datas = await deptTree({})
     deptTreeData.value = datas
   }
 })

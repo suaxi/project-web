@@ -195,7 +195,7 @@ const expanded = ref(false)
 const dialogFormVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref(null)
-let form = reactive({
+const form = reactive({
   id: undefined,
   pid: undefined,
   name: undefined,
@@ -311,15 +311,15 @@ const handleAdd = (row) => {
 
 const handleUpdate = (row) => {
   resetForm()
-  dialogFormVisible.value = true
-  dialogTitle.value = '修改部门'
-
   getDept(row.id).then((res) => {
     form.id = res.id
     form.pid = res.pid
     form.name = res.name
     form.enabled = res.enabled
     form.sort = res.sort
+
+    dialogFormVisible.value = true
+    dialogTitle.value = '修改部门'
   })
 }
 

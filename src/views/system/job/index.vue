@@ -174,7 +174,7 @@ const selectData = ref([])
 const dialogFormVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref(null)
-let form = reactive({
+const form = reactive({
   id: undefined,
   name: undefined,
   sort: 999,
@@ -230,13 +230,14 @@ const handleAdd = () => {
 
 const handleUpdate = () => {
   resetForm()
-  dialogFormVisible.value = true
-  dialogTitle.value = '修改岗位'
   getJob(selectData.value[0].id).then((res) => {
     form.id = res.id
     form.name = res.name
     form.sort = res.sort
     form.enabled = res.enabled
+
+    dialogFormVisible.value = true
+    dialogTitle.value = '修改岗位'
   })
 }
 

@@ -348,7 +348,7 @@ const dialogFormVisible = ref(false)
 const dialogTitle = ref('')
 const iconSelectRef = ref(null)
 const formRef = ref(null)
-let form = reactive({
+const form = reactive({
   id: undefined,
   pid: undefined,
   type: 0,
@@ -478,9 +478,6 @@ const handleAdd = (row) => {
 
 const handleUpdate = (row) => {
   resetForm()
-  dialogFormVisible.value = true
-  dialogTitle.value = '修改菜单'
-
   getMenu(row.id).then((res) => {
     form.id = res.id
     form.pid = res.pid || 0
@@ -495,6 +492,9 @@ const handleUpdate = (row) => {
     form.hidden = res.hidden
     form.permission = res.permission
     form.sort = res.sort
+
+    dialogFormVisible.value = true
+    dialogTitle.value = '修改菜单'
   })
 }
 

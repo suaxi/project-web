@@ -250,7 +250,7 @@ const deptTreeProps = { children: 'children', label: 'label', isLeaf: 'leaf' }
 const jobList = ref([])
 const roleList = ref([])
 const formRef = ref(null)
-let form = reactive({
+const form = reactive({
   id: undefined,
   deptId: undefined,
   username: undefined,
@@ -342,8 +342,6 @@ const handleAdd = () => {
 
 const handleUpdate = () => {
   resetForm()
-  dialogFormVisible.value = true
-  dialogTitle.value = '修改用户'
   getUser(selectData.value[0].id).then((res) => {
     form.id = res.id
     form.deptId = res.deptId
@@ -357,12 +355,15 @@ const handleUpdate = () => {
     form.jobIds = res.jobIds.split(',').map((item) => Number(item))
     form.roleIds = res.roleIds.split(',').map((item) => Number(item))
     form.password = undefined
-  })
-  getRoleList({}).then((res) => {
-    roleList.value = res
-  })
-  getJobList().then((res) => {
-    jobList.value = res
+
+    getRoleList({}).then((res) => {
+      roleList.value = res
+    })
+    getJobList().then((res) => {
+      jobList.value = res
+    })
+    dialogTitle.value = '修改用户'
+    dialogFormVisible.value = true
   })
 }
 
@@ -384,14 +385,14 @@ const submit = () => {
   formRef.value.validate((valid) => {
     if (valid) {
       confirmButtonLoading.value = true
-      form = {
+
+      const submitForm = {
         ...form,
         jobIds: form.jobIds.join(','),
         roleIds: form.roleIds.join(',')
       }
-
-      if (form.id) {
-        update(form)
+      if (submitForm.id) {
+        update(submitForm)
           .then(() => {
             ElMessage.success('修改成功')
             dialogFormVisible.value = false
@@ -402,7 +403,7 @@ const submit = () => {
             confirmButtonLoading.value = false
           })
       } else {
-        add(form)
+        add(submitForm)
           .then(() => {
             ElMessage.success('保存成功')
             dialogFormVisible.value = false

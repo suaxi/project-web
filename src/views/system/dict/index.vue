@@ -151,7 +151,7 @@ const dialogFormVisible = ref(false)
 const dialogTitle = ref('')
 const dictDetailRef = ref(null)
 const formRef = ref(null)
-let form = reactive({
+const form = reactive({
   id: undefined,
   name: undefined,
   description: undefined
@@ -207,12 +207,13 @@ const handleAdd = () => {
 
 const handleUpdate = () => {
   resetForm()
-  dialogFormVisible.value = true
-  dialogTitle.value = '修改字典'
   getDict(selectData.value[0].id).then((res) => {
     form.id = res.id
     form.name = res.name
     form.description = res.description
+
+    dialogFormVisible.value = true
+    dialogTitle.value = '修改字典'
   })
 }
 
