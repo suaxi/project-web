@@ -255,8 +255,8 @@ const resetQuery = () => {
 }
 
 const resetForm = () => {
-  queryParams.num = 1
-  queryParams.size = 10
+  queryParams.pageNum = 1
+  queryParams.pageSize = 10
   queryParams.name = undefined
   queryParams.enabled = undefined
 
