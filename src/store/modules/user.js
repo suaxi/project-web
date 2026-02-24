@@ -39,7 +39,7 @@ const useUserStore = defineStore('user', {
             } else {
               this.roles = res.permissions
             }
-            this.user = res
+            this.user = res.user
             resolve(res)
           })
           .catch((error) => {

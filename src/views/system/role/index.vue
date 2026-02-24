@@ -109,6 +109,7 @@
                 <span class="role-span">菜单分配</span>
               </el-tooltip>
               <el-button
+                v-permission="permission.roleMenuEdit"
                 :disabled="!showButton"
                 :loading="menuLoading"
                 icon="Check"
@@ -217,7 +218,8 @@ const confirmButtonLoading = ref(false)
 const permission = {
   add: ['roles:add'],
   edit: ['roles:edit'],
-  del: ['roles:del']
+  del: ['roles:del'],
+  roleMenuEdit: ['role-menu:edit']
 }
 const queryParams = reactive({
   pageNum: 1,
